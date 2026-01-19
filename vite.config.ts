@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: './',
+  base: '/waffle-tycoon/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

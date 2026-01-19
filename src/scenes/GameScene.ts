@@ -46,7 +46,6 @@ export class GameScene extends Phaser.Scene {
   private moneyText!: Phaser.GameObjects.Text;
   private timeText!: Phaser.GameObjects.Text;
   private timeBar!: Phaser.GameObjects.Rectangle;
-  private timeBarBg!: Phaser.GameObjects.Rectangle;
   private dayText!: Phaser.GameObjects.Text;
   private fireButton!: Phaser.GameObjects.Rectangle;
   private fireButtonText!: Phaser.GameObjects.Text;
@@ -160,7 +159,7 @@ export class GameScene extends Phaser.Scene {
     const barHeight = 24;
 
     // 바 배경 (회색)
-    this.timeBarBg = this.add.rectangle(GAME_WIDTH / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xCCCCCC)
+    this.add.rectangle(GAME_WIDTH / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xCCCCCC)
       .setStrokeStyle(2, 0x999999);
 
     // 시간 바 (빨간색, 왼쪽 정렬)
@@ -719,11 +718,11 @@ export class GameScene extends Phaser.Scene {
     const success = this.gameState.money >= this.gameState.targetMoney;
 
     // 결과 오버레이 배경
-    const overlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7)
       .setDepth(200);
 
     // 결과 패널
-    const panel = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 350, 0xFFF8E7)
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 350, 0xFFF8E7)
       .setStrokeStyle(4, 0x8B6914)
       .setDepth(201);
 
