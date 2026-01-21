@@ -104,7 +104,6 @@ export class GameScene extends Phaser.Scene {
   private readonly HEADER_Y = 45;
   private readonly TIME_BAR_Y = 90; // 시간 바 위치
   private readonly CUSTOMER_Y = 190; // 손님 영역 중심 (위로 이동)
-  private readonly CUSTOMER_HEIGHT = 180; // 손님 영역 높이
   private readonly FINISHED_TRAY_Y = 355;
   private readonly TOPPING_BTN_Y = 455; // 버튼 영역 (2배 높이 90px)
   private readonly WORK_TRAY_Y = 535;
