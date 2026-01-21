@@ -35,10 +35,45 @@ export class BootScene extends Phaser.Scene {
       loadingText.destroy();
     });
 
-    // 여기에 에셋 로드
-    // this.load.image('waffle', 'assets/images/waffle.png');
-    // this.load.image('waffle-iron', 'assets/images/waffle-iron.png');
-    // this.load.audio('sizzle', 'assets/audio/sizzle.mp3');
+    // 와플 이미지 (익힘 단계별)
+    this.load.image('waffle_batter', 'assets/images/waffle_batter.png');
+    this.load.image('waffle_undercooked', 'assets/images/waffle_undercooked.png');
+    this.load.image('waffle_cooked', 'assets/images/waffle_cooked.png');
+    this.load.image('waffle_perfect', 'assets/images/waffle_perfect.png');
+    this.load.image('waffle_burnt', 'assets/images/waffle_burnt.png');
+
+    // 완성품 (와플 + 잼)
+    this.load.image('waffle_jam_undercooked', 'assets/images/waffle_apple_jam_undercooked.png');
+    this.load.image('waffle_jam_cooked', 'assets/images/waffle_apple_jam_cooked.png');
+    this.load.image('waffle_jam_perfect', 'assets/images/waffle_jam_perfect.png');
+
+    // 굽는판
+    this.load.image('grill_slot_empty', 'assets/images/grill_slot_empty.png');
+
+    // 버튼
+    this.load.image('btn_apple_jam', 'assets/images/btn_apple_jam.png');
+    this.load.image('btn_trash', 'assets/images/btn_trash.png');
+
+    // 트레이 배경
+    this.load.image('ready_tray', 'assets/images/ready_tray.png');
+    this.load.image('finished_plate', 'assets/images/finished_plate.png');
+
+    // 손님 영역 배경
+    this.load.image('customer_background', 'assets/images/customer_background.png');
+
+    // 손님 이미지
+    this.load.image('customer_dog', 'assets/images/customer_dog.png');
+    this.load.image('customer_dog_angry', 'assets/images/customer_dog_angry.png');
+    this.load.image('customer_hamster', 'assets/images/customer_hamster.png');
+    this.load.image('customer_hamster_angry', 'assets/images/customer_hamster_angry.png');
+    this.load.image('customer_turtle', 'assets/images/customer_turtle.png');
+    this.load.image('customer_turtle_angry', 'assets/images/customer_turtle_angry.png');
+    this.load.image('customer_horse', 'assets/images/customer_horse.png');
+    this.load.image('customer_horse_angry', 'assets/images/customer_horse_angry.png');
+    this.load.image('customer_bear', 'assets/images/customer_bear.png');
+    this.load.image('customer_bear_angry', 'assets/images/customer_bear_angry.png');
+    this.load.image('customer_rabbit', 'assets/images/customer_rabbit.png');
+    this.load.image('customer_rabbit_angry', 'assets/images/customer_rabbit_angry.png');
   }
 
   create(): void {

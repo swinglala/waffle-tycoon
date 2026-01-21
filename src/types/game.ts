@@ -20,13 +20,27 @@ export interface TrayWaffle {
   hasJam: boolean;
 }
 
+// 손님 종류
+export type CustomerType = 'dog' | 'hamster' | 'turtle' | 'horse' | 'bear' | 'rabbit';
+
 // 손님
 export interface Customer {
   id: number;
+  type: CustomerType;      // 손님 종류
   waffleCount: number;     // 주문 와플 개수 (1~3)
   waitTime: number;        // 남은 대기 시간
   maxWaitTime: number;     // 최대 대기 시간
 }
+
+// 손님별 대기 시간 배율 (거북이는 더 오래 기다림)
+export const CUSTOMER_WAIT_MULTIPLIER: Record<CustomerType, number> = {
+  dog: 1,
+  hamster: 1,
+  horse: 1,
+  turtle: 1.5,    // 거북이는 50% 더 오래 기다림
+  bear: 0.8,      // 곰은 조금 급함
+  rabbit: 0.8,    // 토끼도 조금 급함
+};
 
 // 게임 설정 상수
 export const GAME_CONFIG = {
