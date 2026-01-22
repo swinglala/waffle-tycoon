@@ -258,51 +258,65 @@ export function getDayTarget(day: number): number {
 
 // 업그레이드 종류
 export enum UpgradeType {
-  BATTER = 'batter',               // 반죽 개선 (와플 가격 +50원/레벨)
-  BERRY_JAM = 'berry_jam',         // 베리잼 해금
-  PISTACHIO_JAM = 'pistachio_jam', // 피스타치오잼 해금
-  FIRE_STRENGTH = 'fire_strength', // 화력 강화 (굽기속도 +10%/레벨)
-  TRAY_CAPACITY = 'tray_capacity', // 트레이 확장 (+2/레벨)
+  BERRY_JAM = 'berry_jam',                   // 베리잼 해금
+  PISTACHIO_JAM = 'pistachio_jam',           // 피스타치오잼 해금
+  BATTER = 'batter',                         // 반죽 개선 (와플 가격 +50원/레벨)
+  FIRE_STRENGTH = 'fire_strength',           // 화력 강화 (굽기속도 +10%/레벨)
+  TIME_EXTENSION = 'time_extension',         // 시간 연장 (+5초/레벨)
+  WORK_TRAY_CAPACITY = 'work_tray_capacity', // 준비 트레이 확장 (+1/레벨)
+  FINISHED_TRAY_CAPACITY = 'finished_tray_capacity', // 완성 트레이 확장 (+1/레벨)
 }
 
 // 업그레이드 설정 인터페이스
 export interface UpgradeConfig {
   name: string;           // 표시 이름
   description: string;    // 설명
-  cost: number;           // 별 비용
+  costs: number[];        // 레벨별 별 비용
   maxLevel: number;       // 최대 레벨
 }
 
 // 업그레이드 설정
 export const UPGRADE_CONFIGS: Record<UpgradeType, UpgradeConfig> = {
-  [UpgradeType.BATTER]: {
-    name: '반죽 개선',
-    description: '와플 판매 가격 +50원/레벨',
-    cost: 7,
-    maxLevel: 5,
-  },
   [UpgradeType.BERRY_JAM]: {
-    name: '베리잼 해금',
-    description: '가격 1.3배 잼 추가',
-    cost: 7,
+    name: '🍓 베리잼',
+    description: '가격 1.3배 잼 해금',
+    costs: [7],
     maxLevel: 1,
   },
   [UpgradeType.PISTACHIO_JAM]: {
-    name: '피스타치오잼 해금',
-    description: '가격 1.5배 잼 추가',
-    cost: 10,
+    name: '🥜 피스타치오잼',
+    description: '가격 1.5배 잼 해금',
+    costs: [13],
     maxLevel: 1,
   },
+  [UpgradeType.BATTER]: {
+    name: '🧈 반죽 개선',
+    description: '와플 가격 +50원/레벨',
+    costs: [7, 10, 13, 16, 19],
+    maxLevel: 5,
+  },
   [UpgradeType.FIRE_STRENGTH]: {
-    name: '화력 강화',
-    description: '기본 굽기속도 +10%/레벨',
-    cost: 7,
+    name: '🔥 화력 강화',
+    description: '굽기속도 +10%/레벨',
+    costs: [7, 10, 13],
     maxLevel: 3,
   },
-  [UpgradeType.TRAY_CAPACITY]: {
-    name: '트레이 확장',
-    description: '트레이 용량 +2/레벨',
-    cost: 7,
+  [UpgradeType.TIME_EXTENSION]: {
+    name: '⏱️ 시간 연장',
+    description: '하루 시간 +5초/레벨',
+    costs: [4, 7, 10, 13, 16],
+    maxLevel: 5,
+  },
+  [UpgradeType.WORK_TRAY_CAPACITY]: {
+    name: '📥 준비트레이',
+    description: '준비 트레이 +1/레벨',
+    costs: [4, 7, 10, 13, 16],
+    maxLevel: 5,
+  },
+  [UpgradeType.FINISHED_TRAY_CAPACITY]: {
+    name: '📤 완성트레이',
+    description: '완성 트레이 +1/레벨',
+    costs: [4, 7, 10, 13, 16],
     maxLevel: 5,
   },
 };
@@ -318,8 +332,15 @@ export interface ProgressState {
 
 // 트레이 설정
 export const TRAY_CONFIG = {
-  BASE_CAPACITY: 5,         // 기본 용량
-  CAPACITY_PER_UPGRADE: 2,  // 업그레이드당 추가 용량
+  WORK_BASE_CAPACITY: 5,      // 준비 트레이 기본 용량
+  FINISHED_BASE_CAPACITY: 5,  // 완성 트레이 기본 용량
+  CAPACITY_PER_UPGRADE: 1,    // 업그레이드당 추가 용량
+};
+
+// 시간 설정
+export const TIME_CONFIG = {
+  BASE_DAY_TIME: 60,          // 기본 하루 시간 (초)
+  TIME_PER_UPGRADE: 5,        // 업그레이드당 추가 시간 (초)
 };
 
 // 별 계산 설정

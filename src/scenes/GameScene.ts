@@ -138,7 +138,8 @@ export class GameScene extends Phaser.Scene {
   private heartManager!: HeartManager;
   private heartUsed = false; // 이번 게임에서 하트 사용 여부
   private progressManager!: ProgressManager;
-  private trayCapacity = 5; // 기본 트레이 용량
+  private workTrayCapacity = 5; // 준비 트레이 용량
+  private finishedTrayCapacity = 5; // 완성 트레이 용량
   private customerCooldowns: Record<CustomerType, number> = {} as Record<CustomerType, number>; // 손님별 쿨다운
 
   // 손님 슬롯 X 좌표
@@ -208,7 +209,13 @@ export class GameScene extends Phaser.Scene {
     this.progressManager = ProgressManager.getInstance();
 
     // 트레이 용량 설정 (업그레이드 반영)
-    this.trayCapacity = this.progressManager.getTrayCapacity();
+    this.workTrayCapacity = this.progressManager.getWorkTrayCapacity();
+    this.finishedTrayCapacity = this.progressManager.getFinishedTrayCapacity();
+
+    // 시간 연장 업그레이드 반영
+    const dayTime = this.progressManager.getDayTime();
+    this.gameState.timeRemaining = dayTime;
+    this.gameState.maxTime = dayTime;
 
     // 게임 시작 시 하트 사용
     if (!this.heartUsed) {
@@ -824,9 +831,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private moveToWorkTray(row: number, col: number): void {
-    // 트레이 용량 체크
-    if (this.workTray.length >= this.trayCapacity) {
-      this.showMessage(`작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.trayCapacity})`);
+    // 준비 트레이 용량 체크
+    if (this.workTray.length >= this.workTrayCapacity) {
+      this.showMessage(`작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.workTrayCapacity})`);
       return;
     }
 
@@ -867,8 +874,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 완성품 트레이 용량 체크
-    if (this.finishedTray.length >= this.trayCapacity) {
-      this.showMessage(`완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.trayCapacity})`);
+    if (this.finishedTray.length >= this.finishedTrayCapacity) {
+      this.showMessage(`완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.finishedTrayCapacity})`);
       return;
     }
 
@@ -952,7 +959,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 용량 표시 (현재/최대)
-    this.workTrayCountText.setText(`${this.workTray.length}/${this.trayCapacity}`);
+    this.workTrayCountText.setText(`${this.workTray.length}/${this.workTrayCapacity}`);
   }
 
   private updateFinishedTrayDisplay(): void {
@@ -973,7 +980,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 용량 표시 (현재/최대)
-    this.finishedTrayCountText.setText(`${this.finishedTray.length}/${this.trayCapacity}`);
+    this.finishedTrayCountText.setText(`${this.finishedTray.length}/${this.finishedTrayCapacity}`);
   }
 
   private formatTime(seconds: number): string {

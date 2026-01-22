@@ -3,15 +3,15 @@ import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import { UpgradeType, UPGRADE_CONFIGS } from "../types/game";
 import { ProgressManager } from "../utils/ProgressManager";
 
+// 3열 그리드 레이아웃 정의
+const SHOP_LAYOUT: UpgradeType[][] = [
+  [UpgradeType.BERRY_JAM, UpgradeType.PISTACHIO_JAM], // 1행: 잼 해금
+  [UpgradeType.BATTER, UpgradeType.FIRE_STRENGTH, UpgradeType.TIME_EXTENSION], // 2행: 능력 강화
+  [UpgradeType.WORK_TRAY_CAPACITY, UpgradeType.FINISHED_TRAY_CAPACITY], // 3행: 트레이 확장
+];
+
 export class ShopScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
-  private starsText!: Phaser.GameObjects.Text;
-  private upgradeCards: Map<UpgradeType, {
-    card: Phaser.GameObjects.Rectangle;
-    levelText: Phaser.GameObjects.Text;
-    buyBtn: Phaser.GameObjects.Rectangle;
-    buyBtnText: Phaser.GameObjects.Text;
-  }> = new Map();
 
   constructor() {
     super({ key: "ShopScene" });
@@ -21,7 +21,7 @@ export class ShopScene extends Phaser.Scene {
     this.progressManager = ProgressManager.getInstance();
     this.createBackground();
     this.createHeader();
-    this.createUpgradeCards();
+    this.createUpgradeGrid();
     this.createBackButton();
   }
 
@@ -46,7 +46,7 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // 별 잔액 표시
-    this.starsText = this.add
+    this.add
       .text(GAME_WIDTH / 2, 65, this.getStarsDisplayText(), {
         fontFamily: "Arial",
         fontSize: "22px",
@@ -60,77 +60,86 @@ export class ShopScene extends Phaser.Scene {
     return `⭐ ${this.progressManager.getTotalStars()}`;
   }
 
-  private createUpgradeCards(): void {
-    const upgradeTypes = Object.values(UpgradeType);
-    const cardWidth = GAME_WIDTH - 60;
-    const cardHeight = 140;
-    const startY = 140;
-    const gap = 15;
+  private createUpgradeGrid(): void {
+    const startY = 190; // 헤더 아래 여유 공간
+    const rowHeight = 200;
+    const colWidth = (GAME_WIDTH - 40) / 3;
+    const cardWidth = colWidth - 20;
+    const cardHeight = 180;
+    const leftPadding = 30; // 왼쪽 여백
 
-    upgradeTypes.forEach((type, index) => {
-      const config = UPGRADE_CONFIGS[type];
-      const y = startY + index * (cardHeight + gap);
-      this.createUpgradeCard(type, config, cardWidth, cardHeight, y);
+    SHOP_LAYOUT.forEach((row, rowIndex) => {
+      const y = startY + rowIndex * rowHeight;
+
+      // 왼쪽 정렬
+      row.forEach((type, colIndex) => {
+        const x = leftPadding + colWidth / 2 + colIndex * colWidth;
+        this.createUpgradeCard(type, x, y, cardWidth, cardHeight);
+      });
     });
   }
 
   private createUpgradeCard(
     type: UpgradeType,
-    config: { name: string; description: string; cost: number; maxLevel: number },
+    x: number,
+    y: number,
     width: number,
-    height: number,
-    y: number
+    height: number
   ): void {
-    const x = GAME_WIDTH / 2;
+    const config = UPGRADE_CONFIGS[type];
     const currentLevel = this.progressManager.getUpgradeLevel(type);
     const isMaxed = currentLevel >= config.maxLevel;
     const canBuy = this.progressManager.canPurchaseUpgrade(type);
+    const nextCost = this.progressManager.getUpgradeCost(type);
 
     // 카드 배경
-    const card = this.add
+    this.add
       .rectangle(x, y, width, height, 0xffffff)
-      .setStrokeStyle(3, isMaxed ? 0x4CAF50 : 0x8b6914);
+      .setStrokeStyle(3, isMaxed ? 0x4caf50 : 0x8b6914);
 
     // 업그레이드 이름
     this.add
-      .text(40, y - 40, config.name, {
+      .text(x, y - 55, config.name, {
         fontFamily: "Arial",
-        fontSize: "24px",
+        fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
+        align: "center",
       })
-      .setOrigin(0, 0.5);
+      .setOrigin(0.5);
 
     // 설명
     this.add
-      .text(40, y - 5, config.description, {
+      .text(x, y - 20, config.description, {
         fontFamily: "Arial",
-        fontSize: "18px",
+        fontSize: "14px",
         color: "#7D6E57",
+        align: "center",
+        wordWrap: { width: width - 20 },
       })
-      .setOrigin(0, 0.5);
+      .setOrigin(0.5);
 
     // 레벨 표시
-    const levelText = this.add
-      .text(40, y + 35, `Lv. ${currentLevel} / ${config.maxLevel}`, {
+    this.add
+      .text(x, y + 20, `Lv. ${currentLevel} / ${config.maxLevel}`, {
         fontFamily: "Arial",
-        fontSize: "20px",
+        fontSize: "18px",
         color: isMaxed ? "#4CAF50" : "#5D4E37",
         fontStyle: "bold",
       })
-      .setOrigin(0, 0.5);
+      .setOrigin(0.5);
 
     // 구매 버튼
-    const btnX = GAME_WIDTH - 100;
-    const btnWidth = 120;
-    const btnHeight = 50;
+    const btnY = y + 60;
+    const btnWidth = width - 30;
+    const btnHeight = 40;
 
     let btnColor = 0xd4a574;
     let btnTextColor = "#5D4E37";
-    let btnLabel = `⭐${config.cost}`;
+    let btnLabel = `⭐${nextCost}`;
 
     if (isMaxed) {
-      btnColor = 0x4CAF50;
+      btnColor = 0x4caf50;
       btnTextColor = "#FFFFFF";
       btnLabel = "MAX";
     } else if (!canBuy) {
@@ -139,13 +148,13 @@ export class ShopScene extends Phaser.Scene {
     }
 
     const buyBtn = this.add
-      .rectangle(btnX, y, btnWidth, btnHeight, btnColor)
+      .rectangle(x, btnY, btnWidth, btnHeight, btnColor)
       .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x8b6914 : 0x999999);
 
-    const buyBtnText = this.add
-      .text(btnX, y, btnLabel, {
+    this.add
+      .text(x, btnY, btnLabel, {
         fontFamily: "Arial",
-        fontSize: "20px",
+        fontSize: "18px",
         color: btnTextColor,
         fontStyle: "bold",
       })
@@ -157,8 +166,7 @@ export class ShopScene extends Phaser.Scene {
       buyBtn.on("pointerdown", () => {
         if (this.progressManager.canPurchaseUpgrade(type)) {
           this.progressManager.purchaseUpgrade(type);
-          this.refreshUpgradeCards();
-          this.updateStarsDisplay();
+          this.refreshScene();
         } else {
           this.showMessage("별이 부족해요!");
         }
@@ -173,30 +181,15 @@ export class ShopScene extends Phaser.Scene {
         });
       }
     }
-
-    this.upgradeCards.set(type, { card, levelText, buyBtn, buyBtnText });
   }
 
-  private refreshUpgradeCards(): void {
-    // 기존 카드 제거
-    this.upgradeCards.forEach(({ card, levelText, buyBtn, buyBtnText }) => {
-      card.destroy();
-      levelText.destroy();
-      buyBtn.destroy();
-      buyBtnText.destroy();
-    });
-    this.upgradeCards.clear();
-
+  private refreshScene(): void {
     // 모든 자식 오브젝트 제거 후 다시 생성
     this.children.removeAll(true);
     this.createBackground();
     this.createHeader();
-    this.createUpgradeCards();
+    this.createUpgradeGrid();
     this.createBackButton();
-  }
-
-  private updateStarsDisplay(): void {
-    this.starsText.setText(this.getStarsDisplayText());
   }
 
   private createBackButton(): void {

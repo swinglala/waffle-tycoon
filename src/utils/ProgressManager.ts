@@ -4,6 +4,7 @@ import {
   JamType,
   UPGRADE_CONFIGS,
   TRAY_CONFIG,
+  TIME_CONFIG,
   STAR_CONFIG,
   getDayTarget,
 } from "../types/game";
@@ -35,7 +36,9 @@ export class ProgressManager {
         [UpgradeType.BERRY_JAM]: 0,
         [UpgradeType.PISTACHIO_JAM]: 0,
         [UpgradeType.FIRE_STRENGTH]: 0,
-        [UpgradeType.TRAY_CAPACITY]: 0,
+        [UpgradeType.TIME_EXTENSION]: 0,
+        [UpgradeType.WORK_TRAY_CAPACITY]: 0,
+        [UpgradeType.FINISHED_TRAY_CAPACITY]: 0,
       },
       unlockedJams: [JamType.APPLE], // 기본으로 사과잼 해금
     };
@@ -136,12 +139,29 @@ export class ProgressManager {
       return false;
     }
 
+    // 다음 레벨 비용 (costs 배열에서 현재 레벨 인덱스)
+    const nextCost = config.costs[currentLevel];
+
     // 별이 부족
-    if (this.state.totalStars < config.cost) {
+    if (this.state.totalStars < nextCost) {
       return false;
     }
 
     return true;
+  }
+
+  /**
+   * 다음 레벨 업그레이드 비용 반환
+   */
+  getUpgradeCost(type: UpgradeType): number {
+    const config = UPGRADE_CONFIGS[type];
+    const currentLevel = this.getUpgradeLevel(type);
+
+    if (currentLevel >= config.maxLevel) {
+      return 0;
+    }
+
+    return config.costs[currentLevel];
   }
 
   /**
@@ -153,8 +173,8 @@ export class ProgressManager {
       return false;
     }
 
-    const config = UPGRADE_CONFIGS[type];
-    this.state.totalStars -= config.cost;
+    const cost = this.getUpgradeCost(type);
+    this.state.totalStars -= cost;
     this.state.upgrades[type] += 1;
 
     // 잼 해금 처리
@@ -174,11 +194,27 @@ export class ProgressManager {
   // ========================================
 
   /**
-   * 현재 트레이 용량
+   * 현재 준비 트레이 용량
    */
-  getTrayCapacity(): number {
-    const level = this.getUpgradeLevel(UpgradeType.TRAY_CAPACITY);
-    return TRAY_CONFIG.BASE_CAPACITY + level * TRAY_CONFIG.CAPACITY_PER_UPGRADE;
+  getWorkTrayCapacity(): number {
+    const level = this.getUpgradeLevel(UpgradeType.WORK_TRAY_CAPACITY);
+    return TRAY_CONFIG.WORK_BASE_CAPACITY + level * TRAY_CONFIG.CAPACITY_PER_UPGRADE;
+  }
+
+  /**
+   * 현재 완성 트레이 용량
+   */
+  getFinishedTrayCapacity(): number {
+    const level = this.getUpgradeLevel(UpgradeType.FINISHED_TRAY_CAPACITY);
+    return TRAY_CONFIG.FINISHED_BASE_CAPACITY + level * TRAY_CONFIG.CAPACITY_PER_UPGRADE;
+  }
+
+  /**
+   * 현재 하루 시간 (시간 연장 업그레이드 적용)
+   */
+  getDayTime(): number {
+    const level = this.getUpgradeLevel(UpgradeType.TIME_EXTENSION);
+    return TIME_CONFIG.BASE_DAY_TIME + level * TIME_CONFIG.TIME_PER_UPGRADE;
   }
 
   /**
