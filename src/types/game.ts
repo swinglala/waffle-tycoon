@@ -122,8 +122,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
 // 게임 설정 상수
 export const GAME_CONFIG = {
   // 손님 설정
-  CUSTOMER_SPAWN_MIN: 5,      // 최소 등장 간격 (초)
-  CUSTOMER_SPAWN_MAX: 10,     // 최대 등장 간격 (초)
+  CUSTOMER_SPAWN_MIN: 2,      // 최소 등장 간격 (초)
+  CUSTOMER_SPAWN_MAX: 5,      // 최대 등장 간격 (초)
   MAX_CUSTOMERS: 3,           // 최대 동시 손님 수
 
   // 하루 설정
