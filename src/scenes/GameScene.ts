@@ -96,6 +96,8 @@ export class GameScene extends Phaser.Scene {
   private customerSpawnTimer = 0;
   private nextSpawnTime = 0;
   private isGameOver = false;
+  private isPaused = false;
+  private pausePopupObjects: Phaser.GameObjects.GameObject[] = [];
 
   // 손님 슬롯 X 좌표
   private readonly CUSTOMER_SLOT_X = [150, 330, 510];
@@ -239,6 +241,25 @@ export class GameScene extends Phaser.Scene {
       )
       .setOrigin(0.5)
       .setDepth(12);
+
+    // X 버튼 (헤더 오른쪽 끝)
+    const closeBtn = this.add
+      .circle(GAME_WIDTH - 45, this.HEADER_Y, 20, 0xe85a4f)
+      .setStrokeStyle(2, 0xb8453c)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(11);
+
+    this.add
+      .text(GAME_WIDTH - 45, this.HEADER_Y, "✕", {
+        fontFamily: "Arial",
+        fontSize: "24px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(12);
+
+    closeBtn.on("pointerdown", () => this.showPausePopup());
   }
 
   private createCustomerZone(): void {
@@ -734,7 +755,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.isPaused) return;
 
     const deltaSeconds = delta / 1000;
     const cookingSpeed = this.gameState.isStrongFire ? 2 : 1;
@@ -956,5 +977,222 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.timeBar.setFillStyle(0xe85a4f); // 빨강
     }
+  }
+
+  private showPausePopup(): void {
+    if (this.isPaused) return;
+    this.isPaused = true;
+
+    // 반투명 오버레이
+    const overlay = this.add
+      .rectangle(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT / 2,
+        GAME_WIDTH,
+        GAME_HEIGHT,
+        0x000000,
+        0.5,
+      )
+      .setInteractive()
+      .setDepth(300);
+
+    // 팝업 배경
+    const popup = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 400, 280, 0xfff8e7)
+      .setStrokeStyle(4, 0x8b6914)
+      .setDepth(301);
+
+    // 타이틀
+    const title = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "일시정지", {
+        fontFamily: "Arial",
+        fontSize: "32px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(302);
+
+    // 재시도 버튼
+    const retryBtn = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, 280, 55, 0xffc107)
+      .setStrokeStyle(3, 0xffa000)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(302);
+
+    const retryText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, "🔄 재시도", {
+        fontFamily: "Arial",
+        fontSize: "24px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(303);
+
+    // 종료 버튼
+    const exitBtn = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, 280, 55, 0xe85a4f)
+      .setStrokeStyle(3, 0xb8453c)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(302);
+
+    const exitText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, "🚪 종료", {
+        fontFamily: "Arial",
+        fontSize: "24px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(303);
+
+    this.pausePopupObjects = [
+      overlay,
+      popup,
+      title,
+      retryBtn,
+      retryText,
+      exitBtn,
+      exitText,
+    ];
+
+    // 오버레이 클릭으로 닫기
+    overlay.on("pointerdown", () => this.closePausePopup());
+
+    // 재시도 버튼 클릭
+    retryBtn.on("pointerdown", () => {
+      this.closePausePopup();
+      this.showConfirmPopup(
+        "재시도",
+        `${this.gameState.day}일차를 다시 시작할까요?`,
+        () => this.retryDay(),
+      );
+    });
+
+    // 종료 버튼 클릭
+    exitBtn.on("pointerdown", () => {
+      this.closePausePopup();
+      this.showConfirmPopup("종료", "홈 화면으로 돌아갈까요?", () =>
+        this.scene.start("HomeScene"),
+      );
+    });
+  }
+
+  private closePausePopup(): void {
+    for (const obj of this.pausePopupObjects) {
+      obj.destroy();
+    }
+    this.pausePopupObjects = [];
+    this.isPaused = false;
+  }
+
+  private showConfirmPopup(
+    title: string,
+    message: string,
+    onConfirm: () => void,
+  ): void {
+    this.isPaused = true;
+
+    // 반투명 오버레이
+    const overlay = this.add
+      .rectangle(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT / 2,
+        GAME_WIDTH,
+        GAME_HEIGHT,
+        0x000000,
+        0.5,
+      )
+      .setInteractive()
+      .setDepth(400);
+
+    // 팝업 배경
+    const popup = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 420, 250, 0xfff8e7)
+      .setStrokeStyle(4, 0x8b6914)
+      .setDepth(401);
+
+    // 타이틀
+    const titleText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 70, title, {
+        fontFamily: "Arial",
+        fontSize: "28px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(402);
+
+    // 메시지
+    const messageText = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 15, message, {
+        fontFamily: "Arial",
+        fontSize: "22px",
+        color: "#5D4E37",
+      })
+      .setOrigin(0.5)
+      .setDepth(402);
+
+    // 취소 버튼
+    const cancelBtn = this.add
+      .rectangle(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, 130, 50, 0xcccccc)
+      .setStrokeStyle(3, 0x999999)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(402);
+
+    const cancelText = this.add
+      .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(403);
+
+    // 확인 버튼
+    const confirmBtn = this.add
+      .rectangle(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, 130, 50, 0x4caf50)
+      .setStrokeStyle(3, 0x388e3c)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(402);
+
+    const confirmText = this.add
+      .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "확인", {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(403);
+
+    const confirmPopupObjects = [
+      overlay,
+      popup,
+      titleText,
+      messageText,
+      cancelBtn,
+      cancelText,
+      confirmBtn,
+      confirmText,
+    ];
+
+    const closeConfirmPopup = () => {
+      for (const obj of confirmPopupObjects) {
+        obj.destroy();
+      }
+      this.isPaused = false;
+    };
+
+    // 취소 버튼 클릭
+    cancelBtn.on("pointerdown", closeConfirmPopup);
+
+    // 확인 버튼 클릭
+    confirmBtn.on("pointerdown", () => {
+      closeConfirmPopup();
+      onConfirm();
+    });
   }
 }

@@ -77,7 +77,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    // 게임 씬으로 전환
-    this.scene.start('GameScene');
+    // 홈 씬으로 전환
+    this.scene.start('HomeScene');
   }
 }
