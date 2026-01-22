@@ -50,6 +50,8 @@ export interface CustomerConfig {
   jamPreferenceChance: number;    // 선호 잼 확률 (0~1)
   appearDay: number;          // 등장 시작일
   requiresPerfect: boolean;   // 퍼펙트 와플만 가능 여부
+  spawnWeight: number;        // 등장 가중치 (1.0 = 기본, 낮을수록 덜 등장)
+  spawnCooldown: number;      // 등장 후 쿨다운 (초, 연속 등장 방지)
 }
 
 // 손님별 상세 설정
@@ -62,6 +64,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0,
     appearDay: 1,
     requiresPerfect: false,
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
   hamster: {
     waitTime: 15,
@@ -71,6 +75,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0.7,          // 70%
     appearDay: 1,
     requiresPerfect: false,
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
   horse: {
     waitTime: 12,
@@ -80,6 +86,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0.6,          // 60%
     appearDay: 1,
     requiresPerfect: false,
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
   turtle: {
     waitTime: 22,
@@ -89,6 +97,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0,
     appearDay: 1,
     requiresPerfect: false,
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
   rabbit: {
     waitTime: 8,
@@ -98,6 +108,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0.8,          // 80%
     appearDay: 5,
     requiresPerfect: false,
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
   bear: {
     waitTime: 18,
@@ -107,6 +119,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0.9,          // 90%
     appearDay: 10,
     requiresPerfect: false,
+    spawnWeight: 0.15,         // 낮은 등장 확률 (하루 2~3번)
+    spawnCooldown: 20,         // 등장 후 20초간 재등장 불가
   },
   fox: {
     waitTime: 12,
@@ -116,15 +130,19 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     jamPreferenceChance: 0.8,          // 80%
     appearDay: 15,
     requiresPerfect: true,             // 퍼펙트만 가능!
+    spawnWeight: 1.0,
+    spawnCooldown: 0,
   },
 };
 
 // 게임 설정 상수
 export const GAME_CONFIG = {
-  // 손님 설정
-  CUSTOMER_SPAWN_MIN: 2,      // 최소 등장 간격 (초)
-  CUSTOMER_SPAWN_MAX: 5,      // 최대 등장 간격 (초)
-  MAX_CUSTOMERS: 3,           // 최대 동시 손님 수
+  // 손님 설정 (Day 1 기준, Day 5+에서 빨라짐)
+  CUSTOMER_SPAWN_MIN_SLOW: 5,   // Day 1 최소 등장 간격 (초)
+  CUSTOMER_SPAWN_MAX_SLOW: 10,  // Day 1 최대 등장 간격 (초)
+  CUSTOMER_SPAWN_MIN_FAST: 2,   // Day 5+ 최소 등장 간격 (초)
+  CUSTOMER_SPAWN_MAX_FAST: 5,   // Day 5+ 최대 등장 간격 (초)
+  MAX_CUSTOMERS: 3,             // 최대 동시 손님 수
 
   // 하루 설정
   DAY_TIME: 60,               // 하루 시간 (초) - 1분

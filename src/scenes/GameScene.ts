@@ -139,6 +139,7 @@ export class GameScene extends Phaser.Scene {
   private heartUsed = false; // 이번 게임에서 하트 사용 여부
   private progressManager!: ProgressManager;
   private trayCapacity = 5; // 기본 트레이 용량
+  private customerCooldowns: Record<CustomerType, number> = {} as Record<CustomerType, number>; // 손님별 쿨다운
 
   // 손님 슬롯 X 좌표
   private readonly CUSTOMER_SLOT_X = [150, 330, 510];
@@ -169,6 +170,12 @@ export class GameScene extends Phaser.Scene {
     this.customerSlots = [null, null, null];
     this.customerUIObjects = [];
     this.nextCustomerId = 1;
+
+    // 손님 쿨다운 초기화
+    this.customerCooldowns = {} as Record<CustomerType, number>;
+    for (const type of ALL_CUSTOMER_TYPES) {
+      this.customerCooldowns[type] = 0;
+    }
 
     if (data?.day) {
       this.gameState.day = data.day;
@@ -227,18 +234,43 @@ export class GameScene extends Phaser.Scene {
   }
 
   private getRandomSpawnTime(): number {
-    return (
-      GAME_CONFIG.CUSTOMER_SPAWN_MIN +
-      Math.random() *
-        (GAME_CONFIG.CUSTOMER_SPAWN_MAX - GAME_CONFIG.CUSTOMER_SPAWN_MIN)
+    // Day 1~5에 따라 손님 등장 속도 점진적 증가
+    // Day 1: 5~10초, Day 5+: 2~5초
+    const day = this.gameState.day;
+    const progress = Math.min((day - 1) / 4, 1); // 0 (Day1) ~ 1 (Day5+)
+
+    const minTime =
+      GAME_CONFIG.CUSTOMER_SPAWN_MIN_SLOW +
+      (GAME_CONFIG.CUSTOMER_SPAWN_MIN_FAST - GAME_CONFIG.CUSTOMER_SPAWN_MIN_SLOW) * progress;
+    const maxTime =
+      GAME_CONFIG.CUSTOMER_SPAWN_MAX_SLOW +
+      (GAME_CONFIG.CUSTOMER_SPAWN_MAX_FAST - GAME_CONFIG.CUSTOMER_SPAWN_MAX_SLOW) * progress;
+
+    return minTime + Math.random() * (maxTime - minTime);
+  }
+
+  // 해당 day에 등장 가능한 손님 목록 반환 (쿨다운 고려)
+  private getAvailableCustomerTypes(): CustomerType[] {
+    return ALL_CUSTOMER_TYPES.filter(
+      (type) =>
+        CUSTOMER_CONFIG[type].appearDay <= this.gameState.day &&
+        this.customerCooldowns[type] <= 0
     );
   }
 
-  // 해당 day에 등장 가능한 손님 목록 반환
-  private getAvailableCustomerTypes(): CustomerType[] {
-    return ALL_CUSTOMER_TYPES.filter(
-      (type) => CUSTOMER_CONFIG[type].appearDay <= this.gameState.day
-    );
+  // 가중치 기반 랜덤 손님 선택
+  private selectWeightedCustomer(availableTypes: CustomerType[]): CustomerType {
+    const weights = availableTypes.map((type) => CUSTOMER_CONFIG[type].spawnWeight);
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+    let random = Math.random() * totalWeight;
+
+    for (let i = 0; i < availableTypes.length; i++) {
+      random -= weights[i];
+      if (random <= 0) {
+        return availableTypes[i];
+      }
+    }
+    return availableTypes[availableTypes.length - 1];
   }
 
   // 손님의 주문 잼 결정 (선호도 + 해금 여부 고려)
@@ -381,18 +413,21 @@ export class GameScene extends Phaser.Scene {
   private spawnCustomer(): void {
     if (this.isGameOver) return;
 
-    // 빈 슬롯 찾기
-    const emptySlotIndex = this.customerSlots.findIndex(
-      (slot) => slot === null,
-    );
-    if (emptySlotIndex === -1) return; // 빈 슬롯 없음
+    // 빈 슬롯 찾기 (랜덤하게 선택)
+    const emptySlotIndices: number[] = [];
+    this.customerSlots.forEach((slot, index) => {
+      if (slot === null) emptySlotIndices.push(index);
+    });
+    if (emptySlotIndices.length === 0) return; // 빈 슬롯 없음
 
-    // 현재 day에 등장 가능한 손님 중 랜덤 선택
+    // 빈 슬롯 중 랜덤 선택
+    const emptySlotIndex = emptySlotIndices[Math.floor(Math.random() * emptySlotIndices.length)];
+
+    // 현재 day에 등장 가능한 손님 중 가중치 기반 랜덤 선택
     const availableTypes = this.getAvailableCustomerTypes();
     if (availableTypes.length === 0) return;
 
-    const customerType =
-      availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    const customerType = this.selectWeightedCustomer(availableTypes);
     const config = CUSTOMER_CONFIG[customerType];
 
     // 손님별 설정 적용
@@ -414,6 +449,11 @@ export class GameScene extends Phaser.Scene {
     };
 
     this.customerSlots[emptySlotIndex] = customer;
+
+    // 해당 손님 종류의 쿨다운 설정
+    if (config.spawnCooldown > 0) {
+      this.customerCooldowns[customerType] = config.spawnCooldown;
+    }
     // updateCustomerDisplay는 updateCustomers에서 호출됨
   }
 
@@ -970,6 +1010,13 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver || this.isPaused) return;
 
     const deltaSeconds = delta / 1000;
+
+    // 손님별 쿨다운 감소
+    for (const type of ALL_CUSTOMER_TYPES) {
+      if (this.customerCooldowns[type] > 0) {
+        this.customerCooldowns[type] -= deltaSeconds;
+      }
+    }
     // 기본 굽기 속도 (업그레이드 반영) * 강불 배율
     const baseSpeedMultiplier = this.progressManager.getCookingSpeedMultiplier();
     const strongFireMultiplier = this.gameState.isStrongFire ? 2 : 1;
