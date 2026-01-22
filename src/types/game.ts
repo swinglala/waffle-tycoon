@@ -109,3 +109,15 @@ export const WAFFLE_PRICES: Record<CookingStage, number> = {
   [CookingStage.PERFECT]: 2500,      // 퍼펙트 + 잼
   [CookingStage.BURNT]: 0,           // 판매 불가
 };
+
+// 하트 시스템 설정
+export const HEART_CONFIG = {
+  MAX_HEARTS: 5,              // 최대 하트 수
+  RECHARGE_TIME: 15 * 60,     // 충전 시간 (초) - 15분
+};
+
+// 하트 상태 (localStorage 저장용)
+export interface HeartState {
+  hearts: number;             // 현재 하트 수
+  lastRechargeTime: number;   // 마지막 충전 시간 (timestamp)
+}

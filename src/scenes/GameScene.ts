@@ -12,6 +12,7 @@ import {
   GAME_CONFIG,
   CUSTOMER_WAIT_MULTIPLIER,
 } from "../types/game";
+import { HeartManager } from "../utils/HeartManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
@@ -98,6 +99,8 @@ export class GameScene extends Phaser.Scene {
   private isGameOver = false;
   private isPaused = false;
   private pausePopupObjects: Phaser.GameObjects.GameObject[] = [];
+  private heartManager!: HeartManager;
+  private heartUsed = false; // 이번 게임에서 하트 사용 여부
 
   // 손님 슬롯 X 좌표
   private readonly CUSTOMER_SLOT_X = [150, 330, 510];
@@ -115,7 +118,28 @@ export class GameScene extends Phaser.Scene {
     super({ key: "GameScene" });
   }
 
+  init(data?: { day?: number }): void {
+    // HomeScene에서 넘어올 때만 상태 초기화
+    if (data?.day) {
+      this.gameState.day = data.day;
+      this.gameState.money = 0;
+      this.gameState.targetMoney =
+        GAME_CONFIG.BASE_TARGET + (data.day - 1) * GAME_CONFIG.TARGET_INCREASE;
+      this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
+      this.heartUsed = false; // 새 게임 시작 시 하트 사용 준비
+    }
+    // restart()로 호출될 때는 data가 없으므로 heartUsed 유지
+  }
+
   create(): void {
+    this.heartManager = HeartManager.getInstance();
+
+    // 게임 시작 시 하트 사용
+    if (!this.heartUsed) {
+      this.heartManager.useHeart();
+      this.heartUsed = true;
+    }
+
     this.initializeGrill();
     this.createBackground();
     this.createUI();
@@ -809,6 +833,11 @@ export class GameScene extends Phaser.Scene {
 
     const success = this.gameState.money >= this.gameState.targetMoney;
 
+    // 성공 시 하트 반환
+    if (success) {
+      this.heartManager.refundHeart();
+    }
+
     // 결과 오버레이 배경
     this.add
       .rectangle(
@@ -917,6 +946,7 @@ export class GameScene extends Phaser.Scene {
     this.gameState.money = 0;
     this.gameState.targetMoney += GAME_CONFIG.TARGET_INCREASE;
     this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
+    this.heartUsed = false; // 다음 날은 새로운 하트 사용
     this.resetDayState();
   }
 
