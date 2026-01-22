@@ -73,10 +73,10 @@ export interface GameState {
 // 익힘 단계별 필요 시간 (초)
 export const COOKING_TIMES: Record<CookingStage, number> = {
   [CookingStage.EMPTY]: 0,
-  [CookingStage.BATTER]: 3,      // 반죽 → 덜익음: 3초
-  [CookingStage.UNDERCOOKED]: 3, // 덜익음 → 익음: 3초
-  [CookingStage.COOKED]: 3,      // 익음 → 퍼펙트: 3초
-  [CookingStage.PERFECT]: 3,     // 퍼펙트 → 탐: 3초
+  [CookingStage.BATTER]: 8,      // 반죽 → 덜익음: 8초
+  [CookingStage.UNDERCOOKED]: 6, // 덜익음 → 익음: 6초
+  [CookingStage.COOKED]: 6,      // 익음 → 퍼펙트: 6초
+  [CookingStage.PERFECT]: 6,     // 퍼펙트 → 탐: 6초
   [CookingStage.BURNT]: 999,     // 탐은 더 이상 진행 안함
 };
 

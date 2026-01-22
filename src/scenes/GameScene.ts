@@ -18,6 +18,14 @@ const GRID_SIZE = 3;
 const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
 const CELL_GAP = 6;
 
+// 화구별 불 세기 배율 (중앙이 가장 뜨겁고, 가장자리로 갈수록 약함)
+// [row][col] 0-indexed
+const GRILL_HEAT_MULTIPLIER: number[][] = [
+  [1.0, 1.2, 1.0], // 가장자리, 상단중앙, 가장자리
+  [1.2, 1.5, 1.2], // 좌측중앙, 중앙(가장빠름), 우측중앙
+  [1.0, 1.2, 1.0], // 가장자리, 하단중앙, 가장자리
+];
+
 // 익힘 단계별 이미지 키
 const STAGE_IMAGE_KEYS: Record<CookingStage, string> = {
   [CookingStage.EMPTY]: "",
@@ -793,7 +801,9 @@ export class GameScene extends Phaser.Scene {
           slot.stage !== CookingStage.EMPTY &&
           slot.stage !== CookingStage.BURNT
         ) {
-          slot.cookTime += deltaSeconds * cookingSpeed;
+          // 화구별 불 세기 적용
+          const heatMultiplier = GRILL_HEAT_MULTIPLIER[row][col];
+          slot.cookTime += deltaSeconds * cookingSpeed * heatMultiplier;
 
           const requiredTime = COOKING_TIMES[slot.stage];
           if (slot.cookTime >= requiredTime) {
@@ -900,16 +910,20 @@ export class GameScene extends Phaser.Scene {
       .setDepth(202);
 
     // 버튼
+    const leftBtnX = GAME_WIDTH / 2 - 115;
+    const rightBtnX = GAME_WIDTH / 2 + 115;
+    const btnY = GAME_HEIGHT / 2 + 100;
+
     if (success) {
-      // 다음 날 버튼
+      // 다음 날 버튼 (왼쪽)
       const nextBtn = this.add
-        .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, 200, 60, 0x4caf50)
+        .rectangle(leftBtnX, btnY, 200, 60, 0x4caf50)
         .setStrokeStyle(3, 0x388e3c)
         .setInteractive({ useHandCursor: true })
         .setDepth(202);
 
       this.add
-        .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, "▶ 다음 날", {
+        .text(leftBtnX, btnY, "▶ 다음 날", {
           fontFamily: "Arial",
           fontSize: "22px",
           color: "#FFFFFF",
@@ -920,18 +934,18 @@ export class GameScene extends Phaser.Scene {
 
       nextBtn.on("pointerdown", () => this.startNextDay());
     } else {
-      // 재도전 버튼
+      // 재도전 버튼 (왼쪽)
       const retryBtn = this.add
-        .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, 200, 60, 0xe85a4f)
-        .setStrokeStyle(3, 0xb8453c)
+        .rectangle(leftBtnX, btnY, 200, 60, 0xffc107)
+        .setStrokeStyle(3, 0xffa000)
         .setInteractive({ useHandCursor: true })
         .setDepth(202);
 
       this.add
-        .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, "🔄 재도전", {
+        .text(leftBtnX, btnY, "🔄 재도전", {
           fontFamily: "Arial",
           fontSize: "22px",
-          color: "#FFFFFF",
+          color: "#5D4E37",
           fontStyle: "bold",
         })
         .setOrigin(0.5)
@@ -939,6 +953,25 @@ export class GameScene extends Phaser.Scene {
 
       retryBtn.on("pointerdown", () => this.retryDay());
     }
+
+    // 홈 화면 나가기 버튼 (오른쪽, 공통)
+    const homeBtn = this.add
+      .rectangle(rightBtnX, btnY, 200, 60, 0x9e9e9e)
+      .setStrokeStyle(3, 0x757575)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(202);
+
+    this.add
+      .text(rightBtnX, btnY, "🏠 홈으로", {
+        fontFamily: "Arial",
+        fontSize: "22px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(203);
+
+    homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
   }
 
   private startNextDay(): void {

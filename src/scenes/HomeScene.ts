@@ -63,27 +63,27 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createHeartsUI(): void {
-    const heartsY = 400;
+    const heartsY = 50;
 
-    // 하트 배경 박스
+    // 하트 헤더 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, heartsY, 280, 80, 0xfff8e7)
+      .rectangle(GAME_WIDTH / 2, heartsY, GAME_WIDTH - 20, 70, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914);
 
     // 하트 아이콘과 개수
     this.heartsText = this.add
-      .text(GAME_WIDTH / 2, heartsY - 10, "", {
+      .text(GAME_WIDTH / 2, heartsY - 8, "", {
         fontFamily: "Arial",
-        fontSize: "32px",
-        color: "#E85A4F",
+        fontSize: "28px",
+        color: "#FFFFFF",
       })
       .setOrigin(0.5);
 
     // 충전 타이머
     this.timerText = this.add
-      .text(GAME_WIDTH / 2, heartsY + 22, "", {
+      .text(GAME_WIDTH / 2, heartsY + 20, "", {
         fontFamily: "Arial",
-        fontSize: "18px",
+        fontSize: "16px",
         color: "#5D4E37",
       })
       .setOrigin(0.5);
