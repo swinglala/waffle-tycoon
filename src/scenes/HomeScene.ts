@@ -1,13 +1,16 @@
 import Phaser from "phaser";
 import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import { HeartManager } from "../utils/HeartManager";
+import { ProgressManager } from "../utils/ProgressManager";
 import { HEART_CONFIG } from "../types/game";
 
 export class HomeScene extends Phaser.Scene {
   private currentDay = 1;
   private heartManager!: HeartManager;
+  private progressManager!: ProgressManager;
   private heartsText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
+  private starsText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: "HomeScene" });
@@ -20,6 +23,7 @@ export class HomeScene extends Phaser.Scene {
 
   create(): void {
     this.heartManager = HeartManager.getInstance();
+    this.progressManager = ProgressManager.getInstance();
     this.loadProgress();
     this.createBackground();
     this.createTitle();
@@ -34,11 +38,8 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private loadProgress(): void {
-    // 추후 LocalStorage 연동 대비
-    // const savedDay = localStorage.getItem('waffleTycoon_currentDay');
-    // if (savedDay) {
-    //   this.currentDay = parseInt(savedDay, 10);
-    // }
+    // ProgressManager에서 현재 일차 로드
+    this.currentDay = this.progressManager.getCurrentDay();
   }
 
   private createBackground(): void {
@@ -70,7 +71,27 @@ export class HomeScene extends Phaser.Scene {
       .rectangle(GAME_WIDTH / 2, heartsY, GAME_WIDTH - 20, 70, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914);
 
-    // 하트 아이콘과 개수
+    // 왼쪽: 유저 정보 영역 (추후 구현 예정)
+    this.add
+      .text(30, heartsY - 15, "👤 Guest", {
+        fontFamily: "Arial",
+        fontSize: "18px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5);
+
+    // 유저 정보 아래에 별 표시
+    this.starsText = this.add
+      .text(30, heartsY + 12, "", {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#FFD700",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5);
+
+    // 하트 아이콘과 개수 (중앙)
     this.heartsText = this.add
       .text(GAME_WIDTH / 2, heartsY - 8, "", {
         fontFamily: "Arial",
@@ -88,12 +109,40 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // 오른쪽: 설정 버튼
+    const settingsBtnX = GAME_WIDTH - 55;
+    const settingsBtn = this.add
+      .circle(settingsBtnX, heartsY, 25, 0xc49a6c)
+      .setStrokeStyle(2, 0x8b6914)
+      .setInteractive({ useHandCursor: true });
+
+    this.add
+      .text(settingsBtnX, heartsY, "⚙️", {
+        fontSize: "24px",
+      })
+      .setOrigin(0.5);
+
+    settingsBtn.on("pointerdown", () => {
+      this.showPlaceholderPopup("설정");
+    });
+
+    settingsBtn.on("pointerover", () => {
+      settingsBtn.setFillStyle(0xb8896c);
+    });
+    settingsBtn.on("pointerout", () => {
+      settingsBtn.setFillStyle(0xc49a6c);
+    });
+
     this.updateHeartsUI();
   }
 
   private updateHeartsUI(): void {
     const hearts = this.heartManager.getHearts();
     const maxHearts = HEART_CONFIG.MAX_HEARTS;
+
+    // 별 표시
+    const totalStars = this.progressManager.getTotalStars();
+    this.starsText.setText(`⭐ ${totalStars}`);
 
     // 하트 표시 (채워진 하트 + 빈 하트)
     let heartDisplay = "";
@@ -258,36 +307,47 @@ export class HomeScene extends Phaser.Scene {
   private createSideButtons(): void {
     const sideButtonX = 640;
     const buttonRadius = 35;
-    const buttons = [
-      { y: 120, emoji: "🏆", label: "랭킹" },
-      { y: 210, emoji: "⚙️", label: "설정" },
-      { y: 300, emoji: "❓", label: "도움말" },
-    ];
 
-    buttons.forEach(({ y, emoji, label }) => {
-      // 원형 버튼 배경
-      const circle = this.add.circle(sideButtonX, y, buttonRadius, 0xd4a574);
-      circle.setStrokeStyle(3, 0x8b6914);
-      circle.setInteractive({ useHandCursor: true });
+    // 1. 랭킹 버튼 (가장 위)
+    const rankingY = 140;
+    const rankingCircle = this.add.circle(sideButtonX, rankingY, buttonRadius, 0xd4a574);
+    rankingCircle.setStrokeStyle(3, 0x8b6914);
+    rankingCircle.setInteractive({ useHandCursor: true });
 
-      // 이모지
-      const emojiText = this.add.text(sideButtonX, y, emoji, {
-        fontSize: "32px",
-      });
-      emojiText.setOrigin(0.5);
+    this.add
+      .text(sideButtonX, rankingY, "🏆", { fontSize: "32px" })
+      .setOrigin(0.5);
 
-      // 클릭 이벤트 - placeholder 팝업
-      circle.on("pointerdown", () => {
-        this.showPlaceholderPopup(label);
-      });
+    rankingCircle.on("pointerdown", () => {
+      this.showPlaceholderPopup("랭킹");
+    });
 
-      // 호버 효과
-      circle.on("pointerover", () => {
-        circle.setFillStyle(0xc49a6c);
-      });
-      circle.on("pointerout", () => {
-        circle.setFillStyle(0xd4a574);
-      });
+    rankingCircle.on("pointerover", () => {
+      rankingCircle.setFillStyle(0xc49a6c);
+    });
+    rankingCircle.on("pointerout", () => {
+      rankingCircle.setFillStyle(0xd4a574);
+    });
+
+    // 2. 샵 버튼 (두번째)
+    const shopY = 230;
+    const shopCircle = this.add.circle(sideButtonX, shopY, buttonRadius, 0xFFD700);
+    shopCircle.setStrokeStyle(3, 0xD4A574);
+    shopCircle.setInteractive({ useHandCursor: true });
+
+    this.add
+      .text(sideButtonX, shopY, "🛒", { fontSize: "32px" })
+      .setOrigin(0.5);
+
+    shopCircle.on("pointerdown", () => {
+      this.scene.start("ShopScene");
+    });
+
+    shopCircle.on("pointerover", () => {
+      shopCircle.setFillStyle(0xE5C100);
+    });
+    shopCircle.on("pointerout", () => {
+      shopCircle.setFillStyle(0xFFD700);
     });
   }
 

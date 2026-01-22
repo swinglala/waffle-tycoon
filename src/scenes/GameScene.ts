@@ -7,12 +7,17 @@ import {
   GameState,
   Customer,
   CustomerType,
+  JamType,
   COOKING_TIMES,
   WAFFLE_PRICES,
   GAME_CONFIG,
   CUSTOMER_WAIT_MULTIPLIER,
+  JAM_PRICE_MULTIPLIER,
+  STAR_CONFIG,
+  getDayTarget,
 } from "../types/game";
 import { HeartManager } from "../utils/HeartManager";
+import { ProgressManager } from "../utils/ProgressManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
@@ -36,14 +41,43 @@ const STAGE_IMAGE_KEYS: Record<CookingStage, string> = {
   [CookingStage.BURNT]: "waffle_burnt",
 };
 
-// 완성품 (잼 바른 와플) 이미지 키
-const JAM_WAFFLE_IMAGE_KEYS: Record<CookingStage, string> = {
-  [CookingStage.EMPTY]: "",
-  [CookingStage.BATTER]: "",
-  [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
-  [CookingStage.COOKED]: "waffle_jam_cooked",
-  [CookingStage.PERFECT]: "waffle_jam_perfect",
-  [CookingStage.BURNT]: "",
+// 완성품 (잼 바른 와플) 이미지 키 - 잼 종류별
+// 참고: berry/pistachio 이미지가 없으므로 임시로 apple jam 이미지 사용
+const JAM_WAFFLE_IMAGE_KEYS: Record<JamType, Record<CookingStage, string>> = {
+  [JamType.NONE]: {
+    [CookingStage.EMPTY]: "",
+    [CookingStage.BATTER]: "",
+    [CookingStage.UNDERCOOKED]: "",
+    [CookingStage.COOKED]: "",
+    [CookingStage.PERFECT]: "",
+    [CookingStage.BURNT]: "",
+  },
+  [JamType.APPLE]: {
+    [CookingStage.EMPTY]: "",
+    [CookingStage.BATTER]: "",
+    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.BURNT]: "",
+  },
+  // TODO: 베리잼 와플 이미지 추가 시 교체
+  [JamType.BERRY]: {
+    [CookingStage.EMPTY]: "",
+    [CookingStage.BATTER]: "",
+    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.BURNT]: "",
+  },
+  // TODO: 피스타치오잼 와플 이미지 추가 시 교체
+  [JamType.PISTACHIO]: {
+    [CookingStage.EMPTY]: "",
+    [CookingStage.BATTER]: "",
+    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.BURNT]: "",
+  },
 };
 
 // 초반 라운드 손님 종류 (Day 1~3)
@@ -109,6 +143,8 @@ export class GameScene extends Phaser.Scene {
   private pausePopupObjects: Phaser.GameObjects.GameObject[] = [];
   private heartManager!: HeartManager;
   private heartUsed = false; // 이번 게임에서 하트 사용 여부
+  private progressManager!: ProgressManager;
+  private trayCapacity = 5; // 기본 트레이 용량
 
   // 손님 슬롯 X 좌표
   private readonly CUSTOMER_SLOT_X = [150, 330, 510];
@@ -131,8 +167,8 @@ export class GameScene extends Phaser.Scene {
     if (data?.day) {
       this.gameState.day = data.day;
       this.gameState.money = 0;
-      this.gameState.targetMoney =
-        GAME_CONFIG.BASE_TARGET + (data.day - 1) * GAME_CONFIG.TARGET_INCREASE;
+      // 커스텀 목표금액 테이블 사용
+      this.gameState.targetMoney = getDayTarget(data.day);
       this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
       this.heartUsed = false; // 새 게임 시작 시 하트 사용 준비
     }
@@ -141,6 +177,10 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.heartManager = HeartManager.getInstance();
+    this.progressManager = ProgressManager.getInstance();
+
+    // 트레이 용량 설정 (업그레이드 반영)
+    this.trayCapacity = this.progressManager.getTrayCapacity();
 
     // 게임 시작 시 하트 사용
     if (!this.heartUsed) {
@@ -419,16 +459,20 @@ export class GameScene extends Phaser.Scene {
     // 완성품 개수 확인
     if (this.finishedTray.length < customer.waffleCount) {
       this.showMessage(
-        `⚠️ 완성품이 부족해요! (${this.finishedTray.length}/${customer.waffleCount})`,
+        `완성품이 부족해요! (${this.finishedTray.length}/${customer.waffleCount})`,
       );
       return;
     }
 
-    // 판매 처리
+    // 판매 처리 - 잼 배율 및 반죽 개선 보너스 적용
+    const batterBonus = this.progressManager.getBatterPriceBonus();
     let totalPrice = 0;
     for (let i = 0; i < customer.waffleCount; i++) {
       const waffle = this.finishedTray.shift()!;
-      totalPrice += WAFFLE_PRICES[waffle.stage];
+      const basePrice = WAFFLE_PRICES[waffle.stage];
+      const jamMultiplier = JAM_PRICE_MULTIPLIER[waffle.jamType];
+      const wafflePrice = Math.floor((basePrice + batterBonus) * jamMultiplier);
+      totalPrice += wafflePrice;
     }
 
     this.gameState.money += totalPrice;
@@ -437,7 +481,7 @@ export class GameScene extends Phaser.Scene {
     this.updateCustomerDisplay();
     this.updateFinishedTrayDisplay();
 
-    this.showMessage(`💰 +${totalPrice.toLocaleString()}원!`);
+    this.showMessage(`+${totalPrice.toLocaleString()}원!`);
   }
 
   private checkAngryStateChanges(): boolean {
@@ -520,22 +564,46 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createToppingButtons(): void {
-    const buttonSize = 120; // 정사각형 버튼
-    const leftX = 40 + buttonSize / 2; // 왼쪽 끝
-    const rightX = GAME_WIDTH - 40 - buttonSize / 2; // 오른쪽 끝
+    const buttonSize = 100; // 잼 버튼 크기
+    const trashBtnSize = 100;
 
-    // 잼 버튼 (왼쪽) - 이미지 버튼
-    const jamButtonImg = this.add
-      .image(leftX, this.TOPPING_BTN_Y, "btn_apple_jam")
-      .setDisplaySize(buttonSize, buttonSize)
-      .setInteractive({ useHandCursor: true });
+    // 해금된 잼 목록
+    const unlockedJams = this.progressManager.getUnlockedJams();
 
-    jamButtonImg.on("pointerdown", () => this.onJamButtonClick());
+    // 잼 버튼 이미지 키 매핑
+    const jamImageKeys: Record<JamType, string> = {
+      [JamType.NONE]: "",
+      [JamType.APPLE]: "btn_apple_jam",
+      [JamType.BERRY]: "btn_berry_jam",
+      [JamType.PISTACHIO]: "btn_pistachio_jam",
+    };
 
-    // 쓰레기통 버튼 (오른쪽) - 이미지 버튼
+    // 잼 버튼들 (왼쪽에서 시작)
+    const startX = 70;
+    const gap = 110;
+
+    unlockedJams.forEach((jamType, index) => {
+      if (jamType === JamType.NONE) return;
+
+      const x = startX + index * gap;
+      const imageKey = jamImageKeys[jamType];
+
+      if (imageKey) {
+        const jamBtn = this.add
+          .image(x, this.TOPPING_BTN_Y, imageKey)
+          .setDisplaySize(buttonSize, buttonSize)
+          .setInteractive({ useHandCursor: true });
+
+        // 잼 버튼 클릭 시 바로 바르기
+        jamBtn.on("pointerdown", () => this.applyJam(jamType));
+      }
+    });
+
+    // 쓰레기통 버튼 (오른쪽)
+    const trashX = GAME_WIDTH - 70;
     const trashButtonImg = this.add
-      .image(rightX, this.TOPPING_BTN_Y, "btn_trash")
-      .setDisplaySize(buttonSize, buttonSize)
+      .image(trashX, this.TOPPING_BTN_Y, "btn_trash")
+      .setDisplaySize(trashBtnSize, trashBtnSize)
       .setInteractive({ useHandCursor: true });
 
     trashButtonImg.on("pointerdown", () => this.onTrashButtonClick());
@@ -638,11 +706,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   private moveToWorkTray(row: number, col: number): void {
+    // 트레이 용량 체크
+    if (this.workTray.length >= this.trayCapacity) {
+      this.showMessage(`작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.trayCapacity})`);
+      return;
+    }
+
     const slot = this.grillSlots[row][col];
 
     this.workTray.push({
       stage: slot.stage,
-      hasJam: false,
+      jamType: JamType.NONE,
     });
 
     slot.stage = CookingStage.EMPTY;
@@ -661,20 +735,26 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private onJamButtonClick(): void {
+  private applyJam(jamType: JamType): void {
     if (this.workTray.length === 0) {
-      this.showMessage("⚠️ 작업 트레이가 비어있어요");
+      this.showMessage("작업 트레이가 비어있어요");
       return;
     }
 
     const waffle = this.workTray[0]; // 항상 첫 번째 와플
 
     if (waffle.stage === CookingStage.BURNT) {
-      this.showMessage("💀 탄 와플은 판매할 수 없어요!");
+      this.showMessage("탄 와플은 판매할 수 없어요!");
       return;
     }
 
-    waffle.hasJam = true;
+    // 완성품 트레이 용량 체크
+    if (this.finishedTray.length >= this.trayCapacity) {
+      this.showMessage(`완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.trayCapacity})`);
+      return;
+    }
+
+    waffle.jamType = jamType;
     this.finishedTray.push(waffle);
     this.workTray.shift(); // 첫 번째 제거
 
@@ -753,7 +833,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    this.workTrayCountText.setText(`${this.workTray.length}개`);
+    // 용량 표시 (현재/최대)
+    this.workTrayCountText.setText(`${this.workTray.length}/${this.trayCapacity}`);
   }
 
   private updateFinishedTrayDisplay(): void {
@@ -762,7 +843,8 @@ export class GameScene extends Phaser.Scene {
     const displayCount = Math.min(this.finishedTray.length, 12);
     for (let i = 0; i < displayCount; i++) {
       const waffle = this.finishedTray[i];
-      const imageKey = JAM_WAFFLE_IMAGE_KEYS[waffle.stage];
+      // 잼 종류별 이미지 키 사용
+      const imageKey = JAM_WAFFLE_IMAGE_KEYS[waffle.jamType]?.[waffle.stage] || "";
 
       if (imageKey) {
         const waffleImg = this.add
@@ -772,13 +854,23 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    this.finishedTrayCountText.setText(`${this.finishedTray.length}개`);
+    // 용량 표시 (현재/최대)
+    this.finishedTrayCountText.setText(`${this.finishedTray.length}/${this.trayCapacity}`);
   }
 
   private formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `⏱️ ${mins}:${secs.toString().padStart(2, "0")}`;
+  }
+
+  private generateStarDisplay(stars: number): string {
+    const maxStars = STAR_CONFIG.MAX_STARS_PER_DAY;
+    let display = "";
+    for (let i = 0; i < maxStars; i++) {
+      display += i < stars ? "⭐" : "☆";
+    }
+    return display;
   }
 
   private getNextStage(current: CookingStage): CookingStage {
@@ -800,7 +892,10 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver || this.isPaused) return;
 
     const deltaSeconds = delta / 1000;
-    const cookingSpeed = this.gameState.isStrongFire ? 2 : 1;
+    // 기본 굽기 속도 (업그레이드 반영) * 강불 배율
+    const baseSpeedMultiplier = this.progressManager.getCookingSpeedMultiplier();
+    const strongFireMultiplier = this.gameState.isStrongFire ? 2 : 1;
+    const cookingSpeed = baseSpeedMultiplier * strongFireMultiplier;
 
     // 굽는판 업데이트
     for (let row = 0; row < GRID_SIZE; row++) {
@@ -853,10 +948,18 @@ export class GameScene extends Phaser.Scene {
 
     const success = this.gameState.money >= this.gameState.targetMoney;
 
-    // 성공 시 하트 반환
+    // 별 계산 및 적립 (성공 시에만)
+    let starsEarned = 0;
     if (success) {
+      starsEarned = this.progressManager.completeDayWithStars(
+        this.gameState.day,
+        this.gameState.money
+      );
       this.heartManager.refundHeart();
     }
+
+    // 별 표시 문자열 생성
+    const starDisplay = this.generateStarDisplay(starsEarned);
 
     // 결과 오버레이 배경
     this.add
@@ -872,16 +975,16 @@ export class GameScene extends Phaser.Scene {
 
     // 결과 패널
     this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 350, 0xfff8e7)
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 400, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(201);
 
     // 결과 텍스트
-    const resultTitle = success ? "🎉 목표 달성!" : "😢 목표 미달성";
+    const resultTitle = success ? "목표 달성!" : "목표 미달성";
     const titleColor = success ? "#4CAF50" : "#E85A4F";
 
     this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 120, resultTitle, {
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 140, resultTitle, {
         fontFamily: "Arial",
         fontSize: "36px",
         color: titleColor,
@@ -890,10 +993,20 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(202);
 
+    // 별 표시 (항상 표시 - 0개면 빈별 3개)
+    this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, starDisplay, {
+        fontFamily: "Arial",
+        fontSize: "36px",
+        color: "#FFD700",
+      })
+      .setOrigin(0.5)
+      .setDepth(202);
+
     this.add
       .text(
         GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 - 50,
+        GAME_HEIGHT / 2 - 40,
         `Day ${this.gameState.day} 결과`,
         {
           fontFamily: "Arial",
@@ -907,7 +1020,7 @@ export class GameScene extends Phaser.Scene {
     this.add
       .text(
         GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
+        GAME_HEIGHT / 2 + 20,
         `벌은 돈: ${this.gameState.money.toLocaleString()}원\n목표 금액: ${this.gameState.targetMoney.toLocaleString()}원`,
         {
           fontFamily: "Arial",
@@ -922,7 +1035,7 @@ export class GameScene extends Phaser.Scene {
     // 버튼
     const leftBtnX = GAME_WIDTH / 2 - 115;
     const rightBtnX = GAME_WIDTH / 2 + 115;
-    const btnY = GAME_HEIGHT / 2 + 100;
+    const btnY = GAME_HEIGHT / 2 + 130;
 
     if (success) {
       // 다음 날 버튼 (왼쪽)
@@ -985,9 +1098,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private startNextDay(): void {
+    // 진행상황 저장
+    this.progressManager.advanceToNextDay();
+
     this.gameState.day += 1;
     this.gameState.money = 0;
-    this.gameState.targetMoney += GAME_CONFIG.TARGET_INCREASE;
+    // 커스텀 목표금액 테이블 사용
+    this.gameState.targetMoney = getDayTarget(this.gameState.day);
     this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
     this.heartUsed = false; // 다음 날은 새로운 하트 사용
     this.resetDayState();

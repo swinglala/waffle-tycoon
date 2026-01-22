@@ -17,7 +17,7 @@ export interface GrillSlot {
 // 트레이 와플 (작업 트레이용)
 export interface TrayWaffle {
   stage: CookingStage;  // 어떤 익힘 상태로 꺼냈는지
-  hasJam: boolean;
+  jamType: JamType;     // 바른 잼 종류 (NONE이면 잼 없음)
 }
 
 // 손님 종류
@@ -121,3 +121,126 @@ export interface HeartState {
   hearts: number;             // 현재 하트 수
   lastRechargeTime: number;   // 마지막 충전 시간 (timestamp)
 }
+
+// ========================================
+// 별/샵 시스템
+// ========================================
+
+// 잼 종류
+export enum JamType {
+  NONE = 'none',
+  APPLE = 'apple',
+  BERRY = 'berry',
+  PISTACHIO = 'pistachio',
+}
+
+// 잼 가격 배율
+export const JAM_PRICE_MULTIPLIER: Record<JamType, number> = {
+  [JamType.NONE]: 0,
+  [JamType.APPLE]: 1.0,
+  [JamType.BERRY]: 1.3,
+  [JamType.PISTACHIO]: 1.5,
+};
+
+// 잼별 표시 이름
+export const JAM_DISPLAY_NAME: Record<JamType, string> = {
+  [JamType.NONE]: '',
+  [JamType.APPLE]: '사과잼',
+  [JamType.BERRY]: '베리잼',
+  [JamType.PISTACHIO]: '피스타치오잼',
+};
+
+// Day 목표금액 테이블 (1~10일)
+export const DAY_TARGETS: Record<number, number> = {
+  1: 20000,
+  2: 25000,
+  3: 31000,
+  4: 38000,
+  5: 46000,
+  6: 55000,
+  7: 65000,
+  8: 76000,
+  9: 88000,
+  10: 102000,
+};
+
+// Day 목표금액 계산 함수
+export function getDayTarget(day: number): number {
+  if (day <= 10) {
+    return DAY_TARGETS[day] || 102000;
+  }
+  // Day 11+: 102000 + (day - 10) * 15000
+  return 102000 + (day - 10) * 15000;
+}
+
+// 업그레이드 종류
+export enum UpgradeType {
+  BATTER = 'batter',               // 반죽 개선 (와플 가격 +50원/레벨)
+  BERRY_JAM = 'berry_jam',         // 베리잼 해금
+  PISTACHIO_JAM = 'pistachio_jam', // 피스타치오잼 해금
+  FIRE_STRENGTH = 'fire_strength', // 화력 강화 (굽기속도 +10%/레벨)
+  TRAY_CAPACITY = 'tray_capacity', // 트레이 확장 (+2/레벨)
+}
+
+// 업그레이드 설정 인터페이스
+export interface UpgradeConfig {
+  name: string;           // 표시 이름
+  description: string;    // 설명
+  cost: number;           // 별 비용
+  maxLevel: number;       // 최대 레벨
+}
+
+// 업그레이드 설정
+export const UPGRADE_CONFIGS: Record<UpgradeType, UpgradeConfig> = {
+  [UpgradeType.BATTER]: {
+    name: '반죽 개선',
+    description: '와플 판매 가격 +50원/레벨',
+    cost: 7,
+    maxLevel: 5,
+  },
+  [UpgradeType.BERRY_JAM]: {
+    name: '베리잼 해금',
+    description: '가격 1.3배 잼 추가',
+    cost: 7,
+    maxLevel: 1,
+  },
+  [UpgradeType.PISTACHIO_JAM]: {
+    name: '피스타치오잼 해금',
+    description: '가격 1.5배 잼 추가',
+    cost: 10,
+    maxLevel: 1,
+  },
+  [UpgradeType.FIRE_STRENGTH]: {
+    name: '화력 강화',
+    description: '기본 굽기속도 +10%/레벨',
+    cost: 7,
+    maxLevel: 3,
+  },
+  [UpgradeType.TRAY_CAPACITY]: {
+    name: '트레이 확장',
+    description: '트레이 용량 +2/레벨',
+    cost: 7,
+    maxLevel: 5,
+  },
+};
+
+// 진행상황 저장 구조
+export interface ProgressState {
+  totalStars: number;                     // 총 별 (누적, 구매 시 차감)
+  currentDay: number;                     // 현재 진행 일차
+  dayStars: Record<number, number>;       // 일차별 획득한 별 (재도전 시 비교용)
+  upgrades: Record<UpgradeType, number>;  // 업그레이드 레벨
+  unlockedJams: JamType[];                // 해금된 잼 목록
+}
+
+// 트레이 설정
+export const TRAY_CONFIG = {
+  BASE_CAPACITY: 5,         // 기본 용량
+  CAPACITY_PER_UPGRADE: 2,  // 업그레이드당 추가 용량
+};
+
+// 별 계산 설정
+export const STAR_CONFIG = {
+  MAX_STARS_PER_DAY: 3,     // 하루 최대 별
+  MONEY_PER_STAR: 3000,     // 별 1개당 초과 금액
+};
