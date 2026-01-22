@@ -162,15 +162,15 @@ export class GameScene extends Phaser.Scene {
     super({ key: "GameScene" });
   }
 
-  init(data?: { day?: number; isRetry?: boolean }): void {
+  init(data?: { day?: number; skipHeart?: boolean }): void {
     if (data?.day) {
       this.gameState.day = data.day;
       this.gameState.money = 0;
       // 커스텀 목표금액 테이블 사용
       this.gameState.targetMoney = getDayTarget(data.day);
       this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
-      // 재도전이면 하트 이미 사용한 것으로 처리
-      this.heartUsed = data.isRetry || false;
+      // 다음 날 진행 시 하트 사용 안함 (skipHeart)
+      this.heartUsed = data.skipHeart || false;
     }
   }
 
@@ -1032,14 +1032,19 @@ export class GameScene extends Phaser.Scene {
       .setDepth(202);
 
     // 버튼
-    const leftBtnX = GAME_WIDTH / 2 - 115;
-    const rightBtnX = GAME_WIDTH / 2 + 115;
     const btnY = GAME_HEIGHT / 2 + 130;
 
     if (success) {
+      // 성공 시: 다음 날 / 재도전 / 홈으로 (3개)
+      const btnWidth = 145;
+      const btnGap = 155;
+      const leftBtnX = GAME_WIDTH / 2 - btnGap;
+      const centerBtnX = GAME_WIDTH / 2;
+      const rightBtnX = GAME_WIDTH / 2 + btnGap;
+
       // 다음 날 버튼 (왼쪽)
       const nextBtn = this.add
-        .rectangle(leftBtnX, btnY, 200, 60, 0x4caf50)
+        .rectangle(leftBtnX, btnY, btnWidth, 55, 0x4caf50)
         .setStrokeStyle(3, 0x388e3c)
         .setInteractive({ useHandCursor: true })
         .setDepth(202);
@@ -1047,7 +1052,7 @@ export class GameScene extends Phaser.Scene {
       this.add
         .text(leftBtnX, btnY, "▶ 다음 날", {
           fontFamily: "Arial",
-          fontSize: "22px",
+          fontSize: "18px",
           color: "#FFFFFF",
           fontStyle: "bold",
         })
@@ -1055,7 +1060,49 @@ export class GameScene extends Phaser.Scene {
         .setDepth(203);
 
       nextBtn.on("pointerdown", () => this.startNextDay());
+
+      // 재도전 버튼 (중앙)
+      const retryBtn = this.add
+        .rectangle(centerBtnX, btnY, btnWidth, 55, 0xffc107)
+        .setStrokeStyle(3, 0xffa000)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(202);
+
+      this.add
+        .text(centerBtnX, btnY, "🔄 재도전", {
+          fontFamily: "Arial",
+          fontSize: "18px",
+          color: "#5D4E37",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setDepth(203);
+
+      retryBtn.on("pointerdown", () => this.retryDay());
+
+      // 홈 버튼 (오른쪽)
+      const homeBtn = this.add
+        .rectangle(rightBtnX, btnY, btnWidth, 55, 0x9e9e9e)
+        .setStrokeStyle(3, 0x757575)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(202);
+
+      this.add
+        .text(rightBtnX, btnY, "🏠 홈으로", {
+          fontFamily: "Arial",
+          fontSize: "18px",
+          color: "#FFFFFF",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setDepth(203);
+
+      homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
     } else {
+      // 실패 시: 재도전 / 홈으로 (2개)
+      const leftBtnX = GAME_WIDTH / 2 - 115;
+      const rightBtnX = GAME_WIDTH / 2 + 115;
+
       // 재도전 버튼 (왼쪽)
       const retryBtn = this.add
         .rectangle(leftBtnX, btnY, 200, 60, 0xffc107)
@@ -1074,26 +1121,26 @@ export class GameScene extends Phaser.Scene {
         .setDepth(203);
 
       retryBtn.on("pointerdown", () => this.retryDay());
+
+      // 홈 버튼 (오른쪽)
+      const homeBtn = this.add
+        .rectangle(rightBtnX, btnY, 200, 60, 0x9e9e9e)
+        .setStrokeStyle(3, 0x757575)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(202);
+
+      this.add
+        .text(rightBtnX, btnY, "🏠 홈으로", {
+          fontFamily: "Arial",
+          fontSize: "22px",
+          color: "#FFFFFF",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setDepth(203);
+
+      homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
     }
-
-    // 홈 화면 나가기 버튼 (오른쪽, 공통)
-    const homeBtn = this.add
-      .rectangle(rightBtnX, btnY, 200, 60, 0x9e9e9e)
-      .setStrokeStyle(3, 0x757575)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(202);
-
-    this.add
-      .text(rightBtnX, btnY, "🏠 홈으로", {
-        fontFamily: "Arial",
-        fontSize: "22px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5)
-      .setDepth(203);
-
-    homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
   }
 
   private startNextDay(): void {
@@ -1101,13 +1148,13 @@ export class GameScene extends Phaser.Scene {
     this.progressManager.advanceToNextDay();
 
     const nextDay = this.gameState.day + 1;
-    // 다음 날 데이터와 함께 씬 재시작
-    this.scene.restart({ day: nextDay });
+    // 다음 날: 하트 사용 안함 (성공 시 이미 반환됨)
+    this.scene.restart({ day: nextDay, skipHeart: true });
   }
 
   private retryDay(): void {
-    // 같은 날 재도전 (하트 사용 안함)
-    this.scene.restart({ day: this.gameState.day, isRetry: true });
+    // 재도전: 하트 사용함 (skipHeart 없음)
+    this.scene.restart({ day: this.gameState.day });
   }
 
   private updateUI(): void {
