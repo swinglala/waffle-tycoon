@@ -1063,69 +1063,116 @@ export class GameScene extends Phaser.Scene {
     const btnY = GAME_HEIGHT / 2 + 130;
 
     if (success) {
-      // 성공 시: 다음 날 / 재도전 / 홈으로 (3개)
-      const btnWidth = 145;
-      const btnGap = 155;
-      const leftBtnX = GAME_WIDTH / 2 - btnGap;
-      const centerBtnX = GAME_WIDTH / 2;
-      const rightBtnX = GAME_WIDTH / 2 + btnGap;
+      // 별 3개면 재도전 버튼 숨김 (2개 버튼), 아니면 3개 버튼
+      const maxStars = starsEarned >= STAR_CONFIG.MAX_STARS_PER_DAY;
 
-      // 다음 날 버튼 (왼쪽)
-      const nextBtn = this.add
-        .rectangle(leftBtnX, btnY, btnWidth, 55, 0x4caf50)
-        .setStrokeStyle(3, 0x388e3c)
-        .setInteractive({ useHandCursor: true })
-        .setDepth(202);
+      if (maxStars) {
+        // 별 3개: 다음 날 / 홈으로 (2개)
+        const leftBtnX = GAME_WIDTH / 2 - 115;
+        const rightBtnX = GAME_WIDTH / 2 + 115;
 
-      this.add
-        .text(leftBtnX, btnY, "▶ 다음 날", {
-          fontFamily: "Arial",
-          fontSize: "18px",
-          color: "#FFFFFF",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setDepth(203);
+        // 다음 날 버튼 (왼쪽)
+        const nextBtn = this.add
+          .rectangle(leftBtnX, btnY, 200, 60, 0x4caf50)
+          .setStrokeStyle(3, 0x388e3c)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(202);
 
-      nextBtn.on("pointerdown", () => this.startNextDay());
+        this.add
+          .text(leftBtnX, btnY, "▶ 다음 날", {
+            fontFamily: "Arial",
+            fontSize: "22px",
+            color: "#FFFFFF",
+            fontStyle: "bold",
+          })
+          .setOrigin(0.5)
+          .setDepth(203);
 
-      // 재도전 버튼 (중앙)
-      const retryBtn = this.add
-        .rectangle(centerBtnX, btnY, btnWidth, 55, 0xffc107)
-        .setStrokeStyle(3, 0xffa000)
-        .setInteractive({ useHandCursor: true })
-        .setDepth(202);
+        nextBtn.on("pointerdown", () => this.startNextDay());
 
-      this.add
-        .text(centerBtnX, btnY, "🔄 재도전", {
-          fontFamily: "Arial",
-          fontSize: "18px",
-          color: "#5D4E37",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setDepth(203);
+        // 홈 버튼 (오른쪽)
+        const homeBtn = this.add
+          .rectangle(rightBtnX, btnY, 200, 60, 0x9e9e9e)
+          .setStrokeStyle(3, 0x757575)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(202);
 
-      retryBtn.on("pointerdown", () => this.retryDay());
+        this.add
+          .text(rightBtnX, btnY, "🏠 홈으로", {
+            fontFamily: "Arial",
+            fontSize: "22px",
+            color: "#FFFFFF",
+            fontStyle: "bold",
+          })
+          .setOrigin(0.5)
+          .setDepth(203);
 
-      // 홈 버튼 (오른쪽)
-      const homeBtn = this.add
-        .rectangle(rightBtnX, btnY, btnWidth, 55, 0x9e9e9e)
-        .setStrokeStyle(3, 0x757575)
-        .setInteractive({ useHandCursor: true })
-        .setDepth(202);
+        homeBtn.on("pointerdown", () => this.goHomeAfterSuccess());
+      } else {
+        // 별 0~2개: 다음 날 / 재도전 / 홈으로 (3개)
+        const btnWidth = 145;
+        const btnGap = 155;
+        const leftBtnX = GAME_WIDTH / 2 - btnGap;
+        const centerBtnX = GAME_WIDTH / 2;
+        const rightBtnX = GAME_WIDTH / 2 + btnGap;
 
-      this.add
-        .text(rightBtnX, btnY, "🏠 홈으로", {
-          fontFamily: "Arial",
-          fontSize: "18px",
-          color: "#FFFFFF",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setDepth(203);
+        // 다음 날 버튼 (왼쪽)
+        const nextBtn = this.add
+          .rectangle(leftBtnX, btnY, btnWidth, 55, 0x4caf50)
+          .setStrokeStyle(3, 0x388e3c)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(202);
 
-      homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
+        this.add
+          .text(leftBtnX, btnY, "▶ 다음 날", {
+            fontFamily: "Arial",
+            fontSize: "18px",
+            color: "#FFFFFF",
+            fontStyle: "bold",
+          })
+          .setOrigin(0.5)
+          .setDepth(203);
+
+        nextBtn.on("pointerdown", () => this.startNextDay());
+
+        // 재도전 버튼 (중앙)
+        const retryBtn = this.add
+          .rectangle(centerBtnX, btnY, btnWidth, 55, 0xffc107)
+          .setStrokeStyle(3, 0xffa000)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(202);
+
+        this.add
+          .text(centerBtnX, btnY, "🔄 재도전", {
+            fontFamily: "Arial",
+            fontSize: "18px",
+            color: "#5D4E37",
+            fontStyle: "bold",
+          })
+          .setOrigin(0.5)
+          .setDepth(203);
+
+        retryBtn.on("pointerdown", () => this.retryDay());
+
+        // 홈 버튼 (오른쪽)
+        const homeBtn = this.add
+          .rectangle(rightBtnX, btnY, btnWidth, 55, 0x9e9e9e)
+          .setStrokeStyle(3, 0x757575)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(202);
+
+        this.add
+          .text(rightBtnX, btnY, "🏠 홈으로", {
+            fontFamily: "Arial",
+            fontSize: "18px",
+            color: "#FFFFFF",
+            fontStyle: "bold",
+          })
+          .setOrigin(0.5)
+          .setDepth(203);
+
+        homeBtn.on("pointerdown", () => this.goHomeAfterSuccess());
+      }
     } else {
       // 실패 시: 재도전 / 홈으로 (2개)
       const leftBtnX = GAME_WIDTH / 2 - 115;
@@ -1185,6 +1232,12 @@ export class GameScene extends Phaser.Scene {
     // 재도전: 하트 사용함 (skipHeart 없음)
     this.scene.stop();
     this.scene.start("GameScene", { day: this.gameState.day });
+  }
+
+  private goHomeAfterSuccess(): void {
+    // 성공 후 홈으로: 다음 날로 저장하고 홈으로 이동
+    this.progressManager.advanceToNextDay();
+    this.scene.start("HomeScene");
   }
 
   private updateUI(): void {
