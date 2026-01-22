@@ -163,14 +163,42 @@ export class GameScene extends Phaser.Scene {
   }
 
   init(data?: { day?: number; skipHeart?: boolean }): void {
+    // 게임 상태 플래그 초기화 (씬 재시작 시 필수)
+    this.isGameOver = false;
+    this.isPaused = false;
+
+    // 트레이 초기화
+    this.workTray = [];
+    this.finishedTray = [];
+
+    // 손님 슬롯 초기화
+    this.customerSlots = [null, null, null];
+    this.customerUIObjects = [];
+    this.nextCustomerId = 1;
+
     if (data?.day) {
       this.gameState.day = data.day;
       this.gameState.money = 0;
       // 커스텀 목표금액 테이블 사용
       this.gameState.targetMoney = getDayTarget(data.day);
       this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
+      this.gameState.maxTime = GAME_CONFIG.DAY_TIME;
+      this.gameState.isStrongFire = false;
+      this.gameState.strongFireRemaining = 0;
       // 다음 날 진행 시 하트 사용 안함 (skipHeart)
       this.heartUsed = data.skipHeart || false;
+    } else {
+      // 기본값 설정 (첫 시작)
+      this.gameState = {
+        day: 1,
+        money: 0,
+        targetMoney: getDayTarget(1),
+        timeRemaining: GAME_CONFIG.DAY_TIME,
+        maxTime: GAME_CONFIG.DAY_TIME,
+        isStrongFire: false,
+        strongFireRemaining: 0,
+      };
+      this.heartUsed = false;
     }
   }
 
