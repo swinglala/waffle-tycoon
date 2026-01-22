@@ -1177,12 +1177,14 @@ export class GameScene extends Phaser.Scene {
 
     const nextDay = this.gameState.day + 1;
     // 다음 날: 하트 사용 안함 (성공 시 이미 반환됨)
-    this.scene.restart({ day: nextDay, skipHeart: true });
+    this.scene.stop();
+    this.scene.start("GameScene", { day: nextDay, skipHeart: true });
   }
 
   private retryDay(): void {
     // 재도전: 하트 사용함 (skipHeart 없음)
-    this.scene.restart({ day: this.gameState.day });
+    this.scene.stop();
+    this.scene.start("GameScene", { day: this.gameState.day });
   }
 
   private updateUI(): void {
