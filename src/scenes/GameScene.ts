@@ -385,20 +385,30 @@ export class GameScene extends Phaser.Scene {
 
     icon.on("pointerdown", () => this.onCustomerClick(index));
 
-    // 주문 표시 (손님 이미지 위에)
-    const orderText = this.add
-      .text(x, y + 50, `🧇 x ${customer.waffleCount}`, {
-        fontFamily: "Arial",
-        fontSize: "30px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-        backgroundColor: "#FFFFFF",
-        padding: { x: 10, y: 6 },
-      })
-      .setOrigin(0.5)
+    // 주문 표시 배경 (손님 이미지 위에)
+    const orderBg = this.add
+      .rectangle(x, y + 50, 130, 50, 0xffffff)
+      .setStrokeStyle(2, 0x8b6914)
       .setDepth(3);
 
-    this.customerUIObjects[index].push(icon, orderText);
+    // 주문 와플 이미지
+    const orderImage = this.add
+      .image(x - 30, y + 50, "order_apple_jam")
+      .setDisplaySize(40, 40)
+      .setDepth(4);
+
+    // 주문 개수 텍스트
+    const orderText = this.add
+      .text(x + 20, y + 50, `x ${customer.waffleCount}`, {
+        fontFamily: "Arial",
+        fontSize: "26px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(4);
+
+    this.customerUIObjects[index].push(icon, orderBg, orderImage, orderText);
   }
 
   private onCustomerClick(index: number): void {

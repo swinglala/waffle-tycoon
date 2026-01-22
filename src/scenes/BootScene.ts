@@ -61,6 +61,11 @@ export class BootScene extends Phaser.Scene {
     // 손님 영역 배경
     this.load.image('customer_background', 'assets/images/customer_background.png');
 
+    // 주문 이미지
+    this.load.image('order_apple_jam', 'assets/images/order_apple_jam.png');
+    this.load.image('order_berry_jam', 'assets/images/order_berry_jam.png');
+    this.load.image('order_pistachio_jam', 'assets/images/order_pistachio_jam.png');
+
     // 손님 이미지
     this.load.image('customer_dog', 'assets/images/customer_dog.png');
     this.load.image('customer_dog_angry', 'assets/images/customer_dog_angry.png');
