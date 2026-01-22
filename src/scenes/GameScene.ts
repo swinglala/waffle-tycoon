@@ -162,17 +162,16 @@ export class GameScene extends Phaser.Scene {
     super({ key: "GameScene" });
   }
 
-  init(data?: { day?: number }): void {
-    // HomeScene에서 넘어올 때만 상태 초기화
+  init(data?: { day?: number; isRetry?: boolean }): void {
     if (data?.day) {
       this.gameState.day = data.day;
       this.gameState.money = 0;
       // 커스텀 목표금액 테이블 사용
       this.gameState.targetMoney = getDayTarget(data.day);
       this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
-      this.heartUsed = false; // 새 게임 시작 시 하트 사용 준비
+      // 재도전이면 하트 이미 사용한 것으로 처리
+      this.heartUsed = data.isRetry || false;
     }
-    // restart()로 호출될 때는 data가 없으므로 heartUsed 유지
   }
 
   create(): void {
@@ -1101,48 +1100,14 @@ export class GameScene extends Phaser.Scene {
     // 진행상황 저장
     this.progressManager.advanceToNextDay();
 
-    this.gameState.day += 1;
-    this.gameState.money = 0;
-    // 커스텀 목표금액 테이블 사용
-    this.gameState.targetMoney = getDayTarget(this.gameState.day);
-    this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
-    this.heartUsed = false; // 다음 날은 새로운 하트 사용
-    this.resetDayState();
+    const nextDay = this.gameState.day + 1;
+    // 다음 날 데이터와 함께 씬 재시작
+    this.scene.restart({ day: nextDay });
   }
 
   private retryDay(): void {
-    this.gameState.money = 0;
-    this.gameState.timeRemaining = GAME_CONFIG.DAY_TIME;
-    this.resetDayState();
-  }
-
-  private resetDayState(): void {
-    // 게임 상태 리셋
-    this.isGameOver = false;
-    this.customerSlots = [null, null, null];
-    this.workTray = [];
-    this.finishedTray = [];
-    this.customerSpawnTimer = 0;
-    this.nextSpawnTime = this.getRandomSpawnTime();
-
-    // 굽는판 초기화
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        this.grillSlots[row][col] = {
-          stage: CookingStage.EMPTY,
-          cookTime: 0,
-        };
-        this.updateGrillCell(row, col);
-      }
-    }
-
-    // UI 업데이트
-    this.updateCustomerDisplay();
-    this.updateWorkTrayDisplay();
-    this.updateFinishedTrayDisplay();
-
-    // 씬 재시작
-    this.scene.restart();
+    // 같은 날 재도전 (하트 사용 안함)
+    this.scene.restart({ day: this.gameState.day, isRetry: true });
   }
 
   private updateUI(): void {
