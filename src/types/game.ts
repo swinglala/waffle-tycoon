@@ -215,27 +215,27 @@ export const JAM_DISPLAY_NAME: Record<JamType, string> = {
   [JamType.PISTACHIO]: '피스타치오잼',
 };
 
-// Day 목표금액 테이블 (1~10일)
+// Day 목표금액 테이블 (1~10일) - 5000원씩 증가
 export const DAY_TARGETS: Record<number, number> = {
   1: 20000,
   2: 25000,
-  3: 31000,
-  4: 38000,
-  5: 46000,
-  6: 55000,
-  7: 65000,
-  8: 76000,
-  9: 88000,
-  10: 102000,
+  3: 30000,
+  4: 35000,
+  5: 40000,
+  6: 45000,
+  7: 50000,
+  8: 55000,
+  9: 60000,
+  10: 65000,
 };
 
 // Day 목표금액 계산 함수
 export function getDayTarget(day: number): number {
   if (day <= 10) {
-    return DAY_TARGETS[day] || 102000;
+    return DAY_TARGETS[day] || 65000;
   }
-  // Day 11+: 102000 + (day - 10) * 15000
-  return 102000 + (day - 10) * 15000;
+  // Day 11+: 65000 + (day - 10) * 5000
+  return 65000 + (day - 10) * 5000;
 }
 
 // 업그레이드 종류
