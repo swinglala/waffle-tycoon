@@ -8,6 +8,14 @@ export enum CookingStage {
   BURNT = 'burnt',         // 탐 💀
 }
 
+// 잼 종류
+export enum JamType {
+  NONE = 'none',
+  APPLE = 'apple',
+  BERRY = 'berry',
+  PISTACHIO = 'pistachio',
+}
+
 // 굽는판 한 칸
 export interface GrillSlot {
   stage: CookingStage;
@@ -21,25 +29,94 @@ export interface TrayWaffle {
 }
 
 // 손님 종류
-export type CustomerType = 'dog' | 'hamster' | 'turtle' | 'horse' | 'bear' | 'rabbit';
+export type CustomerType = 'dog' | 'hamster' | 'turtle' | 'horse' | 'bear' | 'rabbit' | 'fox';
 
 // 손님
 export interface Customer {
   id: number;
   type: CustomerType;      // 손님 종류
-  waffleCount: number;     // 주문 와플 개수 (1~3)
+  waffleCount: number;     // 주문 와플 개수
   waitTime: number;        // 남은 대기 시간
   maxWaitTime: number;     // 최대 대기 시간
+  preferredJam: JamType;   // 선호 잼 (주문한 잼)
 }
 
-// 손님별 대기 시간 배율 (거북이는 더 오래 기다림)
-export const CUSTOMER_WAIT_MULTIPLIER: Record<CustomerType, number> = {
-  dog: 1,
-  hamster: 1,
-  horse: 1,
-  turtle: 1.5,    // 거북이는 50% 더 오래 기다림
-  bear: 0.8,      // 곰은 조금 급함
-  rabbit: 0.8,    // 토끼도 조금 급함
+// 손님별 설정
+export interface CustomerConfig {
+  waitTime: number;           // 대기 시간 (초)
+  orderMin: number;           // 최소 주문 개수
+  orderMax: number;           // 최대 주문 개수
+  jamPreference: JamType | null;  // 선호 잼 (null = 아무거나)
+  jamPreferenceChance: number;    // 선호 잼 확률 (0~1)
+  appearDay: number;          // 등장 시작일
+  requiresPerfect: boolean;   // 퍼펙트 와플만 가능 여부
+}
+
+// 손님별 상세 설정
+export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
+  dog: {
+    waitTime: 15,
+    orderMin: 1,
+    orderMax: 2,
+    jamPreference: null,      // 아무거나
+    jamPreferenceChance: 0,
+    appearDay: 1,
+    requiresPerfect: false,
+  },
+  hamster: {
+    waitTime: 15,
+    orderMin: 1,
+    orderMax: 2,
+    jamPreference: JamType.PISTACHIO,  // 피스타치오 선호
+    jamPreferenceChance: 0.7,          // 70%
+    appearDay: 1,
+    requiresPerfect: false,
+  },
+  horse: {
+    waitTime: 12,
+    orderMin: 1,
+    orderMax: 2,
+    jamPreference: JamType.BERRY,      // 딸기(베리) 선호
+    jamPreferenceChance: 0.6,          // 60%
+    appearDay: 1,
+    requiresPerfect: false,
+  },
+  turtle: {
+    waitTime: 22,
+    orderMin: 2,
+    orderMax: 3,
+    jamPreference: null,      // 아무거나
+    jamPreferenceChance: 0,
+    appearDay: 1,
+    requiresPerfect: false,
+  },
+  rabbit: {
+    waitTime: 8,
+    orderMin: 1,
+    orderMax: 2,
+    jamPreference: JamType.BERRY,      // 딸기(베리) 선호
+    jamPreferenceChance: 0.8,          // 80%
+    appearDay: 5,
+    requiresPerfect: false,
+  },
+  bear: {
+    waitTime: 18,
+    orderMin: 5,
+    orderMax: 7,
+    jamPreference: JamType.APPLE,      // 사과 선호
+    jamPreferenceChance: 0.9,          // 90%
+    appearDay: 10,
+    requiresPerfect: false,
+  },
+  fox: {
+    waitTime: 12,
+    orderMin: 1,
+    orderMax: 2,
+    jamPreference: JamType.PISTACHIO,  // 피스타치오 선호
+    jamPreferenceChance: 0.8,          // 80%
+    appearDay: 15,
+    requiresPerfect: true,             // 퍼펙트만 가능!
+  },
 };
 
 // 게임 설정 상수
@@ -47,10 +124,6 @@ export const GAME_CONFIG = {
   // 손님 설정
   CUSTOMER_SPAWN_MIN: 5,      // 최소 등장 간격 (초)
   CUSTOMER_SPAWN_MAX: 10,     // 최대 등장 간격 (초)
-  CUSTOMER_WAIT_MIN: 15,      // 최소 대기 시간 (초)
-  CUSTOMER_WAIT_MAX: 30,      // 최대 대기 시간 (초)
-  CUSTOMER_ORDER_MIN: 1,      // 최소 주문 개수
-  CUSTOMER_ORDER_MAX: 3,      // 최대 주문 개수
   MAX_CUSTOMERS: 3,           // 최대 동시 손님 수
 
   // 하루 설정
@@ -125,14 +198,6 @@ export interface HeartState {
 // ========================================
 // 별/샵 시스템
 // ========================================
-
-// 잼 종류
-export enum JamType {
-  NONE = 'none',
-  APPLE = 'apple',
-  BERRY = 'berry',
-  PISTACHIO = 'pistachio',
-}
 
 // 잼 가격 배율
 export const JAM_PRICE_MULTIPLIER: Record<JamType, number> = {

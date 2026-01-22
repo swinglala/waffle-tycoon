@@ -11,7 +11,7 @@ import {
   COOKING_TIMES,
   WAFFLE_PRICES,
   GAME_CONFIG,
-  CUSTOMER_WAIT_MULTIPLIER,
+  CUSTOMER_CONFIG,
   JAM_PRICE_MULTIPLIER,
   STAR_CONFIG,
   getDayTarget,
@@ -80,14 +80,7 @@ const JAM_WAFFLE_IMAGE_KEYS: Record<JamType, Record<CookingStage, string>> = {
   },
 };
 
-// 초반 라운드 손님 종류 (Day 1~3)
-const EARLY_CUSTOMER_TYPES: CustomerType[] = [
-  "dog",
-  "hamster",
-  "turtle",
-  "horse",
-];
-// 후반 라운드 손님 종류 (Day 4+)
+// 모든 손님 종류
 const ALL_CUSTOMER_TYPES: CustomerType[] = [
   "dog",
   "hamster",
@@ -95,6 +88,7 @@ const ALL_CUSTOMER_TYPES: CustomerType[] = [
   "horse",
   "bear",
   "rabbit",
+  "fox",
 ];
 
 export class GameScene extends Phaser.Scene {
@@ -240,22 +234,29 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
-  private getRandomWaitTime(): number {
-    return (
-      GAME_CONFIG.CUSTOMER_WAIT_MIN +
-      Math.random() *
-        (GAME_CONFIG.CUSTOMER_WAIT_MAX - GAME_CONFIG.CUSTOMER_WAIT_MIN)
+  // 해당 day에 등장 가능한 손님 목록 반환
+  private getAvailableCustomerTypes(): CustomerType[] {
+    return ALL_CUSTOMER_TYPES.filter(
+      (type) => CUSTOMER_CONFIG[type].appearDay <= this.gameState.day
     );
   }
 
-  private getRandomOrderCount(): number {
-    return (
-      GAME_CONFIG.CUSTOMER_ORDER_MIN +
-      Math.floor(
-        Math.random() *
-          (GAME_CONFIG.CUSTOMER_ORDER_MAX - GAME_CONFIG.CUSTOMER_ORDER_MIN + 1),
-      )
-    );
+  // 손님의 주문 잼 결정 (선호도 + 해금 여부 고려)
+  private determineOrderJam(customerType: CustomerType): JamType {
+    const config = CUSTOMER_CONFIG[customerType];
+    const unlockedJams = this.progressManager.getUnlockedJams();
+
+    // 선호 잼이 있고, 해금되어 있고, 확률 통과 시
+    if (
+      config.jamPreference &&
+      unlockedJams.includes(config.jamPreference) &&
+      Math.random() < config.jamPreferenceChance
+    ) {
+      return config.jamPreference;
+    }
+
+    // 그 외에는 해금된 잼 중 랜덤 선택
+    return unlockedJams[Math.floor(Math.random() * unlockedJams.length)];
   }
 
   private initializeGrill(): void {
@@ -386,22 +387,30 @@ export class GameScene extends Phaser.Scene {
     );
     if (emptySlotIndex === -1) return; // 빈 슬롯 없음
 
-    // 라운드에 따른 손님 종류 선택
-    const availableTypes =
-      this.gameState.day <= 3 ? EARLY_CUSTOMER_TYPES : ALL_CUSTOMER_TYPES;
+    // 현재 day에 등장 가능한 손님 중 랜덤 선택
+    const availableTypes = this.getAvailableCustomerTypes();
+    if (availableTypes.length === 0) return;
+
     const customerType =
       availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    const config = CUSTOMER_CONFIG[customerType];
 
-    // 손님 종류에 따른 대기 시간 적용
-    const baseWaitTime = this.getRandomWaitTime();
-    const waitTime = baseWaitTime * CUSTOMER_WAIT_MULTIPLIER[customerType];
+    // 손님별 설정 적용
+    const waitTime = config.waitTime;
+    const orderCount =
+      config.orderMin +
+      Math.floor(Math.random() * (config.orderMax - config.orderMin + 1));
+
+    // 주문 잼 결정
+    const preferredJam = this.determineOrderJam(customerType);
 
     const customer: Customer = {
       id: this.nextCustomerId++,
       type: customerType,
-      waffleCount: this.getRandomOrderCount(),
+      waffleCount: orderCount,
       waitTime: waitTime,
       maxWaitTime: waitTime,
+      preferredJam: preferredJam,
     };
 
     this.customerSlots[emptySlotIndex] = customer;
@@ -458,9 +467,10 @@ export class GameScene extends Phaser.Scene {
       .setStrokeStyle(2, 0x8b6914)
       .setDepth(3);
 
-    // 주문 와플 이미지
+    // 주문 와플 이미지 (손님이 원하는 잼에 따라)
+    const orderImageKey = `order_${customer.preferredJam}_jam`;
     const orderImage = this.add
-      .image(x - 30, y + 50, "order_apple_jam")
+      .image(x - 30, y + 50, orderImageKey)
       .setDisplaySize(40, 40)
       .setDepth(4);
 
@@ -483,6 +493,8 @@ export class GameScene extends Phaser.Scene {
     if (!customer) return;
     if (this.isGameOver) return;
 
+    const config = CUSTOMER_CONFIG[customer.type];
+
     // 완성품 개수 확인
     if (this.finishedTray.length < customer.waffleCount) {
       this.showMessage(
@@ -491,15 +503,54 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // 판매 처리 - 잼 배율 및 반죽 개선 보너스 적용
+    // 손님이 원하는 잼과 일치하는 와플 확인
+    const matchingWaffles = this.finishedTray.filter(
+      (w) => w.jamType === customer.preferredJam
+    );
+    if (matchingWaffles.length < customer.waffleCount) {
+      const jamName =
+        customer.preferredJam === JamType.APPLE
+          ? "사과잼"
+          : customer.preferredJam === JamType.BERRY
+            ? "베리잼"
+            : "피스타치오잼";
+      this.showMessage(
+        `${jamName} 와플이 부족해요! (${matchingWaffles.length}/${customer.waffleCount})`,
+      );
+      return;
+    }
+
+    // 여우는 퍼펙트 와플만 가능
+    if (config.requiresPerfect) {
+      const perfectWaffles = matchingWaffles.filter(
+        (w) => w.stage === CookingStage.PERFECT
+      );
+      if (perfectWaffles.length < customer.waffleCount) {
+        this.showMessage(
+          `🦊 여우는 퍼펙트 와플만 원해요! (${perfectWaffles.length}/${customer.waffleCount})`,
+        );
+        return;
+      }
+    }
+
+    // 판매 처리 - 잼이 일치하는 와플만 사용
     const batterBonus = this.progressManager.getBatterPriceBonus();
     let totalPrice = 0;
-    for (let i = 0; i < customer.waffleCount; i++) {
-      const waffle = this.finishedTray.shift()!;
+    let soldCount = 0;
+
+    // 여우는 퍼펙트만, 아니면 일치하는 잼 와플 판매
+    for (let i = this.finishedTray.length - 1; i >= 0 && soldCount < customer.waffleCount; i--) {
+      const waffle = this.finishedTray[i];
+      if (waffle.jamType !== customer.preferredJam) continue;
+      if (config.requiresPerfect && waffle.stage !== CookingStage.PERFECT) continue;
+
+      // 조건 만족 - 판매
+      this.finishedTray.splice(i, 1);
       const basePrice = WAFFLE_PRICES[waffle.stage];
       const jamMultiplier = JAM_PRICE_MULTIPLIER[waffle.jamType];
       const wafflePrice = Math.floor((basePrice + batterBonus) * jamMultiplier);
       totalPrice += wafflePrice;
+      soldCount++;
     }
 
     this.gameState.money += totalPrice;

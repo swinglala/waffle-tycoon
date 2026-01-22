@@ -81,6 +81,8 @@ export class BootScene extends Phaser.Scene {
     this.load.image('customer_bear_angry', 'assets/images/customer_bear_angry.png');
     this.load.image('customer_rabbit', 'assets/images/customer_rabbit.png');
     this.load.image('customer_rabbit_angry', 'assets/images/customer_rabbit_angry.png');
+    this.load.image('customer_fox', 'assets/images/customer_fox.png');
+    this.load.image('customer_fox_angry', 'assets/images/customer_fox_angry.png');
   }
 
   create(): void {
