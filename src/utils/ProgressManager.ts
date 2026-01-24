@@ -67,7 +67,7 @@ export class ProgressManager {
   // ========================================
 
   /**
-   * 별 계산: (벌어들인돈 - 목표금액) / 3000, 최대 3개
+   * 별 계산: (벌어들인돈 - 목표금액) / 2500, 최대 3개
    */
   calculateStars(earnedMoney: number, day: number): number {
     const target = getDayTarget(day);

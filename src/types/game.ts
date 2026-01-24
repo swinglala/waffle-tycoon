@@ -346,5 +346,5 @@ export const TIME_CONFIG = {
 // 별 계산 설정
 export const STAR_CONFIG = {
   MAX_STARS_PER_DAY: 3,     // 하루 최대 별
-  MONEY_PER_STAR: 3000,     // 별 1개당 초과 금액
+  MONEY_PER_STAR: 2500,     // 별 1개당 초과 금액
 };
