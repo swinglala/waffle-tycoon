@@ -18,6 +18,7 @@ export class HomeScene extends Phaser.Scene {
   private userText!: Phaser.GameObjects.Text;
   private loginBtn!: Phaser.GameObjects.Rectangle;
   private loginBtnText!: Phaser.GameObjects.Text;
+  private startBtnText!: Phaser.GameObjects.Text;
   private authUnsubscribe?: () => void;
   private isSyncing = false;
 
@@ -228,7 +229,7 @@ export class HomeScene extends Phaser.Scene {
     buttonBg.setInteractive({ useHandCursor: true });
 
     // 버튼 텍스트
-    const buttonText = this.add.text(
+    this.startBtnText = this.add.text(
       GAME_WIDTH / 2,
       buttonY,
       `${this.currentDay}일차 시작하기`,
@@ -239,7 +240,7 @@ export class HomeScene extends Phaser.Scene {
         fontStyle: "bold",
       },
     );
-    buttonText.setOrigin(0.5);
+    this.startBtnText.setOrigin(0.5);
 
     // 클릭 이벤트
     buttonBg.on("pointerdown", () => {
@@ -257,6 +258,10 @@ export class HomeScene extends Phaser.Scene {
     buttonBg.on("pointerout", () => {
       buttonBg.setFillStyle(0xd4a574);
     });
+  }
+
+  private updateStartButton(): void {
+    this.startBtnText.setText(`${this.currentDay}일차 시작하기`);
   }
 
   private showNoHeartsPopup(): void {
@@ -781,6 +786,7 @@ export class HomeScene extends Phaser.Scene {
         this.heartManager.loadFromExternalData(mergedData.hearts);
         this.currentDay = mergedData.progress.currentDay;
         this.updateHeartsUI();
+        this.updateStartButton();
         console.log("[HomeScene] 클라우드 데이터로 업데이트됨");
       }
     } finally {
