@@ -109,7 +109,7 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     appearDay: 5,
     requiresPerfect: false,
     spawnWeight: 1.0,
-    spawnCooldown: 0,
+    spawnCooldown: 10,         // 등장 후 10초간 재등장 불가 (연속 등장 방지)
   },
   bear: {
     waitTime: 18,
