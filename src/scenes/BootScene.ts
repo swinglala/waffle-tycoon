@@ -58,6 +58,7 @@ export class BootScene extends Phaser.Scene {
 
     // 트레이 배경
     this.load.image('ready_tray', 'assets/images/ready_tray.png');
+    this.load.image('finished_tray', 'assets/images/finished_tray.png');
     this.load.image('finished_plate', 'assets/images/finished_plate.png');
 
     // 손님 영역 배경

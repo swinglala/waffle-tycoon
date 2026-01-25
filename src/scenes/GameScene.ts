@@ -108,13 +108,15 @@ export class GameScene extends Phaser.Scene {
   private grillGraphics: Phaser.GameObjects.Image[][] = [];
   private grillWaffleImages: (Phaser.GameObjects.Image | null)[][] = [];
 
-  // 작업 트레이 (잼 안바른 와플)
+  // 작업 트레이 (잼 안바른 와플) - 슬롯 기반
   private workTray: TrayWaffle[] = [];
-  private workTrayContainer!: Phaser.GameObjects.Container;
+  private workTraySlotImages: Phaser.GameObjects.Image[] = [];
+  private workTrayWaffleImages: (Phaser.GameObjects.Image | null)[] = [];
 
-  // 완성품 트레이 (잼 바른 와플)
+  // 완성품 트레이 (잼 바른 와플) - 슬롯 기반
   private finishedTray: TrayWaffle[] = [];
-  private finishedTrayContainer!: Phaser.GameObjects.Container;
+  private finishedTraySlotImages: Phaser.GameObjects.Image[] = [];
+  private finishedTrayWaffleImages: (Phaser.GameObjects.Image | null)[] = [];
 
   // UI 요소
   private moneyText!: Phaser.GameObjects.Text;
@@ -166,6 +168,10 @@ export class GameScene extends Phaser.Scene {
     // 트레이 초기화
     this.workTray = [];
     this.finishedTray = [];
+    this.workTraySlotImages = [];
+    this.workTrayWaffleImages = [];
+    this.finishedTraySlotImages = [];
+    this.finishedTrayWaffleImages = [];
 
     // 손님 슬롯 초기화
     this.customerSlots = [null, null, null];
@@ -665,26 +671,39 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createFinishedTrayUI(): void {
-    // 완성품 트레이 배경 이미지
-    this.add
-      .image(GAME_WIDTH / 2, this.FINISHED_TRAY_Y, "finished_plate")
-      .setDisplaySize(GAME_WIDTH - 40, 70)
-      .setDepth(5);
+    // 슬롯 기반 완성품 트레이
+    this.finishedTraySlotImages = [];
+    this.finishedTrayWaffleImages = [];
+
+    const usableWidth = GAME_WIDTH - 40; // 좌우 여백 20px씩
+    const slotWidth = usableWidth / this.finishedTrayCapacity; // 현재 용량으로 등분
+    const slotSize = 100; // 슬롯 이미지 고정 크기 (정사각형)
+    const startX = 20 + slotWidth / 2; // 첫 슬롯 중심 X
+
+    // 현재 용량만큼 슬롯 생성
+    for (let i = 0; i < this.finishedTrayCapacity; i++) {
+      const x = startX + i * slotWidth;
+
+      // 슬롯 배경 이미지 (고정 크기, 가운데 정렬)
+      const slotImg = this.add
+        .image(x, this.FINISHED_TRAY_Y, "finished_tray")
+        .setDisplaySize(slotSize, slotSize)
+        .setDepth(5);
+      this.finishedTraySlotImages.push(slotImg);
+
+      // 와플 이미지 (초기에는 null)
+      this.finishedTrayWaffleImages.push(null);
+    }
 
     // 개수 표시
     this.finishedTrayCountText = this.add
-      .text(GAME_WIDTH - 30, this.FINISHED_TRAY_Y - 25, "0개", {
+      .text(GAME_WIDTH - 30, this.FINISHED_TRAY_Y - 25, "0/" + this.finishedTrayCapacity, {
         fontFamily: "Arial",
         fontSize: "16px",
         color: "#FFFFFF",
         fontStyle: "bold",
       })
       .setOrigin(1, 0)
-      .setDepth(6);
-
-    // 트레이 컨테이너
-    this.finishedTrayContainer = this.add
-      .container(60, this.FINISHED_TRAY_Y + 5)
       .setDepth(6);
   }
 
@@ -735,23 +754,38 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createWorkTrayUI(): void {
-    // 작업 트레이 배경 이미지
-    this.add
-      .image(GAME_WIDTH / 2, this.WORK_TRAY_Y, "ready_tray")
-      .setDisplaySize(GAME_WIDTH - 40, 60);
+    // 슬롯 기반 작업 트레이
+    this.workTraySlotImages = [];
+    this.workTrayWaffleImages = [];
+
+    const usableWidth = GAME_WIDTH - 40; // 좌우 여백 20px씩
+    const slotWidth = usableWidth / this.workTrayCapacity; // 현재 용량으로 등분
+    const slotSize = 85; // 슬롯 이미지 고정 크기 (정사각형)
+    const startX = 20 + slotWidth / 2; // 첫 슬롯 중심 X
+
+    // 현재 용량만큼 슬롯 생성
+    for (let i = 0; i < this.workTrayCapacity; i++) {
+      const x = startX + i * slotWidth;
+
+      // 슬롯 배경 이미지 (고정 크기, 가운데 정렬)
+      const slotImg = this.add
+        .image(x, this.WORK_TRAY_Y, "ready_tray")
+        .setDisplaySize(slotSize, slotSize);
+      this.workTraySlotImages.push(slotImg);
+
+      // 와플 이미지 (초기에는 null)
+      this.workTrayWaffleImages.push(null);
+    }
 
     // 개수 표시
     this.workTrayCountText = this.add
-      .text(GAME_WIDTH - 30, this.WORK_TRAY_Y - 20, "0개", {
+      .text(GAME_WIDTH - 30, this.WORK_TRAY_Y - 20, "0/" + this.workTrayCapacity, {
         fontFamily: "Arial",
         fontSize: "14px",
         color: "#FFFFFF",
         fontStyle: "bold",
       })
       .setOrigin(1, 0);
-
-    // 트레이 컨테이너
-    this.workTrayContainer = this.add.container(60, this.WORK_TRAY_Y + 5);
   }
 
   private createGrillUI(): void {
@@ -943,18 +977,35 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateWorkTrayDisplay(): void {
-    this.workTrayContainer.removeAll(true);
+    const usableWidth = GAME_WIDTH - 40;
+    const slotWidth = usableWidth / this.workTrayCapacity; // 현재 용량으로 등분
+    const waffleSize = 100; // 변경 전과 동일한 와플 크기
+    const startX = 20 + slotWidth / 2;
 
-    const displayCount = Math.min(this.workTray.length, 12);
-    for (let i = 0; i < displayCount; i++) {
+    // 기존 와플 이미지 제거
+    for (const img of this.workTrayWaffleImages) {
+      if (img) img.destroy();
+    }
+    this.workTrayWaffleImages = [];
+
+    // 각 슬롯에 와플 표시
+    for (let i = 0; i < this.workTrayCapacity; i++) {
+      const x = startX + i * slotWidth;
       const waffle = this.workTray[i];
-      const imageKey = STAGE_IMAGE_KEYS[waffle.stage];
 
-      if (imageKey) {
-        const waffleImg = this.add
-          .image(i * 30, 0, imageKey)
-          .setDisplaySize(100, 100);
-        this.workTrayContainer.add(waffleImg);
+      if (waffle) {
+        const imageKey = STAGE_IMAGE_KEYS[waffle.stage];
+        if (imageKey) {
+          const waffleImg = this.add
+            .image(x, this.WORK_TRAY_Y, imageKey)
+            .setDisplaySize(waffleSize, waffleSize)
+            .setDepth(1);
+          this.workTrayWaffleImages.push(waffleImg);
+        } else {
+          this.workTrayWaffleImages.push(null);
+        }
+      } else {
+        this.workTrayWaffleImages.push(null);
       }
     }
 
@@ -963,19 +1014,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateFinishedTrayDisplay(): void {
-    this.finishedTrayContainer.removeAll(true);
+    const usableWidth = GAME_WIDTH - 40;
+    const slotWidth = usableWidth / this.finishedTrayCapacity; // 현재 용량으로 등분
+    const waffleSize = 100; // 변경 전과 동일한 와플 크기
+    const startX = 20 + slotWidth / 2;
 
-    const displayCount = Math.min(this.finishedTray.length, 12);
-    for (let i = 0; i < displayCount; i++) {
+    // 기존 와플 이미지 제거
+    for (const img of this.finishedTrayWaffleImages) {
+      if (img) img.destroy();
+    }
+    this.finishedTrayWaffleImages = [];
+
+    // 각 슬롯에 와플 표시
+    for (let i = 0; i < this.finishedTrayCapacity; i++) {
+      const x = startX + i * slotWidth;
       const waffle = this.finishedTray[i];
-      // 잼 종류별 이미지 키 사용
-      const imageKey = JAM_WAFFLE_IMAGE_KEYS[waffle.jamType]?.[waffle.stage] || "";
 
-      if (imageKey) {
-        const waffleImg = this.add
-          .image(i * 30, 0, imageKey)
-          .setDisplaySize(100, 100);
-        this.finishedTrayContainer.add(waffleImg);
+      if (waffle) {
+        // 잼 종류별 이미지 키 사용
+        const imageKey = JAM_WAFFLE_IMAGE_KEYS[waffle.jamType]?.[waffle.stage] || "";
+        if (imageKey) {
+          const waffleImg = this.add
+            .image(x, this.FINISHED_TRAY_Y, imageKey)
+            .setDisplaySize(waffleSize, waffleSize)
+            .setDepth(6);
+          this.finishedTrayWaffleImages.push(waffleImg);
+        } else {
+          this.finishedTrayWaffleImages.push(null);
+        }
+      } else {
+        this.finishedTrayWaffleImages.push(null);
       }
     }
 
