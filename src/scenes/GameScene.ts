@@ -42,7 +42,6 @@ const STAGE_IMAGE_KEYS: Record<CookingStage, string> = {
 };
 
 // 완성품 (잼 바른 와플) 이미지 키 - 잼 종류별
-// 참고: berry/pistachio 이미지가 없으므로 임시로 apple jam 이미지 사용
 const JAM_WAFFLE_IMAGE_KEYS: Record<JamType, Record<CookingStage, string>> = {
   [JamType.NONE]: {
     [CookingStage.EMPTY]: "",
@@ -55,27 +54,25 @@ const JAM_WAFFLE_IMAGE_KEYS: Record<JamType, Record<CookingStage, string>> = {
   [JamType.APPLE]: {
     [CookingStage.EMPTY]: "",
     [CookingStage.BATTER]: "",
-    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
-    [CookingStage.COOKED]: "waffle_jam_cooked",
-    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.UNDERCOOKED]: "waffle_apple_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_apple_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_apple_jam_perfect",
     [CookingStage.BURNT]: "",
   },
-  // TODO: 베리잼 와플 이미지 추가 시 교체
   [JamType.BERRY]: {
     [CookingStage.EMPTY]: "",
     [CookingStage.BATTER]: "",
-    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
-    [CookingStage.COOKED]: "waffle_jam_cooked",
-    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.UNDERCOOKED]: "waffle_berry_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_berry_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_berry_jam_perfect",
     [CookingStage.BURNT]: "",
   },
-  // TODO: 피스타치오잼 와플 이미지 추가 시 교체
   [JamType.PISTACHIO]: {
     [CookingStage.EMPTY]: "",
     [CookingStage.BATTER]: "",
-    [CookingStage.UNDERCOOKED]: "waffle_jam_undercooked",
-    [CookingStage.COOKED]: "waffle_jam_cooked",
-    [CookingStage.PERFECT]: "waffle_jam_perfect",
+    [CookingStage.UNDERCOOKED]: "waffle_pistachio_jam_undercooked",
+    [CookingStage.COOKED]: "waffle_pistachio_jam_cooked",
+    [CookingStage.PERFECT]: "waffle_pistachio_jam_perfect",
     [CookingStage.BURNT]: "",
   },
 };

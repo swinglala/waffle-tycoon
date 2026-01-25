@@ -42,10 +42,18 @@ export class BootScene extends Phaser.Scene {
     this.load.image('waffle_perfect', 'assets/images/waffle_perfect.png');
     this.load.image('waffle_burnt', 'assets/images/waffle_burnt.png');
 
-    // 완성품 (와플 + 잼)
-    this.load.image('waffle_jam_undercooked', 'assets/images/waffle_apple_jam_undercooked.png');
-    this.load.image('waffle_jam_cooked', 'assets/images/waffle_apple_jam_cooked.png');
-    this.load.image('waffle_jam_perfect', 'assets/images/waffle_jam_perfect.png');
+    // 완성품 (와플 + 잼) - 사과잼
+    this.load.image('waffle_apple_jam_undercooked', 'assets/images/waffle_apple_jam_undercooked.png');
+    this.load.image('waffle_apple_jam_cooked', 'assets/images/waffle_apple_jam_cooked.png');
+    this.load.image('waffle_apple_jam_perfect', 'assets/images/waffle_apple_jam_perfect.png');
+    // 완성품 (와플 + 잼) - 베리잼
+    this.load.image('waffle_berry_jam_undercooked', 'assets/images/waffle_berry_jam_undercooked.png');
+    this.load.image('waffle_berry_jam_cooked', 'assets/images/waffle_berry_jam_cooked.png');
+    this.load.image('waffle_berry_jam_perfect', 'assets/images/waffle_berry_jam_perfect.png');
+    // 완성품 (와플 + 잼) - 피스타치오잼
+    this.load.image('waffle_pistachio_jam_undercooked', 'assets/images/waffle_pistachio_jam_undercooked.png');
+    this.load.image('waffle_pistachio_jam_cooked', 'assets/images/waffle_pistachio_jam_cooked.png');
+    this.load.image('waffle_pistachio_jam_perfect', 'assets/images/waffle_pistachio_jam_perfect.png');
 
     // 굽는판
     this.load.image('grill_slot_empty', 'assets/images/grill_slot_empty.png');
