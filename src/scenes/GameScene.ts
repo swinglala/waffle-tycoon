@@ -442,9 +442,29 @@ export class GameScene extends Phaser.Scene {
 
     // 손님별 설정 적용
     const waitTime = config.waitTime;
+
+    // 곰 주문 수량은 Day별로 다름
+    let orderMin = config.orderMin;
+    let orderMax = config.orderMax;
+    if (customerType === 'bear') {
+      const day = this.gameState.day;
+      if (day < 20) {
+        // Day 10~19: 5개만
+        orderMin = 5;
+        orderMax = 5;
+      } else if (day < 30) {
+        // Day 20~29: 5~6개
+        orderMin = 5;
+        orderMax = 6;
+      } else {
+        // Day 30+: 5~7개
+        orderMin = 5;
+        orderMax = 7;
+      }
+    }
+
     const orderCount =
-      config.orderMin +
-      Math.floor(Math.random() * (config.orderMax - config.orderMin + 1));
+      orderMin + Math.floor(Math.random() * (orderMax - orderMin + 1));
 
     // 주문 잼 결정
     const preferredJam = this.determineOrderJam(customerType);
