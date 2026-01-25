@@ -51,10 +51,13 @@ export class AuthManager {
     }
 
     try {
+      // GitHub Pages 등 서브 경로에 배포된 경우를 위해 전체 URL 사용
+      const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
         },
       });
 
