@@ -11,9 +11,13 @@ import {
 
 const STORAGE_KEY = "waffleTycoon_progress";
 
+// 클라우드 동기화 콜백 타입
+type CloudSyncCallback = () => void;
+
 export class ProgressManager {
   private static instance: ProgressManager;
   private state: ProgressState;
+  private cloudSyncCallback: CloudSyncCallback | null = null;
 
   private constructor() {
     this.state = this.loadState();
@@ -60,6 +64,8 @@ export class ProgressManager {
 
   private saveState(): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    // 클라우드 동기화 트리거
+    this.triggerCloudSync();
   }
 
   // ========================================
@@ -265,5 +271,52 @@ export class ProgressManager {
   addStars(amount: number): void {
     this.state.totalStars += amount;
     this.saveState();
+  }
+
+  // ========================================
+  // 클라우드 동기화 관련 메서드
+  // ========================================
+
+  /**
+   * 클라우드 동기화 콜백 등록
+   * CloudSaveManager와 연동할 때 사용
+   */
+  setCloudSyncCallback(callback: CloudSyncCallback | null): void {
+    this.cloudSyncCallback = callback;
+  }
+
+  /**
+   * 클라우드 동기화 트리거
+   */
+  private triggerCloudSync(): void {
+    if (this.cloudSyncCallback) {
+      this.cloudSyncCallback();
+    }
+  }
+
+  /**
+   * 현재 상태 반환 (클라우드 저장용)
+   */
+  getState(): ProgressState {
+    return { ...this.state };
+  }
+
+  /**
+   * 외부 데이터로 상태 덮어쓰기 (클라우드 불러오기용)
+   * @returns 변경 여부
+   */
+  loadFromExternalData(data: ProgressState): boolean {
+    // 기존 상태와 비교하여 변경 여부 확인
+    const hasChanged =
+      data.totalStars !== this.state.totalStars ||
+      data.currentDay !== this.state.currentDay;
+
+    this.state = {
+      ...this.getDefaultState(),
+      ...data,
+    };
+    this.saveState();
+
+    return hasChanged;
   }
 }

@@ -9,6 +9,7 @@
 - **빌드**: Vite 5.4
 - **모바일 래퍼**: Capacitor 6.0 (iOS/Android)
 - **화면 크기**: 720x1280 (9:16 세로 모바일)
+- **백엔드**: Supabase (인증, 클라우드 저장)
 
 ## 프로젝트 구조
 
@@ -17,15 +18,18 @@ src/
 ├── main.ts              # 엔트리포인트, Phaser.Game 인스턴스 생성
 ├── config/
 │   ├── gameConfig.ts    # Phaser 게임 설정
-│   └── constants.ts     # 화면 크기 상수 (720x1280)
+│   ├── constants.ts     # 화면 크기 상수 (720x1280)
+│   └── supabase.ts      # Supabase 클라이언트 설정
 ├── scenes/
 │   ├── BootScene.ts     # 에셋 로딩 씬
-│   ├── HomeScene.ts     # 홈 화면 (메인 메뉴)
+│   ├── HomeScene.ts     # 홈 화면 (메인 메뉴, 로그인)
 │   ├── GameScene.ts     # 메인 게임 로직
 │   └── ShopScene.ts     # 상점 화면
 ├── utils/
 │   ├── HeartManager.ts  # 하트 시스템 관리
-│   └── ProgressManager.ts # 진행상황/별/업그레이드 관리
+│   ├── ProgressManager.ts # 진행상황/별/업그레이드 관리
+│   ├── AuthManager.ts   # Google OAuth 인증 관리
+│   └── CloudSaveManager.ts # 클라우드 저장/동기화
 └── types/
     └── game.ts          # 타입 정의, 게임 상수
 ```
@@ -315,8 +319,67 @@ interface ProgressState { totalStars, currentDay, dayStars, upgrades, unlockedJa
 
 ---
 
+## Supabase 연동 (회원/클라우드 저장)
+
+### 설정
+- **프로젝트**: `udegsopkidgluonvywad`
+- **환경변수**: `.env` 파일에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 설정
+- **MCP 서버**: [supabase-community/supabase-mcp](https://github.com/supabase-community/supabase-mcp) 사용 가능
+
+### 인증 (AuthManager.ts)
+- **Google OAuth** 로그인/로그아웃
+- `signInWithGoogle()` - Google 로그인
+- `signOut()` - 로그아웃
+- `getUser()` - 현재 사용자 정보
+- `getDisplayName()` - 표시 이름
+- `onAuthStateChange()` - 인증 상태 변경 리스너
+
+### 클라우드 저장 (CloudSaveManager.ts)
+- `saveToCloud(data)` - 클라우드에 저장
+- `loadFromCloud()` - 클라우드에서 불러오기
+- `syncWithLocal(localData)` - 로컬 ↔ 클라우드 동기화
+
+### 데이터베이스 테이블
+```sql
+-- game_progress 테이블
+CREATE TABLE game_progress (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id),
+  total_stars INTEGER,
+  current_day INTEGER,
+  day_stars JSONB,
+  upgrades JSONB,
+  unlocked_jams TEXT[],
+  hearts INTEGER,
+  last_recharge_time BIGINT,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+);
+```
+
+### 동기화 전략
+```
+앱 시작 → 로그인 확인
+├─ 비로그인: LocalStorage만 사용
+└─ 로그인: 클라우드 데이터 로드 → 로컬과 비교 → 병합
+
+저장 시점 (Day 완료, 업그레이드 등)
+├─ LocalStorage 저장 (항상)
+└─ 로그인 시: 클라우드에도 저장 (2초 디바운스)
+
+병합 기준: 더 높은 별/일차 우선
+```
+
+### HomeScene UI
+- **로그인 버튼**: 헤더 왼쪽 (Guest 옆)
+- **로그인 시**: 프로필 이름 표시 + 로그아웃 버튼
+- **비로그인 시**: "👤 Guest" + 파란색 로그인 버튼
+
+---
+
 ## 향후 개발 아이디어
 
+- [x] 회원 시스템 (Google 로그인, 클라우드 저장) ✅
 - [ ] 사운드 효과 및 BGM
 - [ ] 랭킹 시스템 구현
 - [ ] 설정 화면 (사운드 on/off 등)
