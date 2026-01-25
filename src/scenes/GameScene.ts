@@ -140,6 +140,8 @@ export class GameScene extends Phaser.Scene {
   private workTrayCapacity = 5; // 준비 트레이 용량
   private finishedTrayCapacity = 5; // 완성 트레이 용량
   private customerCooldowns: Record<CustomerType, number> = {} as Record<CustomerType, number>; // 손님별 쿨다운
+  private bearAppearedThisDay = false; // 이번 Day에 곰 등장 여부
+  private guaranteedBearTime = 0; // 곰 보장 등장 시간 (남은 시간 기준)
 
   // 손님 슬롯 X 좌표
   private readonly CUSTOMER_SLOT_X = [150, 330, 510];
@@ -181,6 +183,10 @@ export class GameScene extends Phaser.Scene {
       this.customerCooldowns[type] = 0;
     }
 
+    // 곰 보장 등장 초기화
+    this.bearAppearedThisDay = false;
+    this.guaranteedBearTime = 0;
+
     if (data?.day) {
       this.gameState.day = data.day;
       this.gameState.money = 0;
@@ -219,6 +225,12 @@ export class GameScene extends Phaser.Scene {
     const dayTime = this.progressManager.getDayTime();
     this.gameState.timeRemaining = dayTime;
     this.gameState.maxTime = dayTime;
+
+    // 곰 보장 등장 시간 설정 (Day 10+에서만, 남은 시간의 30~70% 지점)
+    if (this.gameState.day >= 10) {
+      const bearSpawnRatio = 0.3 + Math.random() * 0.4; // 30~70%
+      this.guaranteedBearTime = dayTime * bearSpawnRatio;
+    }
 
     // 게임 시작 시 하트 사용
     if (!this.heartUsed) {
@@ -484,7 +496,51 @@ export class GameScene extends Phaser.Scene {
     if (config.spawnCooldown > 0) {
       this.customerCooldowns[customerType] = config.spawnCooldown;
     }
+
+    // 곰 등장 추적
+    if (customerType === 'bear') {
+      this.bearAppearedThisDay = true;
+    }
     // updateCustomerDisplay는 updateCustomers에서 호출됨
+  }
+
+  // 곰 강제 등장 (하루 1회 보장)
+  private forceSpawnBear(): void {
+    if (this.isGameOver) return;
+
+    // 빈 슬롯 찾기
+    const emptySlotIndex = this.customerSlots.findIndex((slot) => slot === null);
+    if (emptySlotIndex === -1) return;
+
+    const config = CUSTOMER_CONFIG['bear'];
+    const day = this.gameState.day;
+
+    // Day별 주문 수량
+    let orderMin = 5;
+    let orderMax = 5;
+    if (day >= 30) {
+      orderMax = 7;
+    } else if (day >= 20) {
+      orderMax = 6;
+    }
+
+    const orderCount =
+      orderMin + Math.floor(Math.random() * (orderMax - orderMin + 1));
+    const preferredJam = this.determineOrderJam('bear');
+
+    const customer: Customer = {
+      id: this.nextCustomerId++,
+      type: 'bear',
+      waffleCount: orderCount,
+      waitTime: config.waitTime,
+      maxWaitTime: config.waitTime,
+      preferredJam: preferredJam,
+    };
+
+    this.customerSlots[emptySlotIndex] = customer;
+    this.customerCooldowns['bear'] = config.spawnCooldown;
+    this.bearAppearedThisDay = true;
+    this.guaranteedBearTime = 0; // 보장 시간 리셋 (중복 방지)
   }
 
   private updateCustomerDisplay(): void {
@@ -677,6 +733,20 @@ export class GameScene extends Phaser.Scene {
       this.customerSpawnTimer = 0;
       this.nextSpawnTime = this.getRandomSpawnTime();
       if (hadEmptySlot) {
+        customerChanged = true;
+      }
+    }
+
+    // 곰 보장 등장 체크 (Day 10+, 아직 안 나왔고, 보장 시간 도달)
+    if (
+      this.gameState.day >= 10 &&
+      !this.bearAppearedThisDay &&
+      this.gameState.timeRemaining <= this.guaranteedBearTime &&
+      this.guaranteedBearTime > 0
+    ) {
+      const hasEmptySlot = this.customerSlots.some((slot) => slot === null);
+      if (hasEmptySlot) {
+        this.forceSpawnBear();
         customerChanged = true;
       }
     }
