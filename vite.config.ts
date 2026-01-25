@@ -8,6 +8,7 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     target: 'es2020',
+    chunkSizeWarningLimit: 2000, // Phaser 포함 번들 크기 경고 임계값 (2MB)
   },
   server: {
     port: 3000,
