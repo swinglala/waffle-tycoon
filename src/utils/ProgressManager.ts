@@ -73,18 +73,27 @@ export class ProgressManager {
   // ========================================
 
   /**
-   * 별 계산: (벌어들인돈 - 목표금액) / 2500, 최대 3개
+   * 별 계산:
+   * - 목표금액 달성 → 1별
+   * - 목표금액 초과 ~ +3000원 → 2별
+   * - 목표금액 +3000원 초과 → 3별
    */
   calculateStars(earnedMoney: number, day: number): number {
     const target = getDayTarget(day);
     const excess = earnedMoney - target;
 
-    if (excess <= 0) {
+    if (excess < 0) {
       return 0;
+    } else if (excess <= 0) {
+      // 딱 목표금액 달성
+      return 1;
+    } else if (excess <= STAR_CONFIG.TWO_STAR_THRESHOLD) {
+      // 목표금액 초과 ~ +3000원
+      return 2;
+    } else {
+      // +3000원 초과
+      return 3;
     }
-
-    const stars = Math.floor(excess / STAR_CONFIG.MONEY_PER_STAR);
-    return Math.min(stars, STAR_CONFIG.MAX_STARS_PER_DAY);
   }
 
   /**
