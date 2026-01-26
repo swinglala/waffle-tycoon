@@ -7,6 +7,20 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <title>와플 타이쿤</title>
     <style>
+      /* 어비 푸딩체 폰트 로드 */
+      @font-face {
+        font-family: 'UhBeePuding';
+        src: url('/assets/fonts/UhBeepuding/UhBee puding.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'UhBeePuding';
+        src: url('/assets/fonts/UhBeepuding/UhBee puding Bold.ttf') format('truetype');
+        font-weight: bold;
+        font-style: normal;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -30,9 +44,18 @@
         max-width: 100%;
         max-height: 100%;
       }
+      /* 폰트 프리로드 */
+      .font-preload {
+        font-family: 'UhBeePuding';
+        position: absolute;
+        left: -9999px;
+        visibility: hidden;
+      }
     </style>
   </head>
   <body>
+    <span class="font-preload">폰트 로딩용</span>
+    <span class="font-preload" style="font-weight: bold;">폰트 로딩용 볼드</span>
     <div id="game-container"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

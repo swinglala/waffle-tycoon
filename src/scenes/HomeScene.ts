@@ -80,7 +80,7 @@ export class HomeScene extends Phaser.Scene {
   private createTitle(): void {
     // 타이틀 텍스트
     const titleText = this.add.text(GAME_WIDTH / 2, 200, "와플 타이쿤", {
-      fontFamily: "Arial",
+      fontFamily: "UhBeePuding", padding: { y: 5 },
       fontSize: "56px",
       color: "#5D4E37",
       fontStyle: "bold",
@@ -94,7 +94,7 @@ export class HomeScene extends Phaser.Scene {
     // 왼쪽: 유저 정보 영역
     this.userText = this.add
       .text(20, heartsY - 15, "", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -109,7 +109,7 @@ export class HomeScene extends Phaser.Scene {
 
     this.loginBtnText = this.add
       .text(180, heartsY - 15, "로그인", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "13px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -135,7 +135,7 @@ export class HomeScene extends Phaser.Scene {
 
     this.starsText = this.add
       .text(45, heartsY + 12, "", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "18px",
         color: "#D4A017",
         fontStyle: "bold",
@@ -198,7 +198,7 @@ export class HomeScene extends Phaser.Scene {
     // 충전 타이머
     this.timerText = this.add
       .text(GAME_WIDTH / 2, heartsY + 20, "", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#8B7355",
       })
@@ -287,7 +287,7 @@ export class HomeScene extends Phaser.Scene {
       buttonY,
       `${this.currentDay}일차 시작하기`,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -345,7 +345,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 60,
       "💔 하트 부족",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#E85A4F",
         fontStyle: "bold",
@@ -360,7 +360,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2,
       `하트가 없어요!\n다음 하트까지: ${timeStr}`,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
         align: "center",
@@ -384,7 +384,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 70,
       "확인",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -519,7 +519,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 50,
       title,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -533,7 +533,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2,
       "준비 중입니다!",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
       },
@@ -556,7 +556,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 60,
       "닫기",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -652,7 +652,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 50,
       "로그아웃",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -666,7 +666,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2,
       "정말 로그아웃 하시겠습니까?",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
       }
@@ -689,7 +689,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 60,
       "로그아웃",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -713,7 +713,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 60,
       "취소",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -778,7 +778,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 50,
       `❌ ${title}`,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#E85A4F",
         fontStyle: "bold",
@@ -792,7 +792,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2,
       message,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#5D4E37",
         align: "center",
@@ -817,7 +817,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 60,
       "확인",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#5D4E37",
         fontStyle: "bold",

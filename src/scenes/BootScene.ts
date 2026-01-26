@@ -16,7 +16,7 @@ export class BootScene extends Phaser.Scene {
 
     // 로딩 텍스트
     const loadingText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, '로딩 중...', {
-      fontFamily: 'Arial',
+      fontFamily: 'UhBeePuding', padding: { y: 5 },
       fontSize: '24px',
       color: '#5D4E37',
     });

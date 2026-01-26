@@ -46,7 +46,7 @@ export class DayTreeScene extends Phaser.Scene {
     // 타이틀
     this.add
       .text(GAME_WIDTH / 2, 35, "Day 트리", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -61,7 +61,7 @@ export class DayTreeScene extends Phaser.Scene {
       .setDisplaySize(24, 24);
     this.add
       .text(starIconX + 20, 65, `${totalStars}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#FFD700",
         fontStyle: "bold",
@@ -75,7 +75,7 @@ export class DayTreeScene extends Phaser.Scene {
         130,
         "재도전으로 더 많은 별을 모아보세요!\n재도전 시, 하트 1개 소모",
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "16px",
           color: "#7D6E57",
           align: "center",
@@ -145,7 +145,7 @@ export class DayTreeScene extends Phaser.Scene {
     // Day 텍스트
     const dayText = this.add
       .text(x, y - 30, `Day ${day}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -181,7 +181,7 @@ export class DayTreeScene extends Phaser.Scene {
       const moneyColor = money >= target ? "#4CAF50" : "#E85A4F";
       const moneyText = this.add
         .text(x, y + 35, `₩${money.toLocaleString()}`, {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "14px",
           color: moneyColor,
           fontStyle: "bold",
@@ -192,7 +192,7 @@ export class DayTreeScene extends Phaser.Scene {
       // 목표 금액 표시
       const targetText = this.add
         .text(x, y + 52, `목표: ₩${target.toLocaleString()}`, {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "11px",
           color: "#7D6E57",
         })
@@ -203,7 +203,7 @@ export class DayTreeScene extends Phaser.Scene {
       const target = getDayTarget(day);
       const targetText = this.add
         .text(x, y + 5, `목표: ₩${target.toLocaleString()}`, {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "14px",
           color: "#2196f3",
         })
@@ -213,7 +213,7 @@ export class DayTreeScene extends Phaser.Scene {
       // "진행중" 표시
       const currentText = this.add
         .text(x, y + 30, "진행중", {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "18px",
           color: "#2196f3",
           fontStyle: "bold",
@@ -299,7 +299,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 90,
       title,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -314,7 +314,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 40,
       `목표: ₩${target.toLocaleString()}`,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         align: "center",
@@ -331,7 +331,7 @@ export class DayTreeScene extends Phaser.Scene {
         GAME_HEIGHT / 2 - 5,
         "현재 기록:",
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "18px",
           color: "#5D4E37",
         }
@@ -362,7 +362,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 20,
       "❤️ 하트 1개 사용 (성공 시 환불)",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#E85A4F",
       }
@@ -387,7 +387,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 80,
       isRetry ? "재도전" : "시작",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -413,7 +413,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 80,
       "취소",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -485,7 +485,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 - 60,
       "💔 하트 부족",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#E85A4F",
         fontStyle: "bold",
@@ -501,7 +501,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2,
       `하트가 없어요!\n다음 하트까지: ${timeStr}`,
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
         align: "center",
@@ -527,7 +527,7 @@ export class DayTreeScene extends Phaser.Scene {
       GAME_HEIGHT / 2 + 70,
       "확인",
       {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -567,7 +567,7 @@ export class DayTreeScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
         fontStyle: "bold",

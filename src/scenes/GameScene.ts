@@ -333,7 +333,7 @@ export class GameScene extends Phaser.Scene {
     // Day 표시
     this.dayText = this.add
       .text(30, this.HEADER_Y - 10, `Day ${this.gameState.day}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -347,7 +347,7 @@ export class GameScene extends Phaser.Scene {
         this.HEADER_Y - 10,
         `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "20px",
           color: "#5D4E37",
         },
@@ -378,7 +378,7 @@ export class GameScene extends Phaser.Scene {
         this.TIME_BAR_Y,
         this.formatTime(this.gameState.timeRemaining),
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "14px",
           color: "#FFFFFF",
           fontStyle: "bold",
@@ -396,7 +396,7 @@ export class GameScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH - 45, this.HEADER_Y, "✕", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -594,7 +594,7 @@ export class GameScene extends Phaser.Scene {
     // 주문 개수 텍스트
     const orderText = this.add
       .text(x + 20, y + 50, `x ${customer.waffleCount}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -776,7 +776,7 @@ export class GameScene extends Phaser.Scene {
     // 개수 표시
     this.finishedTrayCountText = this.add
       .text(GAME_WIDTH - 30, this.FINISHED_TRAY_Y - 25, "0/" + this.finishedTrayCapacity, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -858,7 +858,7 @@ export class GameScene extends Phaser.Scene {
     // 개수 표시
     this.workTrayCountText = this.add
       .text(GAME_WIDTH - 30, this.WORK_TRAY_Y - 20, "0/" + this.workTrayCapacity, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "14px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -920,7 +920,7 @@ export class GameScene extends Phaser.Scene {
 
     this.fireButtonText = this.add
       .text(GAME_WIDTH / 2, buttonY, "🔥 강불 (3초)", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -1014,7 +1014,7 @@ export class GameScene extends Phaser.Scene {
   private showMessage(text: string): void {
     const msg = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, text, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding",
         fontSize: "24px",
         color: "#5D4E37",
         backgroundColor: "#FFFFFF",
@@ -1251,7 +1251,7 @@ export class GameScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 140, resultTitle, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "36px",
         color: titleColor,
         fontStyle: "bold",
@@ -1285,7 +1285,7 @@ export class GameScene extends Phaser.Scene {
         GAME_HEIGHT / 2 - 40,
         `Day ${this.gameState.day} 결과`,
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "24px",
           color: "#5D4E37",
         },
@@ -1299,7 +1299,7 @@ export class GameScene extends Phaser.Scene {
         GAME_HEIGHT / 2 + 20,
         `벌은 돈: ${this.gameState.money.toLocaleString()}원\n목표 금액: ${this.gameState.targetMoney.toLocaleString()}원`,
         {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "20px",
           color: "#5D4E37",
           align: "center",
@@ -1329,7 +1329,7 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(leftBtnX, btnY, "▶ 다음 날", {
-            fontFamily: "Arial",
+            fontFamily: "UhBeePuding", padding: { y: 5 },
             fontSize: "22px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1348,7 +1348,7 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(rightBtnX, btnY, "🏠 홈으로", {
-            fontFamily: "Arial",
+            fontFamily: "UhBeePuding", padding: { y: 5 },
             fontSize: "22px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1374,7 +1374,7 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(leftBtnX, btnY, "▶ 다음 날", {
-            fontFamily: "Arial",
+            fontFamily: "UhBeePuding", padding: { y: 5 },
             fontSize: "18px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1393,7 +1393,7 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(centerBtnX, btnY, "🔄 재도전", {
-            fontFamily: "Arial",
+            fontFamily: "UhBeePuding", padding: { y: 5 },
             fontSize: "18px",
             color: "#5D4E37",
             fontStyle: "bold",
@@ -1412,7 +1412,7 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(rightBtnX, btnY, "🏠 홈으로", {
-            fontFamily: "Arial",
+            fontFamily: "UhBeePuding", padding: { y: 5 },
             fontSize: "18px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1436,7 +1436,7 @@ export class GameScene extends Phaser.Scene {
 
       this.add
         .text(leftBtnX, btnY, "🔄 재도전", {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "22px",
           color: "#5D4E37",
           fontStyle: "bold",
@@ -1455,7 +1455,7 @@ export class GameScene extends Phaser.Scene {
 
       this.add
         .text(rightBtnX, btnY, "🏠 홈으로", {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "22px",
           color: "#FFFFFF",
           fontStyle: "bold",
@@ -1543,7 +1543,7 @@ export class GameScene extends Phaser.Scene {
     // 타이틀
     const title = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "일시정지", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1560,7 +1560,7 @@ export class GameScene extends Phaser.Scene {
 
     const retryText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, "🔄 재시도", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1577,7 +1577,7 @@ export class GameScene extends Phaser.Scene {
 
     const exitText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, "🚪 종료", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -1654,7 +1654,7 @@ export class GameScene extends Phaser.Scene {
     // 타이틀
     const titleText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 70, title, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1665,7 +1665,7 @@ export class GameScene extends Phaser.Scene {
     // 메시지
     const messageText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 15, message, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
       })
@@ -1681,7 +1681,7 @@ export class GameScene extends Phaser.Scene {
 
     const cancelText = this.add
       .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1698,7 +1698,7 @@ export class GameScene extends Phaser.Scene {
 
     const confirmText = this.add
       .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "확인", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#FFFFFF",
         fontStyle: "bold",

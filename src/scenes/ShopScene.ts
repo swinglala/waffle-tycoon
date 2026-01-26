@@ -38,7 +38,7 @@ export class ShopScene extends Phaser.Scene {
     // 타이틀
     this.add
       .text(GAME_WIDTH / 2, 35, "상점", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -52,7 +52,7 @@ export class ShopScene extends Phaser.Scene {
       .setDisplaySize(24, 24);
     this.add
       .text(starIconX + 20, 65, `${this.progressManager.getTotalStars()}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#FFD700",
         fontStyle: "bold",
@@ -100,7 +100,7 @@ export class ShopScene extends Phaser.Scene {
     // 업그레이드 이름
     this.add
       .text(x, y - 55, config.name, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -111,7 +111,7 @@ export class ShopScene extends Phaser.Scene {
     // 설명
     this.add
       .text(x, y - 20, config.description, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "14px",
         color: "#7D6E57",
         align: "center",
@@ -122,7 +122,7 @@ export class ShopScene extends Phaser.Scene {
     // 레벨 표시
     this.add
       .text(x, y + 20, `Lv. ${currentLevel} / ${config.maxLevel}`, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "18px",
         color: isMaxed ? "#4CAF50" : "#5D4E37",
         fontStyle: "bold",
@@ -158,7 +158,7 @@ export class ShopScene extends Phaser.Scene {
         .setDisplaySize(starIconSize, starIconSize);
       this.add
         .text(x + 5, btnY, `${nextCost}`, {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "18px",
           color: btnTextColor,
           fontStyle: "bold",
@@ -168,7 +168,7 @@ export class ShopScene extends Phaser.Scene {
       // MAX 텍스트
       this.add
         .text(x, btnY, "MAX", {
-          fontFamily: "Arial",
+          fontFamily: "UhBeePuding", padding: { y: 5 },
           fontSize: "18px",
           color: btnTextColor,
           fontStyle: "bold",
@@ -218,7 +218,7 @@ export class ShopScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -240,7 +240,7 @@ export class ShopScene extends Phaser.Scene {
   private showMessage(text: string): void {
     const msg = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, text, {
-        fontFamily: "Arial",
+        fontFamily: "UhBeePuding",
         fontSize: "24px",
         color: "#E85A4F",
         backgroundColor: "#FFFFFF",
