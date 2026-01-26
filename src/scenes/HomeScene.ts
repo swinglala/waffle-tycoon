@@ -12,7 +12,7 @@ export class HomeScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
   private authManager!: AuthManager;
   private cloudSaveManager!: CloudSaveManager;
-  private heartsText!: Phaser.GameObjects.Text;
+  private heartImages: Phaser.GameObjects.Image[] = [];
   private timerText!: Phaser.GameObjects.Text;
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
@@ -90,31 +90,26 @@ export class HomeScene extends Phaser.Scene {
   private createHeartsUI(): void {
     const heartsY = 50;
 
-    // 하트 헤더 배경
-    this.add
-      .rectangle(GAME_WIDTH / 2, heartsY, GAME_WIDTH - 20, 70, 0xd4a574)
-      .setStrokeStyle(3, 0x8b6914);
-
-    // 왼쪽: 유저 정보 영역 (로그인 버튼 또는 유저 이름)
+    // 왼쪽: 유저 정보 영역
     this.userText = this.add
-      .text(30, heartsY - 15, "", {
+      .text(20, heartsY - 15, "", {
         fontFamily: "Arial",
-        fontSize: "18px",
+        fontSize: "16px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0, 0.5);
 
-    // 로그인/로그아웃 버튼 (유저 정보 옆)
+    // 로그인/로그아웃 버튼 (유저 정보 오른쪽, 겹치지 않게 고정 위치)
     this.loginBtn = this.add
-      .rectangle(125, heartsY - 15, 70, 24, 0x4285f4)
+      .rectangle(180, heartsY - 15, 70, 26, 0x4285f4)
       .setStrokeStyle(2, 0x3367d6)
       .setInteractive({ useHandCursor: true });
 
     this.loginBtnText = this.add
-      .text(125, heartsY - 15, "로그인", {
+      .text(180, heartsY - 15, "로그인", {
         fontFamily: "Arial",
-        fontSize: "12px",
+        fontSize: "13px",
         color: "#FFFFFF",
         fontStyle: "bold",
       })
@@ -134,54 +129,67 @@ export class HomeScene extends Phaser.Scene {
 
     // 유저 정보 아래에 별 표시
     this.starsText = this.add
-      .text(30, heartsY + 12, "", {
+      .text(20, heartsY + 12, "", {
         fontFamily: "Arial",
-        fontSize: "20px",
-        color: "#FFD700",
+        fontSize: "18px",
+        color: "#D4A017",
         fontStyle: "bold",
       })
       .setOrigin(0, 0.5);
 
-    // 하트 아이콘과 개수 (중앙)
-    this.heartsText = this.add
-      .text(GAME_WIDTH / 2, heartsY - 8, "", {
-        fontFamily: "Arial",
-        fontSize: "28px",
-        color: "#FFFFFF",
-      })
-      .setOrigin(0.5);
+    // 하트 아이콘 5개 (중앙)
+    const heartSize = 32;
+    const heartGap = 8;
+    const totalHeartsWidth = HEART_CONFIG.MAX_HEARTS * heartSize + (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
+    const heartsStartX = GAME_WIDTH / 2 - totalHeartsWidth / 2 + heartSize / 2;
+
+    // 하트 + 타이머 배경 (베이지색, 라운드)
+    const heartsBgPadding = 12;
+    const heartsBgWidth = totalHeartsWidth + heartsBgPadding * 2;
+    const heartsBgHeight = 62; // 하트 + 타이머 텍스트 포함 + y패딩
+    const heartsBg = this.add.graphics();
+    heartsBg.fillStyle(0xF5E6D3, 1);
+    heartsBg.fillRoundedRect(
+      GAME_WIDTH / 2 - heartsBgWidth / 2,
+      heartsY - 24,
+      heartsBgWidth,
+      heartsBgHeight,
+      20
+    );
+
+    this.heartImages = [];
+    for (let i = 0; i < HEART_CONFIG.MAX_HEARTS; i++) {
+      const heartImg = this.add
+        .image(heartsStartX + i * (heartSize + heartGap), heartsY - 5, "icon_heart")
+        .setDisplaySize(heartSize, heartSize);
+      this.heartImages.push(heartImg);
+    }
 
     // 충전 타이머
     this.timerText = this.add
       .text(GAME_WIDTH / 2, heartsY + 20, "", {
         fontFamily: "Arial",
         fontSize: "16px",
-        color: "#5D4E37",
+        color: "#8B7355",
       })
       .setOrigin(0.5);
 
     // 오른쪽: 설정 버튼
     const settingsBtnX = GAME_WIDTH - 55;
-    const settingsBtn = this.add
-      .circle(settingsBtnX, heartsY, 25, 0xc49a6c)
-      .setStrokeStyle(2, 0x8b6914)
+    const settingsIcon = this.add
+      .image(settingsBtnX, heartsY, "icon_setting")
+      .setDisplaySize(50, 50)
       .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(settingsBtnX, heartsY, "⚙️", {
-        fontSize: "24px",
-      })
-      .setOrigin(0.5);
-
-    settingsBtn.on("pointerdown", () => {
+    settingsIcon.on("pointerdown", () => {
       this.showPlaceholderPopup("설정");
     });
 
-    settingsBtn.on("pointerover", () => {
-      settingsBtn.setFillStyle(0xb8896c);
+    settingsIcon.on("pointerover", () => {
+      settingsIcon.setTint(0xcccccc);
     });
-    settingsBtn.on("pointerout", () => {
-      settingsBtn.setFillStyle(0xc49a6c);
+    settingsIcon.on("pointerout", () => {
+      settingsIcon.clearTint();
     });
 
     this.updateHeartsUI();
@@ -196,12 +204,16 @@ export class HomeScene extends Phaser.Scene {
     const totalStars = this.progressManager.getTotalStars();
     this.starsText.setText(`⭐ ${totalStars}`);
 
-    // 하트 표시 (채워진 하트 + 빈 하트)
-    let heartDisplay = "";
-    for (let i = 0; i < maxHearts; i++) {
-      heartDisplay += i < hearts ? "❤️" : "🤍";
+    // 하트 표시 (채워진 하트는 원본, 빈 하트는 회색)
+    for (let i = 0; i < this.heartImages.length; i++) {
+      if (i < hearts) {
+        this.heartImages[i].clearTint();
+        this.heartImages[i].setAlpha(1);
+      } else {
+        this.heartImages[i].setTint(0x555555);
+        this.heartImages[i].setAlpha(0.4);
+      }
     }
-    this.heartsText.setText(heartDisplay);
 
     // 타이머 표시
     if (hearts < maxHearts) {
@@ -362,69 +374,77 @@ export class HomeScene extends Phaser.Scene {
 
   private createSideButtons(): void {
     const sideButtonX = 640;
-    const buttonRadius = 35;
+    const iconSize = 50;
+    const btnSize = 70;
+    const shadowOffset = 4;
+
+    // 버튼 배경 생성 헬퍼 (입체감 있는 라운드 버튼)
+    const createButtonBg = (x: number, y: number) => {
+      const bg = this.add.graphics();
+      // 그림자 (어두운 색)
+      bg.fillStyle(0xC4A484, 1);
+      bg.fillRoundedRect(x - btnSize / 2, y - btnSize / 2 + shadowOffset, btnSize, btnSize, btnSize / 2);
+      // 메인 버튼 (밝은 베이지)
+      bg.fillStyle(0xF5E6D3, 1);
+      bg.fillRoundedRect(x - btnSize / 2, y - btnSize / 2, btnSize, btnSize, btnSize / 2);
+      return bg;
+    };
 
     // 1. 랭킹 버튼 (가장 위)
     const rankingY = 140;
-    const rankingCircle = this.add.circle(sideButtonX, rankingY, buttonRadius, 0xd4a574);
-    rankingCircle.setStrokeStyle(3, 0x8b6914);
-    rankingCircle.setInteractive({ useHandCursor: true });
+    createButtonBg(sideButtonX, rankingY);
+    const rankingIcon = this.add
+      .image(sideButtonX, rankingY, "icon_rank")
+      .setDisplaySize(iconSize, iconSize)
+      .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(sideButtonX, rankingY, "🏆", { fontSize: "32px" })
-      .setOrigin(0.5);
-
-    rankingCircle.on("pointerdown", () => {
+    rankingIcon.on("pointerdown", () => {
       this.showPlaceholderPopup("랭킹");
     });
 
-    rankingCircle.on("pointerover", () => {
-      rankingCircle.setFillStyle(0xc49a6c);
+    rankingIcon.on("pointerover", () => {
+      rankingIcon.setTint(0xdddddd);
     });
-    rankingCircle.on("pointerout", () => {
-      rankingCircle.setFillStyle(0xd4a574);
+    rankingIcon.on("pointerout", () => {
+      rankingIcon.clearTint();
     });
 
     // 2. 샵 버튼 (두번째)
     const shopY = 230;
-    const shopCircle = this.add.circle(sideButtonX, shopY, buttonRadius, 0xFFD700);
-    shopCircle.setStrokeStyle(3, 0xD4A574);
-    shopCircle.setInteractive({ useHandCursor: true });
+    createButtonBg(sideButtonX, shopY);
+    const shopIcon = this.add
+      .image(sideButtonX, shopY, "icon_shop")
+      .setDisplaySize(iconSize, iconSize)
+      .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(sideButtonX, shopY, "🛒", { fontSize: "32px" })
-      .setOrigin(0.5);
-
-    shopCircle.on("pointerdown", () => {
+    shopIcon.on("pointerdown", () => {
       this.scene.start("ShopScene");
     });
 
-    shopCircle.on("pointerover", () => {
-      shopCircle.setFillStyle(0xE5C100);
+    shopIcon.on("pointerover", () => {
+      shopIcon.setTint(0xdddddd);
     });
-    shopCircle.on("pointerout", () => {
-      shopCircle.setFillStyle(0xFFD700);
+    shopIcon.on("pointerout", () => {
+      shopIcon.clearTint();
     });
 
     // 3. Day 트리 버튼 (세번째)
     const dayTreeY = 320;
-    const dayTreeCircle = this.add.circle(sideButtonX, dayTreeY, buttonRadius, 0xd4a574);
-    dayTreeCircle.setStrokeStyle(3, 0x8b6914);
-    dayTreeCircle.setInteractive({ useHandCursor: true });
+    createButtonBg(sideButtonX, dayTreeY);
+    const dayTreeIcon = this.add
+      .image(sideButtonX, dayTreeY, "icon_calendar")
+      .setDisplaySize(iconSize, iconSize)
+      .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(sideButtonX, dayTreeY, "📅", { fontSize: "32px" })
-      .setOrigin(0.5);
-
-    dayTreeCircle.on("pointerdown", () => {
+    dayTreeIcon.on("pointerdown", () => {
       this.scene.start("DayTreeScene");
     });
 
-    dayTreeCircle.on("pointerover", () => {
-      dayTreeCircle.setFillStyle(0xc49a6c);
+    dayTreeIcon.on("pointerover", () => {
+      dayTreeIcon.setTint(0xdddddd);
     });
-    dayTreeCircle.on("pointerout", () => {
-      dayTreeCircle.setFillStyle(0xd4a574);
+    dayTreeIcon.on("pointerout", () => {
+      dayTreeIcon.clearTint();
     });
   }
 

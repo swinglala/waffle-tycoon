@@ -77,6 +77,13 @@ export class BootScene extends Phaser.Scene {
     this.load.image('order_berry_jam', 'assets/images/order_berry_jam.png');
     this.load.image('order_pistachio_jam', 'assets/images/order_pistachio_jam.png');
 
+    // UI 아이콘
+    this.load.image('icon_shop', 'assets/images/shop.png');
+    this.load.image('icon_rank', 'assets/images/rank.png');
+    this.load.image('icon_setting', 'assets/images/setting.png');
+    this.load.image('icon_heart', 'assets/images/heart.png');
+    this.load.image('icon_calendar', 'assets/images/Calendar.png');
+
     // 손님 이미지
     this.load.image('customer_dog', 'assets/images/customer_dog.png');
     this.load.image('customer_dog_angry', 'assets/images/customer_dog_angry.png');
