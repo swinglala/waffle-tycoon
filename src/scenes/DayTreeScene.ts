@@ -10,7 +10,7 @@ const CELL_WIDTH = 200;
 const CELL_HEIGHT = 160;
 const CELL_GAP_X = 20;
 const CELL_GAP_Y = 20;
-const START_Y = 200;
+const START_Y = 260;
 
 export class DayTreeScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
@@ -45,7 +45,7 @@ export class DayTreeScene extends Phaser.Scene {
 
     // 타이틀
     this.add
-      .text(GAME_WIDTH / 2, 35, "Day 트리", {
+      .text(GAME_WIDTH / 2, 35, "데이트리", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
@@ -360,7 +360,7 @@ export class DayTreeScene extends Phaser.Scene {
     const heartInfo = this.add.text(
       GAME_WIDTH / 2,
       GAME_HEIGHT / 2 + 20,
-      "❤️ 하트 1개 사용 (성공 시 환불)",
+      "❤️ 하트 1개 소모",
       {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",

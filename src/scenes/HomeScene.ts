@@ -17,9 +17,9 @@ export class HomeScene extends Phaser.Scene {
   private timerText!: Phaser.GameObjects.Text;
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
+  private dayText!: Phaser.GameObjects.Text;
   private loginBtn!: Phaser.GameObjects.Rectangle;
   private loginBtnText!: Phaser.GameObjects.Text;
-  private startBtnText!: Phaser.GameObjects.Text;
   private authUnsubscribe?: () => void;
   private isSyncing = false;
 
@@ -78,22 +78,35 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createTitle(): void {
-    // 타이틀 텍스트
-    const titleText = this.add.text(GAME_WIDTH / 2, 200, "와플 타이쿤", {
-      fontFamily: "UhBeePuding", padding: { y: 5 },
-      fontSize: "56px",
-      color: "#5D4E37",
-      fontStyle: "bold",
-    });
-    titleText.setOrigin(0.5);
+    // 로고 이미지
+    const logo = this.add.image(GAME_WIDTH / 2, 230, "logo");
+    logo.setOrigin(0.5);
+    // 필요시 크기 조절 (원본 비율 유지)
+    const maxWidth = 400;
+    if (logo.width > maxWidth) {
+      const scale = maxWidth / logo.width;
+      logo.setScale(scale);
+    }
+
+    // 로고 아래 N일차 표시
+    this.dayText = this.add
+      .text(GAME_WIDTH / 2, 400, `${this.currentDay}일차`, {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "100px",
+        color: "#2C2C2C",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
   }
 
   private createHeartsUI(): void {
     const heartsY = 50;
+    const leftX = 20;
 
-    // 왼쪽: 유저 정보 영역
+    // 왼쪽: 유저 정보 영역 (세로 배치: 유저정보 → N일차 → 별)
+    // 1. 유저 정보
     this.userText = this.add
-      .text(20, heartsY - 15, "", {
+      .text(leftX, heartsY - 20, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "16px",
         color: "#5D4E37",
@@ -101,14 +114,14 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5);
 
-    // 로그인/로그아웃 버튼 (유저 정보 오른쪽, 겹치지 않게 고정 위치)
+    // 로그인/로그아웃 버튼 (유저 정보 오른쪽)
     this.loginBtn = this.add
-      .rectangle(180, heartsY - 15, 70, 26, 0x4285f4)
+      .rectangle(180, heartsY - 20, 70, 26, 0x4285f4)
       .setStrokeStyle(2, 0x3367d6)
       .setInteractive({ useHandCursor: true });
 
     this.loginBtnText = this.add
-      .text(180, heartsY - 15, "로그인", {
+      .text(180, heartsY - 20, "로그인", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "13px",
         color: "#FFFFFF",
@@ -128,13 +141,13 @@ export class HomeScene extends Phaser.Scene {
       this.loginBtn.setFillStyle(isLoggedIn ? 0xe74c3c : 0x4285f4);
     });
 
-    // 유저 정보 아래에 별 표시 (아이콘 + 텍스트)
+    // 2. 별 표시 (아이콘 + 텍스트)
     this.add
-      .image(30, heartsY + 12, "icon_star")
+      .image(leftX + 10, heartsY + 8, "icon_star")
       .setDisplaySize(20, 20);
 
     this.starsText = this.add
-      .text(45, heartsY + 12, "", {
+      .text(leftX + 25, heartsY + 8, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "18px",
         color: "#D4A017",
@@ -266,37 +279,14 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createStartButton(): void {
-    const buttonWidth = 320;
-    const buttonHeight = 70;
-    const buttonY = 640;
+    const buttonY = GAME_HEIGHT * 0.78; // bottom 25% 영역
 
-    // 버튼 배경
-    const buttonBg = this.add.rectangle(
-      GAME_WIDTH / 2,
-      buttonY,
-      buttonWidth,
-      buttonHeight,
-      0xd4a574,
-    );
-    buttonBg.setStrokeStyle(4, 0x8b6914);
-    buttonBg.setInteractive({ useHandCursor: true });
-
-    // 버튼 텍스트
-    this.startBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      buttonY,
-      `${this.currentDay}일차 시작하기`,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "28px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      },
-    );
-    this.startBtnText.setOrigin(0.5);
+    // 버튼 이미지
+    const buttonImg = this.add.image(GAME_WIDTH / 2, buttonY, "btn_start");
+    buttonImg.setInteractive({ useHandCursor: true });
 
     // 클릭 이벤트
-    buttonBg.on("pointerdown", () => {
+    buttonImg.on("pointerdown", () => {
       if (this.heartManager.hasHeart()) {
         this.scene.start("GameScene", { day: this.currentDay });
       } else {
@@ -305,16 +295,16 @@ export class HomeScene extends Phaser.Scene {
     });
 
     // 호버 효과
-    buttonBg.on("pointerover", () => {
-      buttonBg.setFillStyle(0xc49a6c);
+    buttonImg.on("pointerover", () => {
+      buttonImg.setTint(0xdddddd);
     });
-    buttonBg.on("pointerout", () => {
-      buttonBg.setFillStyle(0xd4a574);
+    buttonImg.on("pointerout", () => {
+      buttonImg.clearTint();
     });
   }
 
   private updateStartButton(): void {
-    this.startBtnText.setText(`${this.currentDay}일차 시작하기`);
+    this.dayText.setText(`${this.currentDay}일차`);
   }
 
   private showNoHeartsPopup(): void {
