@@ -68,13 +68,18 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createBackground(): void {
-    // 배경 이미지
+    // 배경 이미지 (비율 유지, 가운데 맞춤, crop)
     const bg = this.add.image(
       GAME_WIDTH / 2,
       GAME_HEIGHT / 2,
       "home_background",
     );
-    bg.setDisplaySize(GAME_WIDTH, GAME_HEIGHT);
+
+    // cover 방식: 비율 유지하면서 화면을 꽉 채움 (넘치는 부분은 잘림)
+    const scaleX = GAME_WIDTH / bg.width;
+    const scaleY = GAME_HEIGHT / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale);
   }
 
   private createTitle(): void {
