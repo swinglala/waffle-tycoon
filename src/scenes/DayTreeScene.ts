@@ -10,7 +10,7 @@ const CELL_WIDTH = 200;
 const CELL_HEIGHT = 160;
 const CELL_GAP_X = 20;
 const CELL_GAP_Y = 20;
-const START_Y = 150;
+const START_Y = 200;
 
 export class DayTreeScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
@@ -71,8 +71,8 @@ export class DayTreeScene extends Phaser.Scene {
     // 스크롤 가능한 컨테이너 생성
     this.scrollContainer = this.add.container(0, 0);
 
-    // 표시할 최대 Day 수 (현재 Day + 잠긴 Day 몇 개)
-    const maxDisplayDay = Math.min(currentDay + 6, 99);
+    // 현재 Day까지만 표시 (잠긴 Day는 표시 안함)
+    const maxDisplayDay = currentDay;
     const totalRows = Math.ceil(maxDisplayDay / GRID_COLS);
 
     // 그리드 시작 X 좌표 (중앙 정렬)
@@ -104,27 +104,17 @@ export class DayTreeScene extends Phaser.Scene {
     const state = this.getDayState(day, currentDay);
     const stars = this.progressManager.getDayStars(day);
 
-    // 셀 배경 색상
+    // 셀 배경 색상 (완료 또는 진행중만 표시)
     let bgColor = 0xffffff;
     let strokeColor = 0x8b6914;
-    let isInteractive = false;
 
-    switch (state) {
-      case "completed":
-        bgColor = stars === 3 ? 0xfff9c4 : 0xffffff; // 3별이면 황금색 배경
-        strokeColor = stars === 3 ? 0xffd700 : 0x4caf50; // 3별이면 금색, 아니면 녹색
-        isInteractive = true;
-        break;
-      case "current":
-        bgColor = 0xe3f2fd; // 연한 파란색
-        strokeColor = 0x2196f3;
-        isInteractive = true;
-        break;
-      case "locked":
-        bgColor = 0xe0e0e0; // 회색
-        strokeColor = 0x9e9e9e;
-        isInteractive = false;
-        break;
+    if (state === "completed") {
+      bgColor = stars === 3 ? 0xfff9c4 : 0xffffff; // 3별이면 황금색 배경
+      strokeColor = stars === 3 ? 0xffd700 : 0x4caf50; // 3별이면 금색, 아니면 녹색
+    } else {
+      // current
+      bgColor = 0xe3f2fd; // 연한 파란색
+      strokeColor = 0x2196f3;
     }
 
     // 셀 배경
@@ -138,7 +128,7 @@ export class DayTreeScene extends Phaser.Scene {
       .text(x, y - 30, `Day ${day}`, {
         fontFamily: "Arial",
         fontSize: "24px",
-        color: state === "locked" ? "#9e9e9e" : "#5D4E37",
+        color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -201,19 +191,10 @@ export class DayTreeScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       this.scrollContainer.add(currentText);
-    } else {
-      // 잠금 아이콘
-      const lockText = this.add
-        .text(x, y + 15, "🔒", {
-          fontSize: "32px",
-        })
-        .setOrigin(0.5);
-      this.scrollContainer.add(lockText);
     }
 
-    // 클릭 이벤트
-    if (isInteractive) {
-      cellBg.setInteractive({ useHandCursor: true });
+    // 클릭 이벤트 (완료/진행중 모두 클릭 가능)
+    cellBg.setInteractive({ useHandCursor: true });
 
       cellBg.on("pointerover", () => {
         cellBg.setFillStyle(this.darkenColor(bgColor, 0.1));
@@ -223,19 +204,17 @@ export class DayTreeScene extends Phaser.Scene {
         cellBg.setFillStyle(bgColor);
       });
 
-      cellBg.on("pointerdown", () => {
-        this.onDayClick(day);
-      });
-    }
+    cellBg.on("pointerdown", () => {
+      this.onDayClick(day);
+    });
   }
 
   private getDayState(
     day: number,
     currentDay: number
-  ): "completed" | "current" | "locked" {
+  ): "completed" | "current" {
     if (day < currentDay) return "completed";
-    if (day === currentDay) return "current";
-    return "locked";
+    return "current";
   }
 
   private getStarDisplay(stars: number): string {
@@ -261,8 +240,167 @@ export class DayTreeScene extends Phaser.Scene {
       return;
     }
 
-    // GameScene 시작
-    this.scene.start("GameScene", { day });
+    // 확인 팝업 표시
+    this.showConfirmPopup(day);
+  }
+
+  private showConfirmPopup(day: number): void {
+    const currentDay = this.progressManager.getCurrentDay();
+    const isRetry = day < currentDay;
+    const stars = this.progressManager.getDayStars(day);
+    const target = getDayTarget(day);
+
+    // 반투명 오버레이
+    const overlay = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0x000000,
+      0.5
+    );
+    overlay.setInteractive();
+    overlay.setDepth(100);
+
+    // 팝업 배경
+    const popup = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      420,
+      280,
+      0xfff8e7
+    );
+    popup.setStrokeStyle(4, 0x8b6914);
+    popup.setDepth(101);
+
+    // 팝업 타이틀
+    const title = isRetry ? `Day ${day} 재도전` : `Day ${day} 시작`;
+    const popupTitle = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 90,
+      title,
+      {
+        fontFamily: "Arial",
+        fontSize: "28px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      }
+    );
+    popupTitle.setOrigin(0.5);
+    popupTitle.setDepth(102);
+
+    // 정보 표시
+    let infoText = `목표: ₩${target.toLocaleString()}`;
+    if (isRetry) {
+      infoText += `\n현재 기록: ${this.getStarDisplay(stars)}`;
+    }
+    const info = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 30,
+      infoText,
+      {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#5D4E37",
+        align: "center",
+      }
+    );
+    info.setOrigin(0.5);
+    info.setDepth(102);
+
+    // 하트 비용 안내
+    const heartInfo = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 20,
+      "❤️ 하트 1개 사용 (성공 시 환불)",
+      {
+        fontFamily: "Arial",
+        fontSize: "16px",
+        color: "#E85A4F",
+      }
+    );
+    heartInfo.setOrigin(0.5);
+    heartInfo.setDepth(102);
+
+    // 시작 버튼
+    const startBtn = this.add.rectangle(
+      GAME_WIDTH / 2 - 80,
+      GAME_HEIGHT / 2 + 80,
+      130,
+      50,
+      0x4caf50
+    );
+    startBtn.setStrokeStyle(3, 0x388e3c);
+    startBtn.setInteractive({ useHandCursor: true });
+    startBtn.setDepth(102);
+
+    const startBtnText = this.add.text(
+      GAME_WIDTH / 2 - 80,
+      GAME_HEIGHT / 2 + 80,
+      isRetry ? "재도전" : "시작",
+      {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      }
+    );
+    startBtnText.setOrigin(0.5);
+    startBtnText.setDepth(102);
+
+    // 취소 버튼
+    const cancelBtn = this.add.rectangle(
+      GAME_WIDTH / 2 + 80,
+      GAME_HEIGHT / 2 + 80,
+      130,
+      50,
+      0xd4a574
+    );
+    cancelBtn.setStrokeStyle(3, 0x8b6914);
+    cancelBtn.setInteractive({ useHandCursor: true });
+    cancelBtn.setDepth(102);
+
+    const cancelBtnText = this.add.text(
+      GAME_WIDTH / 2 + 80,
+      GAME_HEIGHT / 2 + 80,
+      "취소",
+      {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      }
+    );
+    cancelBtnText.setOrigin(0.5);
+    cancelBtnText.setDepth(102);
+
+    // 팝업 닫기
+    const closePopup = () => {
+      overlay.destroy();
+      popup.destroy();
+      popupTitle.destroy();
+      info.destroy();
+      heartInfo.destroy();
+      startBtn.destroy();
+      startBtnText.destroy();
+      cancelBtn.destroy();
+      cancelBtnText.destroy();
+    };
+
+    // 이벤트
+    startBtn.on("pointerdown", () => {
+      closePopup();
+      this.scene.start("GameScene", { day });
+    });
+
+    cancelBtn.on("pointerdown", closePopup);
+    overlay.on("pointerdown", closePopup);
+
+    // 호버 효과
+    startBtn.on("pointerover", () => startBtn.setFillStyle(0x388e3c));
+    startBtn.on("pointerout", () => startBtn.setFillStyle(0x4caf50));
+    cancelBtn.on("pointerover", () => cancelBtn.setFillStyle(0xc49a6c));
+    cancelBtn.on("pointerout", () => cancelBtn.setFillStyle(0xd4a574));
   }
 
   private showNoHeartsPopup(): void {
