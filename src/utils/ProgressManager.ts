@@ -54,8 +54,16 @@ export class ProgressManager {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // 기본값과 병합 (새로운 필드 대응)
-        return { ...this.getDefaultState(), ...parsed };
+        const defaultState = this.getDefaultState();
+        // 기본값과 병합 (새로운 필드 대응) - 중첩 객체도 병합
+        return {
+          ...defaultState,
+          ...parsed,
+          upgrades: {
+            ...defaultState.upgrades,
+            ...(parsed.upgrades || {}),
+          },
+        };
       } catch {
         // 파싱 실패시 기본값
       }

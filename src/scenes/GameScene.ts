@@ -719,13 +719,14 @@ export class GameScene extends Phaser.Scene {
     // 손님 스폰 타이머
     this.customerSpawnTimer += deltaSeconds;
     if (this.customerSpawnTimer >= this.nextSpawnTime) {
-      const hadEmptySlot = this.customerSlots.some((slot) => slot === null);
-      this.spawnCustomer();
-      this.customerSpawnTimer = 0;
-      this.nextSpawnTime = this.getRandomSpawnTime();
-      if (hadEmptySlot) {
+      const hasEmptySlot = this.customerSlots.some((slot) => slot === null);
+      if (hasEmptySlot) {
+        this.spawnCustomer();
+        this.customerSpawnTimer = 0;
+        this.nextSpawnTime = this.getRandomSpawnTime();
         customerChanged = true;
       }
+      // 슬롯이 꽉 찼으면 타이머 리셋하지 않음 - 빈 슬롯 생기면 바로 스폰
     }
 
     // 곰 보장 등장 체크 (Day 10+, 아직 안 나왔고, 보장 시간 도달)
