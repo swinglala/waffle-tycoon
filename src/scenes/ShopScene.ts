@@ -45,19 +45,19 @@ export class ShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // 별 잔액 표시
+    // 별 잔액 표시 (아이콘 + 텍스트)
+    const starIconX = GAME_WIDTH / 2 - 30;
     this.add
-      .text(GAME_WIDTH / 2, 65, this.getStarsDisplayText(), {
+      .image(starIconX, 65, "icon_star")
+      .setDisplaySize(24, 24);
+    this.add
+      .text(starIconX + 20, 65, `${this.progressManager.getTotalStars()}`, {
         fontFamily: "Arial",
         fontSize: "22px",
         color: "#FFD700",
         fontStyle: "bold",
       })
-      .setOrigin(0.5);
-  }
-
-  private getStarsDisplayText(): string {
-    return `⭐ ${this.progressManager.getTotalStars()}`;
+      .setOrigin(0, 0.5);
   }
 
   private createUpgradeGrid(): void {
@@ -136,12 +136,11 @@ export class ShopScene extends Phaser.Scene {
 
     let btnColor = 0xd4a574;
     let btnTextColor = "#5D4E37";
-    let btnLabel = `⭐${nextCost}`;
+    const showStarIcon = !isMaxed;
 
     if (isMaxed) {
       btnColor = 0x4caf50;
       btnTextColor = "#FFFFFF";
-      btnLabel = "MAX";
     } else if (!canBuy) {
       btnColor = 0xcccccc;
       btnTextColor = "#999999";
@@ -151,14 +150,31 @@ export class ShopScene extends Phaser.Scene {
       .rectangle(x, btnY, btnWidth, btnHeight, btnColor)
       .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x8b6914 : 0x999999);
 
-    this.add
-      .text(x, btnY, btnLabel, {
-        fontFamily: "Arial",
-        fontSize: "18px",
-        color: btnTextColor,
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    if (showStarIcon) {
+      // 별 아이콘 + 비용 표시
+      const starIconSize = 20;
+      this.add
+        .image(x - 18, btnY, "icon_star")
+        .setDisplaySize(starIconSize, starIconSize);
+      this.add
+        .text(x + 5, btnY, `${nextCost}`, {
+          fontFamily: "Arial",
+          fontSize: "18px",
+          color: btnTextColor,
+          fontStyle: "bold",
+        })
+        .setOrigin(0, 0.5);
+    } else {
+      // MAX 텍스트
+      this.add
+        .text(x, btnY, "MAX", {
+          fontFamily: "Arial",
+          fontSize: "18px",
+          color: btnTextColor,
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+    }
 
     if (!isMaxed) {
       buyBtn.setInteractive({ useHandCursor: canBuy });

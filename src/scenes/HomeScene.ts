@@ -13,6 +13,7 @@ export class HomeScene extends Phaser.Scene {
   private authManager!: AuthManager;
   private cloudSaveManager!: CloudSaveManager;
   private heartImages: Phaser.GameObjects.Image[] = [];
+  private plusButton!: Phaser.GameObjects.Image;
   private timerText!: Phaser.GameObjects.Text;
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
@@ -127,9 +128,13 @@ export class HomeScene extends Phaser.Scene {
       this.loginBtn.setFillStyle(isLoggedIn ? 0xe74c3c : 0x4285f4);
     });
 
-    // 유저 정보 아래에 별 표시
+    // 유저 정보 아래에 별 표시 (아이콘 + 텍스트)
+    this.add
+      .image(30, heartsY + 12, "icon_star")
+      .setDisplaySize(20, 20);
+
     this.starsText = this.add
-      .text(20, heartsY + 12, "", {
+      .text(45, heartsY + 12, "", {
         fontFamily: "Arial",
         fontSize: "18px",
         color: "#D4A017",
@@ -137,15 +142,18 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5);
 
-    // 하트 아이콘 5개 (중앙)
+    // 하트 아이콘 5개 + 플러스 버튼 (중앙)
     const heartSize = 32;
     const heartGap = 8;
+    const plusSize = 28;
+    const plusGap = 10;
     const totalHeartsWidth = HEART_CONFIG.MAX_HEARTS * heartSize + (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
-    const heartsStartX = GAME_WIDTH / 2 - totalHeartsWidth / 2 + heartSize / 2;
+    const totalWidth = totalHeartsWidth + plusGap + plusSize;
+    const heartsStartX = GAME_WIDTH / 2 - totalWidth / 2 + heartSize / 2;
 
-    // 하트 + 타이머 배경 (베이지색, 라운드)
+    // 하트 + 플러스 + 타이머 배경 (베이지색, 라운드)
     const heartsBgPadding = 12;
-    const heartsBgWidth = totalHeartsWidth + heartsBgPadding * 2;
+    const heartsBgWidth = totalWidth + heartsBgPadding * 2;
     const heartsBgHeight = 62; // 하트 + 타이머 텍스트 포함 + y패딩
     const heartsBg = this.add.graphics();
     heartsBg.fillStyle(0xF5E6D3, 1);
@@ -164,6 +172,28 @@ export class HomeScene extends Phaser.Scene {
         .setDisplaySize(heartSize, heartSize);
       this.heartImages.push(heartImg);
     }
+
+    // 플러스 버튼 (하트 5개 오른쪽)
+    const plusX = heartsStartX + totalHeartsWidth + plusGap;
+    this.plusButton = this.add
+      .image(plusX, heartsY - 5, "icon_plus")
+      .setDisplaySize(plusSize, plusSize)
+      .setInteractive({ useHandCursor: true });
+
+    this.plusButton.on("pointerdown", () => {
+      this.showPlaceholderPopup("하트 구매하기");
+    });
+
+    this.plusButton.on("pointerover", () => {
+      if (this.heartManager.getHearts() < HEART_CONFIG.MAX_HEARTS) {
+        this.plusButton.setTint(0xcccccc);
+      }
+    });
+    this.plusButton.on("pointerout", () => {
+      if (this.heartManager.getHearts() < HEART_CONFIG.MAX_HEARTS) {
+        this.plusButton.clearTint();
+      }
+    });
 
     // 충전 타이머
     this.timerText = this.add
@@ -200,9 +230,9 @@ export class HomeScene extends Phaser.Scene {
     const hearts = this.heartManager.getHearts();
     const maxHearts = HEART_CONFIG.MAX_HEARTS;
 
-    // 별 표시
+    // 별 표시 (아이콘은 createHeartsUI에서 생성됨)
     const totalStars = this.progressManager.getTotalStars();
-    this.starsText.setText(`⭐ ${totalStars}`);
+    this.starsText.setText(`${totalStars}`);
 
     // 하트 표시 (채워진 하트는 원본, 빈 하트는 회색)
     for (let i = 0; i < this.heartImages.length; i++) {
@@ -213,6 +243,17 @@ export class HomeScene extends Phaser.Scene {
         this.heartImages[i].setTint(0x555555);
         this.heartImages[i].setAlpha(0.4);
       }
+    }
+
+    // 플러스 버튼 상태 (하트 5개 이하일 때만 활성화)
+    if (hearts < maxHearts) {
+      this.plusButton.clearTint();
+      this.plusButton.setAlpha(1);
+      this.plusButton.setInteractive({ useHandCursor: true });
+    } else {
+      this.plusButton.setTint(0x555555);
+      this.plusButton.setAlpha(0.4);
+      this.plusButton.disableInteractive();
     }
 
     // 타이머 표시

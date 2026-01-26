@@ -53,15 +53,34 @@ export class DayTreeScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // 총 별 표시
+    // 총 별 표시 (아이콘 + 텍스트)
     const totalStars = this.progressManager.getTotalStars();
+    const starIconX = GAME_WIDTH / 2 - 30;
     this.add
-      .text(GAME_WIDTH / 2, 65, `⭐ ${totalStars}`, {
+      .image(starIconX, 65, "icon_star")
+      .setDisplaySize(24, 24);
+    this.add
+      .text(starIconX + 20, 65, `${totalStars}`, {
         fontFamily: "Arial",
         fontSize: "22px",
         color: "#FFD700",
         fontStyle: "bold",
       })
+      .setOrigin(0, 0.5);
+
+    // 안내 문구
+    this.add
+      .text(
+        GAME_WIDTH / 2,
+        130,
+        "재도전으로 더 많은 별을 모아보세요!\n재도전 시, 하트 1개 소모",
+        {
+          fontFamily: "Arial",
+          fontSize: "16px",
+          color: "#7D6E57",
+          align: "center",
+        }
+      )
       .setOrigin(0.5);
   }
 
@@ -136,15 +155,25 @@ export class DayTreeScene extends Phaser.Scene {
 
     // 상태별 표시
     if (state === "completed") {
-      // 별 표시
-      const starDisplay = this.getStarDisplay(stars);
-      const starText = this.add
-        .text(x, y, starDisplay, {
-          fontFamily: "Arial",
-          fontSize: "24px",
-        })
-        .setOrigin(0.5);
-      this.scrollContainer.add(starText);
+      // 별 표시 (이미지로)
+      const starSize = 24;
+      const starGap = 4;
+      const totalStarWidth = 3 * starSize + 2 * starGap;
+      const starStartX = x - totalStarWidth / 2 + starSize / 2;
+
+      for (let i = 0; i < 3; i++) {
+        const starImg = this.add
+          .image(starStartX + i * (starSize + starGap), y, "icon_star")
+          .setDisplaySize(starSize, starSize);
+
+        // 획득하지 못한 별은 회색 처리
+        if (i >= stars) {
+          starImg.setTint(0x555555);
+          starImg.setAlpha(0.4);
+        }
+
+        this.scrollContainer.add(starImg);
+      }
 
       // 금액 표시
       const money = this.progressManager.getDayMoney(day);
@@ -217,16 +246,6 @@ export class DayTreeScene extends Phaser.Scene {
     return "current";
   }
 
-  private getStarDisplay(stars: number): string {
-    const filled = "⭐";
-    const empty = "☆";
-    let display = "";
-    for (let i = 0; i < 3; i++) {
-      display += i < stars ? filled : empty;
-    }
-    return display;
-  }
-
   private darkenColor(color: number, amount: number): number {
     const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amount));
     const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amount));
@@ -290,14 +309,10 @@ export class DayTreeScene extends Phaser.Scene {
     popupTitle.setDepth(102);
 
     // 정보 표시
-    let infoText = `목표: ₩${target.toLocaleString()}`;
-    if (isRetry) {
-      infoText += `\n현재 기록: ${this.getStarDisplay(stars)}`;
-    }
     const info = this.add.text(
       GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 30,
-      infoText,
+      GAME_HEIGHT / 2 - 40,
+      `목표: ₩${target.toLocaleString()}`,
       {
         fontFamily: "Arial",
         fontSize: "20px",
@@ -307,6 +322,39 @@ export class DayTreeScene extends Phaser.Scene {
     );
     info.setOrigin(0.5);
     info.setDepth(102);
+
+    // 재도전인 경우 현재 기록 별 표시
+    const popupStarImages: Phaser.GameObjects.Image[] = [];
+    if (isRetry) {
+      const recordLabel = this.add.text(
+        GAME_WIDTH / 2 - 60,
+        GAME_HEIGHT / 2 - 5,
+        "현재 기록:",
+        {
+          fontFamily: "Arial",
+          fontSize: "18px",
+          color: "#5D4E37",
+        }
+      );
+      recordLabel.setOrigin(0, 0.5);
+      recordLabel.setDepth(102);
+      popupStarImages.push(recordLabel as unknown as Phaser.GameObjects.Image);
+
+      const starSize = 22;
+      const starGap = 3;
+      const starStartX = GAME_WIDTH / 2 + 15;
+      for (let i = 0; i < 3; i++) {
+        const starImg = this.add
+          .image(starStartX + i * (starSize + starGap), GAME_HEIGHT / 2 - 5, "icon_star")
+          .setDisplaySize(starSize, starSize)
+          .setDepth(102);
+        if (i >= stars) {
+          starImg.setTint(0x555555);
+          starImg.setAlpha(0.4);
+        }
+        popupStarImages.push(starImg);
+      }
+    }
 
     // 하트 비용 안내
     const heartInfo = this.add.text(
@@ -385,12 +433,16 @@ export class DayTreeScene extends Phaser.Scene {
       startBtnText.destroy();
       cancelBtn.destroy();
       cancelBtnText.destroy();
+      // 별 이미지들 제거
+      popupStarImages.forEach((img) => img.destroy());
     };
 
     // 이벤트
     startBtn.on("pointerdown", () => {
       closePopup();
-      this.scene.start("GameScene", { day });
+      // DayTreeScene에서 시작할 때 항상 하트 차감
+      this.heartManager.useHeart();
+      this.scene.start("GameScene", { day, skipHeart: true });
     });
 
     cancelBtn.on("pointerdown", closePopup);

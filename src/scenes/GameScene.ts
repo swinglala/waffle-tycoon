@@ -1135,15 +1135,6 @@ export class GameScene extends Phaser.Scene {
     return `⏱️ ${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
-  private generateStarDisplay(stars: number): string {
-    const maxStars = STAR_CONFIG.MAX_STARS_PER_DAY;
-    let display = "";
-    for (let i = 0; i < maxStars; i++) {
-      display += i < stars ? "⭐" : "☆";
-    }
-    return display;
-  }
-
   private getNextStage(current: CookingStage): CookingStage {
     switch (current) {
       case CookingStage.BATTER:
@@ -1236,9 +1227,6 @@ export class GameScene extends Phaser.Scene {
       this.heartManager.refundHeart();
     }
 
-    // 별 표시 문자열 생성
-    const starDisplay = this.generateStarDisplay(starsEarned);
-
     // 결과 오버레이 배경
     this.add
       .rectangle(
@@ -1272,14 +1260,24 @@ export class GameScene extends Phaser.Scene {
       .setDepth(202);
 
     // 별 표시 (항상 표시 - 0개면 빈별 3개)
-    this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, starDisplay, {
-        fontFamily: "Arial",
-        fontSize: "36px",
-        color: "#FFD700",
-      })
-      .setOrigin(0.5)
-      .setDepth(202);
+    const starSize = 40;
+    const starGap = 8;
+    const totalStarWidth = 3 * starSize + 2 * starGap;
+    const starStartX = GAME_WIDTH / 2 - totalStarWidth / 2 + starSize / 2;
+    const starY = GAME_HEIGHT / 2 - 90;
+
+    for (let i = 0; i < 3; i++) {
+      const starImg = this.add
+        .image(starStartX + i * (starSize + starGap), starY, "icon_star")
+        .setDisplaySize(starSize, starSize)
+        .setDepth(202);
+
+      // 획득하지 못한 별은 회색 처리
+      if (i >= starsEarned) {
+        starImg.setTint(0x555555);
+        starImg.setAlpha(0.4);
+      }
+    }
 
     this.add
       .text(
@@ -1470,8 +1468,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private startNextDay(): void {
-    // 진행상황 저장
-    this.progressManager.advanceToNextDay();
+    // 현재 진행중인 Day인 경우에만 다음 날로 진행 (재도전 시에는 진행 안함)
+    if (this.gameState.day === this.progressManager.getCurrentDay()) {
+      this.progressManager.advanceToNextDay();
+    }
 
     const nextDay = this.gameState.day + 1;
     // 다음 날: 하트 사용 안함 (성공 시 이미 반환됨)
@@ -1486,8 +1486,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private goHomeAfterSuccess(): void {
-    // 성공 후 홈으로: 다음 날로 저장하고 홈으로 이동
-    this.progressManager.advanceToNextDay();
+    // 현재 진행중인 Day인 경우에만 다음 날로 진행 (재도전 시에는 진행 안함)
+    if (this.gameState.day === this.progressManager.getCurrentDay()) {
+      this.progressManager.advanceToNextDay();
+    }
     this.scene.start("HomeScene");
   }
 
