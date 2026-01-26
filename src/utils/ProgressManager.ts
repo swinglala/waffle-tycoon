@@ -341,9 +341,15 @@ export class ProgressManager {
       data.totalStars !== this.state.totalStars ||
       data.currentDay !== this.state.currentDay;
 
+    const defaultState = this.getDefaultState();
     this.state = {
-      ...this.getDefaultState(),
+      ...defaultState,
       ...data,
+      // 중첩 객체 병합 (새로운 업그레이드 키 보존)
+      upgrades: {
+        ...defaultState.upgrades,
+        ...(data.upgrades || {}),
+      },
     };
     this.saveState();
 

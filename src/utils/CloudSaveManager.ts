@@ -193,28 +193,74 @@ export class CloudSaveManager {
   }
 
   /**
-   * 두 데이터를 병합 (더 높은 값 기준)
+   * 두 데이터를 병합 (각 필드별 최대값 기준)
    */
   private mergeData(local: LocalSaveData, cloud: LocalSaveData): LocalSaveData {
-    // 별과 일차가 더 높은 쪽 기준
-    const localScore = local.progress.totalStars + local.progress.currentDay * 10;
-    const cloudScore = cloud.progress.totalStars + cloud.progress.currentDay * 10;
+    // 업그레이드는 각 항목별 최대값 사용
+    const mergedUpgrades: Record<string, number> = {};
+    const allUpgradeKeys = new Set([
+      ...Object.keys(local.progress.upgrades || {}),
+      ...Object.keys(cloud.progress.upgrades || {}),
+    ]);
+    allUpgradeKeys.forEach((key) => {
+      const localVal = (local.progress.upgrades as Record<string, number>)?.[key] || 0;
+      const cloudVal = (cloud.progress.upgrades as Record<string, number>)?.[key] || 0;
+      mergedUpgrades[key] = Math.max(localVal, cloudVal);
+    });
 
-    if (cloudScore > localScore) {
-      return cloud;
-    } else if (localScore > cloudScore) {
-      return local;
-    }
+    // dayStars도 각 일차별 최대값 사용
+    const mergedDayStars: Record<number, number> = {};
+    const allDayKeys = new Set([
+      ...Object.keys(local.progress.dayStars || {}).map(Number),
+      ...Object.keys(cloud.progress.dayStars || {}).map(Number),
+    ]);
+    allDayKeys.forEach((day) => {
+      const localVal = local.progress.dayStars?.[day] || 0;
+      const cloudVal = cloud.progress.dayStars?.[day] || 0;
+      mergedDayStars[day] = Math.max(localVal, cloudVal);
+    });
 
-    // 동점이면 업그레이드가 더 많은 쪽
-    const localUpgrades = Object.values(local.progress.upgrades).reduce((a, b) => a + b, 0);
-    const cloudUpgrades = Object.values(cloud.progress.upgrades).reduce((a, b) => a + b, 0);
+    // dayMoney도 각 일차별 최대값 사용
+    const mergedDayMoney: Record<number, number> = {};
+    const allMoneyKeys = new Set([
+      ...Object.keys(local.progress.dayMoney || {}).map(Number),
+      ...Object.keys(cloud.progress.dayMoney || {}).map(Number),
+    ]);
+    allMoneyKeys.forEach((day) => {
+      const localVal = local.progress.dayMoney?.[day] || 0;
+      const cloudVal = cloud.progress.dayMoney?.[day] || 0;
+      mergedDayMoney[day] = Math.max(localVal, cloudVal);
+    });
 
-    if (cloudUpgrades > localUpgrades) {
-      return cloud;
-    }
+    // unlockedJams는 합집합
+    const mergedJams = [...new Set([
+      ...(local.progress.unlockedJams || []),
+      ...(cloud.progress.unlockedJams || []),
+    ])];
 
-    return local;
+    // 하트는 더 많은 쪽
+    const mergedHearts = Math.max(
+      local.hearts?.hearts || 0,
+      cloud.hearts?.hearts || 0
+    );
+
+    return {
+      progress: {
+        totalStars: Math.max(local.progress.totalStars, cloud.progress.totalStars),
+        currentDay: Math.max(local.progress.currentDay, cloud.progress.currentDay),
+        dayStars: mergedDayStars,
+        dayMoney: mergedDayMoney,
+        upgrades: mergedUpgrades as typeof local.progress.upgrades,
+        unlockedJams: mergedJams,
+      },
+      hearts: {
+        hearts: mergedHearts,
+        lastRechargeTime: Math.max(
+          local.hearts?.lastRechargeTime || 0,
+          cloud.hearts?.lastRechargeTime || 0
+        ),
+      },
+    };
   }
 
   /**
