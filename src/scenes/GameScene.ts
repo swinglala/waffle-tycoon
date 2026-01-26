@@ -15,6 +15,7 @@ import {
   JAM_PRICE_MULTIPLIER,
   STAR_CONFIG,
   getDayTarget,
+  getSpawnInterval,
 } from "../types/game";
 import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
@@ -256,19 +257,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private getRandomSpawnTime(): number {
-    // Day 1~5에 따라 손님 등장 속도 점진적 증가
-    // Day 1: 5~10초, Day 5+: 2~5초
-    const day = this.gameState.day;
-    const progress = Math.min((day - 1) / 4, 1); // 0 (Day1) ~ 1 (Day5+)
-
-    const minTime =
-      GAME_CONFIG.CUSTOMER_SPAWN_MIN_SLOW +
-      (GAME_CONFIG.CUSTOMER_SPAWN_MIN_FAST - GAME_CONFIG.CUSTOMER_SPAWN_MIN_SLOW) * progress;
-    const maxTime =
-      GAME_CONFIG.CUSTOMER_SPAWN_MAX_SLOW +
-      (GAME_CONFIG.CUSTOMER_SPAWN_MAX_FAST - GAME_CONFIG.CUSTOMER_SPAWN_MAX_SLOW) * progress;
-
-    return minTime + Math.random() * (maxTime - minTime);
+    // Day별 주문 개수 기반 손님 등장 간격 계산
+    const { min, max } = getSpawnInterval(this.gameState.day, this.gameState.maxTime);
+    return min + Math.random() * (max - min);
   }
 
   // 해당 day에 등장 가능한 손님 목록 반환 (쿨다운 고려)

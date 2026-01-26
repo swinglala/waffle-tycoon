@@ -137,17 +137,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
 
 // 게임 설정 상수
 export const GAME_CONFIG = {
-  // 손님 설정 (Day 1 기준, Day 5+에서 빨라짐)
-  CUSTOMER_SPAWN_MIN_SLOW: 5,   // Day 1 최소 등장 간격 (초)
-  CUSTOMER_SPAWN_MAX_SLOW: 10,  // Day 1 최대 등장 간격 (초)
-  CUSTOMER_SPAWN_MIN_FAST: 2,   // Day 5+ 최소 등장 간격 (초)
-  CUSTOMER_SPAWN_MAX_FAST: 5,   // Day 5+ 최대 등장 간격 (초)
   MAX_CUSTOMERS: 3,             // 최대 동시 손님 수
-
-  // 하루 설정
-  DAY_TIME: 60,               // 하루 시간 (초) - 1분
-  BASE_TARGET: 20000,         // 기본 목표 금액
-  TARGET_INCREASE: 5000,      // 하루당 목표 증가량
+  DAY_TIME: 60,                 // 하루 시간 (초) - 1분
 };
 
 // 게임 상태
@@ -233,27 +224,47 @@ export const JAM_DISPLAY_NAME: Record<JamType, string> = {
   [JamType.PISTACHIO]: '피스타치오잼',
 };
 
-// Day 목표금액 테이블 (1~10일) - 5000원씩 증가
-export const DAY_TARGETS: Record<number, number> = {
-  1: 20000,
-  2: 25000,
-  3: 30000,
-  4: 35000,
-  5: 40000,
-  6: 45000,
-  7: 50000,
-  8: 55000,
-  9: 60000,
-  10: 65000,
+// Day별 주문 개수 테이블
+export const DAY_ORDERS: Record<number, number> = {
+  1: 10,
+  2: 12,
+  3: 14,
+  4: 16,
+  5: 18,
+  6: 20,
+  7: 22,
+  8: 24,
+  9: 26,
+  10: 28,
 };
 
-// Day 목표금액 계산 함수
-export function getDayTarget(day: number): number {
+// Day별 주문 개수 반환
+export function getDayOrders(day: number): number {
   if (day <= 10) {
-    return DAY_TARGETS[day] || 65000;
+    return DAY_ORDERS[day] || 28;
   }
-  // Day 11+: 65000 + (day - 10) * 5000
-  return 65000 + (day - 10) * 5000;
+  // Day 11+: 28 + (day - 10) * 2
+  return 28 + (day - 10) * 2;
+}
+
+// 주문 개수 기반 목표 금액 계산 (80% 달성 기준)
+export function getDayTarget(day: number): number {
+  const orders = getDayOrders(day);
+  return Math.floor(orders * 2500 * 0.8);
+}
+
+// 손님 등장 간격 계산 (초)
+export function getSpawnInterval(day: number, dayTime: number): { min: number; max: number } {
+  const orders = getDayOrders(day);
+  const avgOrderPerCustomer = 1.5;
+  const expectedCustomers = orders / avgOrderPerCustomer;
+  const avgInterval = dayTime / expectedCustomers;
+
+  // ±30% 변동
+  return {
+    min: avgInterval * 0.7,
+    max: avgInterval * 1.3,
+  };
 }
 
 // 업그레이드 종류
