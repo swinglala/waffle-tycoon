@@ -102,28 +102,29 @@ export class HomeScene extends Phaser.Scene {
   private createHeartsUI(): void {
     const heartsY = 50;
     const leftX = 20;
+    const lineGap = 28;
 
-    // 왼쪽: 유저 정보 영역 (세로 배치: 유저정보 → N일차 → 별)
-    // 1. 유저 정보
+    // 왼쪽: 유저 정보 영역 (세로 배치: 유저정보 → 로그인버튼 → 별)
+    // 1. 유저 정보 (1번째 줄)
     this.userText = this.add
-      .text(leftX, heartsY - 20, "", {
+      .text(leftX, heartsY - 15, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#5D4E37",
+        fontSize: "22px",
+        color: "#2C2C2C",
         fontStyle: "bold",
       })
       .setOrigin(0, 0.5);
 
-    // 로그인/로그아웃 버튼 (유저 정보 오른쪽)
+    // 2. 로그인/로그아웃 버튼 (2번째 줄)
     this.loginBtn = this.add
-      .rectangle(180, heartsY - 20, 70, 26, 0x4285f4)
+      .rectangle(leftX + 45, heartsY - 15 + lineGap, 80, 28, 0x4285f4)
       .setStrokeStyle(2, 0x3367d6)
       .setInteractive({ useHandCursor: true });
 
     this.loginBtnText = this.add
-      .text(180, heartsY - 20, "로그인", {
+      .text(leftX + 45, heartsY - 15 + lineGap, "로그인", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "13px",
+        fontSize: "14px",
         color: "#FFFFFF",
         fontStyle: "bold",
       })
@@ -141,13 +142,13 @@ export class HomeScene extends Phaser.Scene {
       this.loginBtn.setFillStyle(isLoggedIn ? 0xe74c3c : 0x4285f4);
     });
 
-    // 2. 별 표시 (아이콘 + 텍스트)
+    // 3. 별 표시 (3번째 줄)
     this.add
-      .image(leftX + 10, heartsY + 8, "icon_star")
-      .setDisplaySize(20, 20);
+      .image(leftX + 10, heartsY - 15 + lineGap * 2, "icon_star")
+      .setDisplaySize(22, 22);
 
     this.starsText = this.add
-      .text(leftX + 25, heartsY + 8, "", {
+      .text(leftX + 25, heartsY - 15 + lineGap * 2, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "18px",
         color: "#D4A017",
@@ -156,16 +157,16 @@ export class HomeScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     // 하트 아이콘 5개 + 플러스 버튼 (중앙)
-    const heartSize = 32;
-    const heartGap = 8;
-    const plusSize = 28;
-    const plusGap = 10;
+    const heartSize = 42;
+    const heartGap = 10;
+    const plusSize = 36;
+    const plusGap = 12;
     const totalHeartsWidth = HEART_CONFIG.MAX_HEARTS * heartSize + (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
     const totalWidth = totalHeartsWidth + plusGap + plusSize;
     const heartsStartX = GAME_WIDTH / 2 - totalWidth / 2 + heartSize / 2;
 
     // 하트 + 플러스 + 타이머 배경 (베이지색, 라운드)
-    const heartsBgPadding = 12;
+    const heartsBgPadding = 15;
     const heartsBgWidth = totalWidth + heartsBgPadding * 2;
     const heartsBgHeight = 62; // 하트 + 타이머 텍스트 포함 + y패딩
     const heartsBg = this.add.graphics();
@@ -210,18 +211,18 @@ export class HomeScene extends Phaser.Scene {
 
     // 충전 타이머
     this.timerText = this.add
-      .text(GAME_WIDTH / 2, heartsY + 20, "", {
+      .text(GAME_WIDTH / 2, heartsY + 28, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
+        fontSize: "18px",
         color: "#8B7355",
       })
       .setOrigin(0.5);
 
     // 오른쪽: 설정 버튼
-    const settingsBtnX = GAME_WIDTH - 55;
+    const settingsBtnX = GAME_WIDTH - 45;
     const settingsIcon = this.add
       .image(settingsBtnX, heartsY, "icon_setting")
-      .setDisplaySize(50, 50)
+      .setDisplaySize(60, 60)
       .setInteractive({ useHandCursor: true });
 
     settingsIcon.on("pointerdown", () => {
@@ -404,10 +405,11 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createSideButtons(): void {
-    const sideButtonX = 640;
-    const iconSize = 50;
-    const btnSize = 70;
-    const shadowOffset = 4;
+    const sideButtonX = 665;
+    const iconSize = 65;
+    const btnSize = 90;
+    const shadowOffset = 5;
+    const buttonGap = 110;
 
     // 버튼 배경 생성 헬퍼 (입체감 있는 라운드 버튼)
     const createButtonBg = (x: number, y: number) => {
@@ -422,7 +424,7 @@ export class HomeScene extends Phaser.Scene {
     };
 
     // 1. 랭킹 버튼 (가장 위)
-    const rankingY = 140;
+    const rankingY = 150;
     createButtonBg(sideButtonX, rankingY);
     const rankingIcon = this.add
       .image(sideButtonX, rankingY, "icon_rank")
@@ -441,7 +443,7 @@ export class HomeScene extends Phaser.Scene {
     });
 
     // 2. 샵 버튼 (두번째)
-    const shopY = 230;
+    const shopY = rankingY + buttonGap;
     createButtonBg(sideButtonX, shopY);
     const shopIcon = this.add
       .image(sideButtonX, shopY, "icon_shop")
@@ -460,7 +462,7 @@ export class HomeScene extends Phaser.Scene {
     });
 
     // 3. Day 트리 버튼 (세번째)
-    const dayTreeY = 320;
+    const dayTreeY = shopY + buttonGap;
     createButtonBg(sideButtonX, dayTreeY);
     const dayTreeIcon = this.add
       .image(sideButtonX, dayTreeY, "icon_calendar")
