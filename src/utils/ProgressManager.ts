@@ -35,6 +35,7 @@ export class ProgressManager {
       totalStars: 0,
       currentDay: 1,
       dayStars: {},
+      dayMoney: {},
       upgrades: {
         [UpgradeType.BATTER]: 0,
         [UpgradeType.BERRY_JAM]: 0,
@@ -97,13 +98,20 @@ export class ProgressManager {
   }
 
   /**
-   * Day 완료 시 별 적립
+   * Day 완료 시 별 적립 및 금액 저장
    * 같은 날 재도전 시 기존 별보다 높아야만 추가 적립
+   * 금액은 최고 기록만 저장
    * @returns 이번에 새로 적립된 별 수
    */
   completeDayWithStars(day: number, earnedMoney: number): number {
     const newStars = this.calculateStars(earnedMoney, day);
     const previousStars = this.state.dayStars[day] || 0;
+    const previousMoney = this.state.dayMoney[day] || 0;
+
+    // 금액은 최고 기록만 저장
+    if (earnedMoney > previousMoney) {
+      this.state.dayMoney[day] = earnedMoney;
+    }
 
     if (newStars > previousStars) {
       // 추가로 적립할 별 = 새 별 - 기존 별
@@ -114,6 +122,7 @@ export class ProgressManager {
       return newStars; // UI에는 총 획득 별 표시
     }
 
+    this.saveState();
     return previousStars; // 기존 별 유지
   }
 
@@ -135,6 +144,10 @@ export class ProgressManager {
 
   getDayStars(day: number): number {
     return this.state.dayStars[day] || 0;
+  }
+
+  getDayMoney(day: number): number {
+    return this.state.dayMoney[day] || 0;
   }
 
   // ========================================

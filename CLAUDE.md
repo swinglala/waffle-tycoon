@@ -24,7 +24,8 @@ src/
 │   ├── BootScene.ts     # 에셋 로딩 씬
 │   ├── HomeScene.ts     # 홈 화면 (메인 메뉴, 로그인)
 │   ├── GameScene.ts     # 메인 게임 로직
-│   └── ShopScene.ts     # 상점 화면
+│   ├── ShopScene.ts     # 상점 화면
+│   └── DayTreeScene.ts  # Day 트리 (재도전/별 확인)
 ├── utils/
 │   ├── HeartManager.ts  # 하트 시스템 관리
 │   ├── ProgressManager.ts # 진행상황/별/업그레이드 관리
@@ -39,7 +40,8 @@ src/
 ```
 BootScene (에셋 로딩) → HomeScene (메인 메뉴) → GameScene (게임 플레이)
                               ↓
-                         ShopScene (상점)
+                    ┌─────────┴─────────┐
+               ShopScene (상점)    DayTreeScene (Day 트리)
 ```
 
 ### HomeScene (홈 화면)
@@ -50,7 +52,22 @@ BootScene (에셋 로딩) → HomeScene (메인 메뉴) → GameScene (게임 �
 - **사이드 버튼**:
   - 🏆 랭킹 (준비 중)
   - 🛒 상점 → ShopScene으로 이동
-  - ⚙️ 설정 (준비 중)
+  - 📅 Day 트리 → DayTreeScene으로 이동
+  - ⚙️ 설정 (헤더 오른쪽, 준비 중)
+
+### DayTreeScene (Day 트리)
+- **3열 그리드 레이아웃**: Day 1부터 순서대로 표시
+- **Day 셀 상태**:
+  | 상태 | 표시 | 클릭 |
+  |------|------|------|
+  | 완료 (1-3별) | Day N + ⭐⭐⭐ | 가능 (재도전) |
+  | 완료 (0별) | Day N + ☆☆☆ | 가능 (재도전) |
+  | 진행중 | Day N + "진행중" | 가능 (시작) |
+  | 잠김 | Day N + 🔒 | 불가 |
+- **3별 완료 셀**: 황금색 테두리, 연한 노란 배경
+- **스크롤**: 터치/드래그 또는 마우스 휠로 스크롤
+- **하트 비용**: 재도전 시 하트 1개 사용 (성공 시 환불)
+- **돌아가기 버튼**: HomeScene으로 이동
 
 ### ShopScene (상점)
 - **3열 그리드 레이아웃**:
@@ -368,6 +385,7 @@ CREATE TABLE game_progress (
   total_stars INTEGER,
   current_day INTEGER,
   day_stars JSONB,
+  day_money JSONB,
   upgrades JSONB,
   unlocked_jams TEXT[],
   hearts INTEGER,
@@ -402,7 +420,7 @@ CREATE TABLE game_progress (
 ### 우선 개발
 - [ ] 튜토리얼 만들기
 - [ ] 효과음, 배경음 만들기
-- [ ] Day 트리 만들기
+- [x] Day 트리 만들기 ✅
 
 ### 추후 개발
 - [x] 회원 시스템 (Google 로그인, 클라우드 저장) ✅

@@ -8,6 +8,7 @@ export interface CloudSaveData {
   total_stars: number;
   current_day: number;
   day_stars: Record<number, number>;
+  day_money: Record<number, number>;
   upgrades: Record<UpgradeType, number>;
   unlocked_jams: JamType[];
   // 하트 상태
@@ -58,6 +59,7 @@ export class CloudSaveManager {
         total_stars: data.progress.totalStars,
         current_day: data.progress.currentDay,
         day_stars: data.progress.dayStars,
+        day_money: data.progress.dayMoney,
         upgrades: data.progress.upgrades,
         unlocked_jams: data.progress.unlockedJams,
         hearts: data.hearts.hearts,
@@ -129,6 +131,7 @@ export class CloudSaveManager {
           totalStars: cloudData.total_stars || 0,
           currentDay: cloudData.current_day || 1,
           dayStars: cloudData.day_stars || {},
+          dayMoney: cloudData.day_money || {},
           upgrades: cloudData.upgrades || {},
           unlockedJams: cloudData.unlocked_jams || [JamType.APPLE],
         },

@@ -337,6 +337,7 @@ export interface ProgressState {
   totalStars: number;                     // 총 별 (누적, 구매 시 차감)
   currentDay: number;                     // 현재 진행 일차
   dayStars: Record<number, number>;       // 일차별 획득한 별 (재도전 시 비교용)
+  dayMoney: Record<number, number>;       // 일차별 최고 금액 (Day Tree 표시용)
   upgrades: Record<UpgradeType, number>;  // 업그레이드 레벨
   unlockedJams: JamType[];                // 해금된 잼 목록
 }

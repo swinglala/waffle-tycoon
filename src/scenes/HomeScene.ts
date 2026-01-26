@@ -405,6 +405,27 @@ export class HomeScene extends Phaser.Scene {
     shopCircle.on("pointerout", () => {
       shopCircle.setFillStyle(0xFFD700);
     });
+
+    // 3. Day 트리 버튼 (세번째)
+    const dayTreeY = 320;
+    const dayTreeCircle = this.add.circle(sideButtonX, dayTreeY, buttonRadius, 0xd4a574);
+    dayTreeCircle.setStrokeStyle(3, 0x8b6914);
+    dayTreeCircle.setInteractive({ useHandCursor: true });
+
+    this.add
+      .text(sideButtonX, dayTreeY, "📅", { fontSize: "32px" })
+      .setOrigin(0.5);
+
+    dayTreeCircle.on("pointerdown", () => {
+      this.scene.start("DayTreeScene");
+    });
+
+    dayTreeCircle.on("pointerover", () => {
+      dayTreeCircle.setFillStyle(0xc49a6c);
+    });
+    dayTreeCircle.on("pointerout", () => {
+      dayTreeCircle.setFillStyle(0xd4a574);
+    });
   }
 
   private showPlaceholderPopup(title: string): void {
