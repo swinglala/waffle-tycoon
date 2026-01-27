@@ -10,13 +10,21 @@ const CELL_WIDTH = 200;
 const CELL_HEIGHT = 160;
 const CELL_GAP_X = 20;
 const CELL_GAP_Y = 20;
-const START_Y = 260;
+const START_Y = 100; // 컨테이너 내부 시작 Y (상대 좌표)
+
+// 스크롤 영역 상수
+const SCROLL_AREA_TOP = 170; // 헤더 + 안내문구 아래
+const SCROLL_AREA_BOTTOM = GAME_HEIGHT - 140; // 뒤로가기 버튼 위
+
+// 드래그 vs 클릭 구분 임계값 (픽셀)
+const DRAG_THRESHOLD = 10;
 
 export class DayTreeScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
   private heartManager!: HeartManager;
   private scrollContainer!: Phaser.GameObjects.Container;
   private maxScrollY = 0;
+  private dragDistance = 0; // 드래그 거리 추적
 
   constructor() {
     super({ key: "DayTreeScene" });
@@ -87,8 +95,16 @@ export class DayTreeScene extends Phaser.Scene {
   private createDayGrid(): void {
     const currentDay = this.progressManager.getCurrentDay();
 
-    // 스크롤 가능한 컨테이너 생성
-    this.scrollContainer = this.add.container(0, 0);
+    // 스크롤 가능한 컨테이너 생성 (스크롤 영역 상단에 위치)
+    this.scrollContainer = this.add.container(0, SCROLL_AREA_TOP);
+
+    // 마스크 생성 (스크롤 영역만 보이게)
+    const scrollAreaHeight = SCROLL_AREA_BOTTOM - SCROLL_AREA_TOP;
+    const maskGraphics = this.make.graphics({ x: 0, y: 0 });
+    maskGraphics.fillStyle(0xffffff);
+    maskGraphics.fillRect(0, SCROLL_AREA_TOP, GAME_WIDTH, scrollAreaHeight);
+    const mask = maskGraphics.createGeometryMask();
+    this.scrollContainer.setMask(mask);
 
     // 현재 Day까지만 표시 (잠긴 Day는 표시 안함)
     const maxDisplayDay = currentDay;
@@ -109,9 +125,8 @@ export class DayTreeScene extends Phaser.Scene {
     }
 
     // 스크롤 범위 계산
-    const contentHeight = totalRows * (CELL_HEIGHT + CELL_GAP_Y) + START_Y + 100;
-    const viewableHeight = GAME_HEIGHT - 180; // 헤더와 버튼 영역 제외
-    this.maxScrollY = Math.max(0, contentHeight - viewableHeight);
+    const contentHeight = totalRows * (CELL_HEIGHT + CELL_GAP_Y) + START_Y;
+    this.maxScrollY = Math.max(0, contentHeight - scrollAreaHeight);
   }
 
   private createDayCell(
@@ -225,16 +240,19 @@ export class DayTreeScene extends Phaser.Scene {
     // 클릭 이벤트 (완료/진행중 모두 클릭 가능)
     cellBg.setInteractive({ useHandCursor: true });
 
-      cellBg.on("pointerover", () => {
-        cellBg.setFillStyle(this.darkenColor(bgColor, 0.1));
-      });
+    cellBg.on("pointerover", () => {
+      cellBg.setFillStyle(this.darkenColor(bgColor, 0.1));
+    });
 
-      cellBg.on("pointerout", () => {
-        cellBg.setFillStyle(bgColor);
-      });
+    cellBg.on("pointerout", () => {
+      cellBg.setFillStyle(bgColor);
+    });
 
-    cellBg.on("pointerdown", () => {
-      this.onDayClick(day);
+    // pointerup에서 드래그 거리 체크 후 클릭 처리
+    cellBg.on("pointerup", () => {
+      if (this.dragDistance < DRAG_THRESHOLD) {
+        this.onDayClick(day);
+      }
     });
   }
 
@@ -587,29 +605,37 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private setupScrolling(): void {
-    if (this.maxScrollY <= 0) return;
-
     // 터치/드래그 스크롤 설정
     let isDragging = false;
     let dragStartY = 0;
+    let dragStartX = 0;
     let containerStartY = 0;
 
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      // 헤더와 버튼 영역 제외
-      if (pointer.y > 100 && pointer.y < GAME_HEIGHT - 100) {
+      // 드래그 거리 초기화
+      this.dragDistance = 0;
+      dragStartX = pointer.x;
+      dragStartY = pointer.y;
+
+      // 스크롤 영역 내에서만 드래그 시작
+      if (pointer.y > SCROLL_AREA_TOP && pointer.y < SCROLL_AREA_BOTTOM) {
         isDragging = true;
-        dragStartY = pointer.y;
         containerStartY = this.scrollContainer.y;
       }
     });
 
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
-      if (isDragging) {
+      // 드래그 거리 계산 (X, Y 모두 고려)
+      const dx = pointer.x - dragStartX;
+      const dy = pointer.y - dragStartY;
+      this.dragDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (isDragging && this.maxScrollY > 0) {
         const deltaY = pointer.y - dragStartY;
         let newY = containerStartY + deltaY;
 
-        // 스크롤 범위 제한
-        newY = Math.max(-this.maxScrollY, Math.min(0, newY));
+        // 스크롤 범위 제한 (SCROLL_AREA_TOP 기준)
+        newY = Math.max(SCROLL_AREA_TOP - this.maxScrollY, Math.min(SCROLL_AREA_TOP, newY));
         this.scrollContainer.y = newY;
       }
     });
@@ -622,14 +648,17 @@ export class DayTreeScene extends Phaser.Scene {
     this.input.on(
       "wheel",
       (
-        _pointer: Phaser.Input.Pointer,
+        pointer: Phaser.Input.Pointer,
         _gameObjects: Phaser.GameObjects.GameObject[],
         _deltaX: number,
         deltaY: number
       ) => {
-        let newY = this.scrollContainer.y - deltaY * 0.5;
-        newY = Math.max(-this.maxScrollY, Math.min(0, newY));
-        this.scrollContainer.y = newY;
+        // 스크롤 영역 내에서만 휠 스크롤
+        if (pointer.y > SCROLL_AREA_TOP && pointer.y < SCROLL_AREA_BOTTOM) {
+          let newY = this.scrollContainer.y - deltaY * 0.5;
+          newY = Math.max(SCROLL_AREA_TOP - this.maxScrollY, Math.min(SCROLL_AREA_TOP, newY));
+          this.scrollContainer.y = newY;
+        }
       }
     );
   }
