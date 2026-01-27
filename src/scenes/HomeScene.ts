@@ -17,6 +17,7 @@ export class HomeScene extends Phaser.Scene {
   private timerText!: Phaser.GameObjects.Text;
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
+  private profileIcon!: Phaser.GameObjects.Image;
   private dayText!: Phaser.GameObjects.Text;
   private loginBtn!: Phaser.GameObjects.Rectangle;
   private loginBtnText!: Phaser.GameObjects.Text;
@@ -110,9 +111,14 @@ export class HomeScene extends Phaser.Scene {
     const lineGap = 28;
 
     // 왼쪽: 유저 정보 영역 (세로 배치: 유저정보 → 로그인버튼 → 별)
-    // 1. 유저 정보 (1번째 줄)
+    // 1. 유저 정보 (1번째 줄) - 프로필 아이콘 + 텍스트
+    const profileSize = 24;
+    this.profileIcon = this.add.image(leftX + 12, heartsY - 15, "icon_profile");
+    const profileScale = profileSize / Math.max(this.profileIcon.width, this.profileIcon.height);
+    this.profileIcon.setScale(profileScale);
+
     this.userText = this.add
-      .text(leftX, heartsY - 15, "", {
+      .text(leftX + 28, heartsY - 15, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "22px",
         color: "#2C2C2C",
@@ -192,12 +198,14 @@ export class HomeScene extends Phaser.Scene {
       this.heartImages.push(heartImg);
     }
 
-    // 플러스 버튼 (하트 5개 오른쪽)
+    // 플러스 버튼 (하트 5개 오른쪽) - 비율 유지
     const plusX = heartsStartX + totalHeartsWidth + plusGap;
     this.plusButton = this.add
       .image(plusX, heartsY - 5, "icon_plus")
-      .setDisplaySize(plusSize, plusSize)
       .setInteractive({ useHandCursor: true });
+    // 비율 유지하면서 크기 조절
+    const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
+    this.plusButton.setScale(plusScale);
 
     this.plusButton.on("pointerdown", () => {
       this.showPlaceholderPopup("하트 구매하기");
@@ -411,30 +419,21 @@ export class HomeScene extends Phaser.Scene {
 
   private createSideButtons(): void {
     const sideButtonX = 665;
-    const iconSize = 65;
-    const btnSize = 90;
-    const shadowOffset = 5;
+    const targetSize = 90; // 원하는 최대 크기
     const buttonGap = 110;
 
-    // 버튼 배경 생성 헬퍼 (입체감 있는 라운드 버튼)
-    const createButtonBg = (x: number, y: number) => {
-      const bg = this.add.graphics();
-      // 그림자 (어두운 색)
-      bg.fillStyle(0xC4A484, 1);
-      bg.fillRoundedRect(x - btnSize / 2, y - btnSize / 2 + shadowOffset, btnSize, btnSize, btnSize / 2);
-      // 메인 버튼 (밝은 베이지)
-      bg.fillStyle(0xF5E6D3, 1);
-      bg.fillRoundedRect(x - btnSize / 2, y - btnSize / 2, btnSize, btnSize, btnSize / 2);
-      return bg;
+    // 비율 유지하면서 크기 조절하는 헬퍼
+    const scaleToFit = (img: Phaser.GameObjects.Image, maxSize: number) => {
+      const scale = maxSize / Math.max(img.width, img.height);
+      img.setScale(scale);
     };
 
     // 1. 랭킹 버튼 (가장 위)
     const rankingY = 150;
-    createButtonBg(sideButtonX, rankingY);
     const rankingIcon = this.add
       .image(sideButtonX, rankingY, "icon_rank")
-      .setDisplaySize(iconSize, iconSize)
       .setInteractive({ useHandCursor: true });
+    scaleToFit(rankingIcon, targetSize);
 
     rankingIcon.on("pointerdown", () => {
       this.showPlaceholderPopup("랭킹");
@@ -449,11 +448,10 @@ export class HomeScene extends Phaser.Scene {
 
     // 2. 샵 버튼 (두번째)
     const shopY = rankingY + buttonGap;
-    createButtonBg(sideButtonX, shopY);
     const shopIcon = this.add
       .image(sideButtonX, shopY, "icon_shop")
-      .setDisplaySize(iconSize, iconSize)
       .setInteractive({ useHandCursor: true });
+    scaleToFit(shopIcon, targetSize);
 
     shopIcon.on("pointerdown", () => {
       this.scene.start("ShopScene");
@@ -468,11 +466,10 @@ export class HomeScene extends Phaser.Scene {
 
     // 3. Day 트리 버튼 (세번째)
     const dayTreeY = shopY + buttonGap;
-    createButtonBg(sideButtonX, dayTreeY);
     const dayTreeIcon = this.add
       .image(sideButtonX, dayTreeY, "icon_calendar")
-      .setDisplaySize(iconSize, iconSize)
       .setInteractive({ useHandCursor: true });
+    scaleToFit(dayTreeIcon, targetSize);
 
     dayTreeIcon.on("pointerdown", () => {
       this.scene.start("DayTreeScene");
@@ -591,8 +588,8 @@ export class HomeScene extends Phaser.Scene {
     const isLoggedIn = this.authManager.isLoggedIn();
     const displayName = this.authManager.getDisplayName();
 
-    // 유저 이름 표시
-    this.userText.setText(`👤 ${displayName}`);
+    // 유저 이름 표시 (아이콘은 별도 이미지로 표시)
+    this.userText.setText(displayName);
 
     // 로그인/로그아웃 버튼 업데이트
     if (isLoggedIn) {

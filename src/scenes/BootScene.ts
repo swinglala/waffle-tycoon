@@ -82,7 +82,7 @@ export class BootScene extends Phaser.Scene {
     this.load.image('icon_rank', 'assets/images/rank.png');
     this.load.image('icon_setting', 'assets/images/setting.png');
     this.load.image('icon_heart', 'assets/images/heart.png');
-    this.load.image('icon_calendar', 'assets/images/Calendar.png');
+    this.load.image('icon_calendar', 'assets/images/calendar.png');
 
     // 손님 이미지
     this.load.image('customer_dog', 'assets/images/customer_dog.png');
@@ -106,6 +106,9 @@ export class BootScene extends Phaser.Scene {
 
     // 로고
     this.load.image('logo', 'assets/images/logo.png');
+
+    // 프로필 아이콘
+    this.load.image('icon_profile', 'assets/images/profile.png');
 
     // 시작 버튼
     this.load.image('btn_start', 'assets/images/start.png');
