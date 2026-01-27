@@ -932,6 +932,7 @@ export class GameScene extends Phaser.Scene {
         const cell = this.add
           .image(x, y, "grill_slot_empty")
           .setDisplaySize(CELL_SIZE, CELL_SIZE)
+          .setDepth(5) // 불 이미지보다 위에 표시
           .setInteractive({ useHandCursor: true });
 
         this.grillGraphics[row][col] = cell;
@@ -952,7 +953,7 @@ export class GameScene extends Phaser.Scene {
     this.fireImage = this.add
       .image(GAME_WIDTH / 2, fireY, "small_fire")
       .setDisplaySize(fireSize, fireSize)
-      .setDepth(10) // 굽는판 위에 표시
+      .setDepth(1) // 굽는판 뒤에 표시
       .setInteractive({ useHandCursor: true });
 
     this.fireImage.on("pointerdown", () => this.onFireButtonClick());
@@ -1080,7 +1081,8 @@ export class GameScene extends Phaser.Scene {
       if (imageKey) {
         const waffleImage = this.add
           .image(cellImage.x, cellImage.y, imageKey)
-          .setDisplaySize(CELL_SIZE - 20, CELL_SIZE - 20);
+          .setDisplaySize(CELL_SIZE - 20, CELL_SIZE - 20)
+          .setDepth(6); // 굽는판 슬롯보다 위에 표시
         this.grillWaffleImages[row][col] = waffleImage;
       }
     }
