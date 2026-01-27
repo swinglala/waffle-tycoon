@@ -208,7 +208,7 @@ export class HomeScene extends Phaser.Scene {
     this.plusButton.setScale(plusScale);
 
     this.plusButton.on("pointerdown", () => {
-      this.showPlaceholderPopup("하트 구매하기");
+      this.showTestPopup();
     });
 
     this.plusButton.on("pointerover", () => {
@@ -272,16 +272,10 @@ export class HomeScene extends Phaser.Scene {
       }
     }
 
-    // 플러스 버튼 상태 (하트 5개 이하일 때만 활성화)
-    if (hearts < maxHearts) {
-      this.plusButton.clearTint();
-      this.plusButton.setAlpha(1);
-      this.plusButton.setInteractive({ useHandCursor: true });
-    } else {
-      this.plusButton.setTint(0x555555);
-      this.plusButton.setAlpha(0.4);
-      this.plusButton.disableInteractive();
-    }
+    // 플러스 버튼 항상 활성화 (테스트 팝업 접근용)
+    this.plusButton.clearTint();
+    this.plusButton.setAlpha(1);
+    this.plusButton.setInteractive({ useHandCursor: true });
 
     // 타이머 표시
     if (hearts < maxHearts) {
@@ -578,6 +572,147 @@ export class HomeScene extends Phaser.Scene {
     closeBtn.on("pointerout", () => {
       closeBtn.setFillStyle(0xd4a574);
     });
+  }
+
+  private showTestPopup(): void {
+    const popupObjects: Phaser.GameObjects.GameObject[] = [];
+
+    // 반투명 오버레이
+    const overlay = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0x000000,
+      0.5,
+    );
+    overlay.setInteractive();
+    popupObjects.push(overlay);
+
+    // 팝업 배경
+    const popup = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      400,
+      350,
+      0xfff8e7,
+    );
+    popup.setStrokeStyle(4, 0x8b6914);
+    popupObjects.push(popup);
+
+    // 팝업 타이틀
+    const popupTitle = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 130,
+      "🛠️ 테스트 메뉴",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "28px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      },
+    );
+    popupTitle.setOrigin(0.5);
+    popupObjects.push(popupTitle);
+
+    // 닫기 함수
+    const closePopup = () => {
+      popupObjects.forEach((obj) => obj.destroy());
+      this.updateHeartsUI();
+      this.updateStartButton();
+    };
+
+    // 버튼 생성 헬퍼
+    const createTestBtn = (
+      x: number,
+      y: number,
+      label: string,
+      color: number,
+      onClick: () => void
+    ) => {
+      const btn = this.add.rectangle(x, y, 160, 50, color);
+      btn.setStrokeStyle(2, 0x5D4E37);
+      btn.setInteractive({ useHandCursor: true });
+      popupObjects.push(btn);
+
+      const btnText = this.add.text(x, y, label, {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "18px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      });
+      btnText.setOrigin(0.5);
+      popupObjects.push(btnText);
+
+      btn.on("pointerdown", onClick);
+      btn.on("pointerover", () => btn.setAlpha(0.8));
+      btn.on("pointerout", () => btn.setAlpha(1));
+    };
+
+    const btnY1 = GAME_HEIGHT / 2 - 60;
+    const btnY2 = GAME_HEIGHT / 2 + 10;
+    const leftX = GAME_WIDTH / 2 - 90;
+    const rightX = GAME_WIDTH / 2 + 90;
+
+    // 1. 하트 +1 버튼
+    createTestBtn(leftX, btnY1, "❤️ 하트 +1", 0xE85A4F, () => {
+      this.heartManager.addHeart();
+      this.updateHeartsUI();
+    });
+
+    // 2. 별 +10 버튼
+    createTestBtn(rightX, btnY1, "⭐ 별 +10", 0xFFD700, () => {
+      this.progressManager.addStars(10);
+      this.updateHeartsUI();
+    });
+
+    // 3. Day +1 버튼
+    createTestBtn(leftX, btnY2, "📅 Day +1", 0x4CAF50, () => {
+      this.progressManager.advanceToNextDay();
+      this.currentDay = this.progressManager.getCurrentDay();
+      this.updateStartButton();
+    });
+
+    // 4. 초기화 버튼
+    createTestBtn(rightX, btnY2, "🔄 초기화", 0x9E9E9E, () => {
+      this.progressManager.resetProgress();
+      this.heartManager.resetHearts();
+      this.currentDay = 1;
+      this.updateHeartsUI();
+      this.updateStartButton();
+    });
+
+    // 닫기 버튼
+    const closeBtn = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 120,
+      120,
+      45,
+      0xd4a574,
+    );
+    closeBtn.setStrokeStyle(3, 0x8b6914);
+    closeBtn.setInteractive({ useHandCursor: true });
+    popupObjects.push(closeBtn);
+
+    const closeBtnText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 120,
+      "닫기",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "20px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      },
+    );
+    closeBtnText.setOrigin(0.5);
+    popupObjects.push(closeBtnText);
+
+    closeBtn.on("pointerdown", closePopup);
+    overlay.on("pointerdown", closePopup);
+
+    closeBtn.on("pointerover", () => closeBtn.setFillStyle(0xc49a6c));
+    closeBtn.on("pointerout", () => closeBtn.setFillStyle(0xd4a574));
   }
 
   // ========================================

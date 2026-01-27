@@ -121,6 +121,24 @@ export class HeartManager {
     return this.state.hearts > 0;
   }
 
+  // 하트 1개 추가 (테스트용)
+  addHeart(): void {
+    this.state.hearts = Math.min(
+      this.state.hearts + 1,
+      HEART_CONFIG.MAX_HEARTS
+    );
+    this.saveState();
+  }
+
+  // 하트 초기화 (테스트용)
+  resetHearts(): void {
+    this.state = {
+      hearts: HEART_CONFIG.MAX_HEARTS,
+      lastRechargeTime: Date.now(),
+    };
+    this.saveState();
+  }
+
   // 포맷된 시간 문자열 (MM:SS)
   formatTimeToNextHeart(): string {
     const seconds = this.getTimeToNextHeart();
