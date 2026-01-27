@@ -121,8 +121,7 @@ export class GameScene extends Phaser.Scene {
   private timeText!: Phaser.GameObjects.Text;
   private timeBar!: Phaser.GameObjects.Rectangle;
   private dayText!: Phaser.GameObjects.Text;
-  private fireButton!: Phaser.GameObjects.Rectangle;
-  private fireButtonText!: Phaser.GameObjects.Text;
+  private fireImage!: Phaser.GameObjects.Image;
   private workTrayCountText!: Phaser.GameObjects.Text;
   private finishedTrayCountText!: Phaser.GameObjects.Text;
 
@@ -140,7 +139,10 @@ export class GameScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
   private workTrayCapacity = 5; // 준비 트레이 용량
   private finishedTrayCapacity = 5; // 완성 트레이 용량
-  private customerCooldowns: Record<CustomerType, number> = {} as Record<CustomerType, number>; // 손님별 쿨다운
+  private customerCooldowns: Record<CustomerType, number> = {} as Record<
+    CustomerType,
+    number
+  >; // 손님별 쿨다운
   private bearAppearedThisDay = false; // 이번 Day에 곰 등장 여부
   private guaranteedBearTime = 0; // 곰 보장 등장 시간 (남은 시간 기준)
 
@@ -258,7 +260,10 @@ export class GameScene extends Phaser.Scene {
 
   private getRandomSpawnTime(): number {
     // Day별 주문 개수 기반 손님 등장 간격 계산
-    const { min, max } = getSpawnInterval(this.gameState.day, this.gameState.maxTime);
+    const { min, max } = getSpawnInterval(
+      this.gameState.day,
+      this.gameState.maxTime,
+    );
     return min + Math.random() * (max - min);
   }
 
@@ -267,13 +272,15 @@ export class GameScene extends Phaser.Scene {
     return ALL_CUSTOMER_TYPES.filter(
       (type) =>
         CUSTOMER_CONFIG[type].appearDay <= this.gameState.day &&
-        this.customerCooldowns[type] <= 0
+        this.customerCooldowns[type] <= 0,
     );
   }
 
   // 가중치 기반 랜덤 손님 선택
   private selectWeightedCustomer(availableTypes: CustomerType[]): CustomerType {
-    const weights = availableTypes.map((type) => CUSTOMER_CONFIG[type].spawnWeight);
+    const weights = availableTypes.map(
+      (type) => CUSTOMER_CONFIG[type].spawnWeight,
+    );
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
     let random = Math.random() * totalWeight;
 
@@ -333,7 +340,8 @@ export class GameScene extends Phaser.Scene {
     // Day 표시
     this.dayText = this.add
       .text(30, this.HEADER_Y - 10, `Day ${this.gameState.day}`, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -347,7 +355,8 @@ export class GameScene extends Phaser.Scene {
         this.HEADER_Y - 10,
         `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
         {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "20px",
           color: "#5D4E37",
         },
@@ -378,7 +387,8 @@ export class GameScene extends Phaser.Scene {
         this.TIME_BAR_Y,
         this.formatTime(this.gameState.timeRemaining),
         {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "14px",
           color: "#FFFFFF",
           fontStyle: "bold",
@@ -396,7 +406,8 @@ export class GameScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH - 45, this.HEADER_Y, "✕", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "24px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -434,7 +445,8 @@ export class GameScene extends Phaser.Scene {
     if (emptySlotIndices.length === 0) return; // 빈 슬롯 없음
 
     // 빈 슬롯 중 랜덤 선택
-    const emptySlotIndex = emptySlotIndices[Math.floor(Math.random() * emptySlotIndices.length)];
+    const emptySlotIndex =
+      emptySlotIndices[Math.floor(Math.random() * emptySlotIndices.length)];
 
     // 현재 day에 등장 가능한 손님 중 가중치 기반 랜덤 선택
     const availableTypes = this.getAvailableCustomerTypes();
@@ -449,7 +461,7 @@ export class GameScene extends Phaser.Scene {
     // 곰 주문 수량은 Day별로 다름
     let orderMin = config.orderMin;
     let orderMax = config.orderMax;
-    if (customerType === 'bear') {
+    if (customerType === "bear") {
       const day = this.gameState.day;
       if (day < 20) {
         // Day 10~19: 5개만
@@ -489,7 +501,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 곰 등장 추적
-    if (customerType === 'bear') {
+    if (customerType === "bear") {
       this.bearAppearedThisDay = true;
     }
     // updateCustomerDisplay는 updateCustomers에서 호출됨
@@ -500,10 +512,12 @@ export class GameScene extends Phaser.Scene {
     if (this.isGameOver) return;
 
     // 빈 슬롯 찾기
-    const emptySlotIndex = this.customerSlots.findIndex((slot) => slot === null);
+    const emptySlotIndex = this.customerSlots.findIndex(
+      (slot) => slot === null,
+    );
     if (emptySlotIndex === -1) return;
 
-    const config = CUSTOMER_CONFIG['bear'];
+    const config = CUSTOMER_CONFIG["bear"];
     const day = this.gameState.day;
 
     // Day별 주문 수량
@@ -517,11 +531,11 @@ export class GameScene extends Phaser.Scene {
 
     const orderCount =
       orderMin + Math.floor(Math.random() * (orderMax - orderMin + 1));
-    const preferredJam = this.determineOrderJam('bear');
+    const preferredJam = this.determineOrderJam("bear");
 
     const customer: Customer = {
       id: this.nextCustomerId++,
-      type: 'bear',
+      type: "bear",
       waffleCount: orderCount,
       waitTime: config.waitTime,
       maxWaitTime: config.waitTime,
@@ -529,7 +543,7 @@ export class GameScene extends Phaser.Scene {
     };
 
     this.customerSlots[emptySlotIndex] = customer;
-    this.customerCooldowns['bear'] = config.spawnCooldown;
+    this.customerCooldowns["bear"] = config.spawnCooldown;
     this.bearAppearedThisDay = true;
     this.guaranteedBearTime = 0; // 보장 시간 리셋 (중복 방지)
   }
@@ -594,7 +608,8 @@ export class GameScene extends Phaser.Scene {
     // 주문 개수 텍스트
     const orderText = this.add
       .text(x + 20, y + 50, `x ${customer.waffleCount}`, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -622,7 +637,7 @@ export class GameScene extends Phaser.Scene {
 
     // 손님이 원하는 잼과 일치하는 와플 확인
     const matchingWaffles = this.finishedTray.filter(
-      (w) => w.jamType === customer.preferredJam
+      (w) => w.jamType === customer.preferredJam,
     );
     if (matchingWaffles.length < customer.waffleCount) {
       const jamName =
@@ -640,7 +655,7 @@ export class GameScene extends Phaser.Scene {
     // 여우는 퍼펙트 와플만 가능
     if (config.requiresPerfect) {
       const perfectWaffles = matchingWaffles.filter(
-        (w) => w.stage === CookingStage.PERFECT
+        (w) => w.stage === CookingStage.PERFECT,
       );
       if (perfectWaffles.length < customer.waffleCount) {
         this.showMessage(
@@ -656,10 +671,15 @@ export class GameScene extends Phaser.Scene {
     let soldCount = 0;
 
     // 여우는 퍼펙트만, 아니면 일치하는 잼 와플 판매
-    for (let i = this.finishedTray.length - 1; i >= 0 && soldCount < customer.waffleCount; i--) {
+    for (
+      let i = this.finishedTray.length - 1;
+      i >= 0 && soldCount < customer.waffleCount;
+      i--
+    ) {
       const waffle = this.finishedTray[i];
       if (waffle.jamType !== customer.preferredJam) continue;
-      if (config.requiresPerfect && waffle.stage !== CookingStage.PERFECT) continue;
+      if (config.requiresPerfect && waffle.stage !== CookingStage.PERFECT)
+        continue;
 
       // 조건 만족 - 판매
       this.finishedTray.splice(i, 1);
@@ -776,12 +796,18 @@ export class GameScene extends Phaser.Scene {
 
     // 개수 표시
     this.finishedTrayCountText = this.add
-      .text(GAME_WIDTH - 30, this.FINISHED_TRAY_Y - 25, "0/" + this.finishedTrayCapacity, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
+      .text(
+        GAME_WIDTH - 30,
+        this.FINISHED_TRAY_Y - 25,
+        "0/" + this.finishedTrayCapacity,
+        {
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
+          fontSize: "16px",
+          color: "#FFFFFF",
+          fontStyle: "bold",
+        },
+      )
       .setOrigin(1, 0)
       .setDepth(6);
   }
@@ -858,12 +884,18 @@ export class GameScene extends Phaser.Scene {
 
     // 개수 표시
     this.workTrayCountText = this.add
-      .text(GAME_WIDTH - 30, this.WORK_TRAY_Y - 20, "0/" + this.workTrayCapacity, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "14px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
+      .text(
+        GAME_WIDTH - 30,
+        this.WORK_TRAY_Y - 20,
+        "0/" + this.workTrayCapacity,
+        {
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
+          fontSize: "14px",
+          color: "#FFFFFF",
+          fontStyle: "bold",
+        },
+      )
       .setOrigin(1, 0);
   }
 
@@ -910,25 +942,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createFireButton(): void {
-    // 굽는판 아래 중앙에 배치
+    // 굽는판 하단에 불 이미지 배치 (기존 버튼 위치와 유사)
     const grillTotalHeight = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
-    const buttonY = this.GRILL_START_Y + grillTotalHeight - 35;
+    const fireY = this.GRILL_START_Y + grillTotalHeight - 30;
 
-    this.fireButton = this.add
-      .rectangle(GAME_WIDTH / 2, buttonY, 200, 60, 0xe85a4f)
-      .setStrokeStyle(3, 0xb8453c)
+    // 불 이미지 크기 (500x500을 적절히 스케일링)
+    const fireSize = 300;
+
+    this.fireImage = this.add
+      .image(GAME_WIDTH / 2, fireY, "small_fire")
+      .setDisplaySize(fireSize, fireSize)
+      .setDepth(10) // 굽는판 위에 표시
       .setInteractive({ useHandCursor: true });
 
-    this.fireButtonText = this.add
-      .text(GAME_WIDTH / 2, buttonY, "🔥 강불 (3초)", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "22px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
-
-    this.fireButton.on("pointerdown", () => this.onFireButtonClick());
+    this.fireImage.on("pointerdown", () => this.onFireButtonClick());
   }
 
   private onGrillCellClick(row: number, col: number): void {
@@ -946,7 +973,9 @@ export class GameScene extends Phaser.Scene {
   private moveToWorkTray(row: number, col: number): void {
     // 준비 트레이 용량 체크
     if (this.workTray.length >= this.workTrayCapacity) {
-      this.showMessage(`작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.workTrayCapacity})`);
+      this.showMessage(
+        `작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.workTrayCapacity})`,
+      );
       return;
     }
 
@@ -968,8 +997,8 @@ export class GameScene extends Phaser.Scene {
       this.gameState.isStrongFire = true;
       this.gameState.strongFireRemaining = 3;
 
-      this.fireButton.setFillStyle(0xff6b5b);
-      this.fireButtonText.setText("🔥🔥 강불 작동중!");
+      // 강불 활성화 - 큰 불 이미지로 전환
+      this.fireImage.setTexture("big_fire");
     }
   }
 
@@ -988,7 +1017,9 @@ export class GameScene extends Phaser.Scene {
 
     // 완성품 트레이 용량 체크
     if (this.finishedTray.length >= this.finishedTrayCapacity) {
-      this.showMessage(`완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.finishedTrayCapacity})`);
+      this.showMessage(
+        `완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.finishedTrayCapacity})`,
+      );
       return;
     }
 
@@ -1089,7 +1120,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 용량 표시 (현재/최대)
-    this.workTrayCountText.setText(`${this.workTray.length}/${this.workTrayCapacity}`);
+    this.workTrayCountText.setText(
+      `${this.workTray.length}/${this.workTrayCapacity}`,
+    );
   }
 
   private updateFinishedTrayDisplay(): void {
@@ -1111,7 +1144,8 @@ export class GameScene extends Phaser.Scene {
 
       if (waffle) {
         // 잼 종류별 이미지 키 사용
-        const imageKey = JAM_WAFFLE_IMAGE_KEYS[waffle.jamType]?.[waffle.stage] || "";
+        const imageKey =
+          JAM_WAFFLE_IMAGE_KEYS[waffle.jamType]?.[waffle.stage] || "";
         if (imageKey) {
           const waffleImg = this.add
             .image(x, this.FINISHED_TRAY_Y, imageKey)
@@ -1127,7 +1161,9 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 용량 표시 (현재/최대)
-    this.finishedTrayCountText.setText(`${this.finishedTray.length}/${this.finishedTrayCapacity}`);
+    this.finishedTrayCountText.setText(
+      `${this.finishedTray.length}/${this.finishedTrayCapacity}`,
+    );
   }
 
   private formatTime(seconds: number): string {
@@ -1163,7 +1199,8 @@ export class GameScene extends Phaser.Scene {
       }
     }
     // 기본 굽기 속도 (업그레이드 반영) * 강불 배율
-    const baseSpeedMultiplier = this.progressManager.getCookingSpeedMultiplier();
+    const baseSpeedMultiplier =
+      this.progressManager.getCookingSpeedMultiplier();
     const strongFireMultiplier = this.gameState.isStrongFire ? 2 : 1;
     const cookingSpeed = baseSpeedMultiplier * strongFireMultiplier;
 
@@ -1195,8 +1232,8 @@ export class GameScene extends Phaser.Scene {
       this.gameState.strongFireRemaining -= deltaSeconds;
       if (this.gameState.strongFireRemaining <= 0) {
         this.gameState.isStrongFire = false;
-        this.fireButton.setFillStyle(0xe85a4f);
-        this.fireButtonText.setText("🔥 강불 (3초)");
+        // 강불 종료 - 작은 불 이미지로 전환
+        this.fireImage.setTexture("small_fire");
       }
     }
 
@@ -1223,7 +1260,7 @@ export class GameScene extends Phaser.Scene {
     if (success) {
       starsEarned = this.progressManager.completeDayWithStars(
         this.gameState.day,
-        this.gameState.money
+        this.gameState.money,
       );
       this.heartManager.refundHeart();
     }
@@ -1252,7 +1289,8 @@ export class GameScene extends Phaser.Scene {
 
     this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 140, resultTitle, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "36px",
         color: titleColor,
         fontStyle: "bold",
@@ -1286,7 +1324,8 @@ export class GameScene extends Phaser.Scene {
         GAME_HEIGHT / 2 - 40,
         `Day ${this.gameState.day} 결과`,
         {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "24px",
           color: "#5D4E37",
         },
@@ -1300,7 +1339,8 @@ export class GameScene extends Phaser.Scene {
         GAME_HEIGHT / 2 + 20,
         `벌은 돈: ${this.gameState.money.toLocaleString()}원\n목표 금액: ${this.gameState.targetMoney.toLocaleString()}원`,
         {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "20px",
           color: "#5D4E37",
           align: "center",
@@ -1330,7 +1370,8 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(leftBtnX, btnY, "▶ 다음 날", {
-            fontFamily: "UhBeePuding", padding: { y: 5 },
+            fontFamily: "UhBeePuding",
+            padding: { y: 5 },
             fontSize: "22px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1349,7 +1390,8 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(rightBtnX, btnY, "🏠 홈으로", {
-            fontFamily: "UhBeePuding", padding: { y: 5 },
+            fontFamily: "UhBeePuding",
+            padding: { y: 5 },
             fontSize: "22px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1375,7 +1417,8 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(leftBtnX, btnY, "▶ 다음 날", {
-            fontFamily: "UhBeePuding", padding: { y: 5 },
+            fontFamily: "UhBeePuding",
+            padding: { y: 5 },
             fontSize: "18px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1394,7 +1437,8 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(centerBtnX, btnY, "🔄 재도전", {
-            fontFamily: "UhBeePuding", padding: { y: 5 },
+            fontFamily: "UhBeePuding",
+            padding: { y: 5 },
             fontSize: "18px",
             color: "#5D4E37",
             fontStyle: "bold",
@@ -1413,7 +1457,8 @@ export class GameScene extends Phaser.Scene {
 
         this.add
           .text(rightBtnX, btnY, "🏠 홈으로", {
-            fontFamily: "UhBeePuding", padding: { y: 5 },
+            fontFamily: "UhBeePuding",
+            padding: { y: 5 },
             fontSize: "18px",
             color: "#FFFFFF",
             fontStyle: "bold",
@@ -1437,7 +1482,8 @@ export class GameScene extends Phaser.Scene {
 
       this.add
         .text(leftBtnX, btnY, "🔄 재도전", {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "22px",
           color: "#5D4E37",
           fontStyle: "bold",
@@ -1456,7 +1502,8 @@ export class GameScene extends Phaser.Scene {
 
       this.add
         .text(rightBtnX, btnY, "🏠 홈으로", {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
           fontSize: "22px",
           color: "#FFFFFF",
           fontStyle: "bold",
@@ -1544,7 +1591,8 @@ export class GameScene extends Phaser.Scene {
     // 타이틀
     const title = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "일시정지", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1561,7 +1609,8 @@ export class GameScene extends Phaser.Scene {
 
     const retryText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, "🔄 재시도", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1578,7 +1627,8 @@ export class GameScene extends Phaser.Scene {
 
     const exitText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, "🚪 종료", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "24px",
         color: "#FFFFFF",
         fontStyle: "bold",
@@ -1655,7 +1705,8 @@ export class GameScene extends Phaser.Scene {
     // 타이틀
     const titleText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 70, title, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1666,7 +1717,8 @@ export class GameScene extends Phaser.Scene {
     // 메시지
     const messageText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 15, message, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "22px",
         color: "#5D4E37",
       })
@@ -1682,7 +1734,8 @@ export class GameScene extends Phaser.Scene {
 
     const cancelText = this.add
       .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
         fontStyle: "bold",
@@ -1699,7 +1752,8 @@ export class GameScene extends Phaser.Scene {
 
     const confirmText = this.add
       .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "확인", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "20px",
         color: "#FFFFFF",
         fontStyle: "bold",

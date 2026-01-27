@@ -109,6 +109,10 @@ export class BootScene extends Phaser.Scene {
 
     // 시작 버튼
     this.load.image('btn_start', 'assets/images/start.png');
+
+    // 불 이미지
+    this.load.image('small_fire', 'assets/images/small_fire.png');
+    this.load.image('big_fire', 'assets/images/big_fire.png');
   }
 
   create(): void {
