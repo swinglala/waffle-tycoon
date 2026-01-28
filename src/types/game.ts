@@ -360,3 +360,43 @@ export const STAR_CONFIG = {
   MAX_STARS_PER_DAY: 3,       // 하루 최대 별
   TWO_STAR_THRESHOLD: 3000,   // 2별 기준 초과 금액 (0 < excess <= 3000)
 };
+
+// ========================================
+// 튜토리얼 시스템
+// ========================================
+
+// 튜토리얼 단계 enum
+export enum TutorialStep {
+  GRILL_TOUCH = 0,        // 1. 굽는판 터치
+  HEAT_EXPLANATION = 1,   // 2. 열 설명
+  STRONG_FIRE = 2,        // 3. 강불 버튼
+  PICK_PERFECT = 3,       // 4. 퍼펙트 굽기 꺼내기
+  BURN_WARNING = 4,       // 5. 타는 경고
+  APPLY_JAM = 5,          // 6. 잼 바르기
+  TRASH_BURNT = 6,        // 7. 탄 와플 버리기
+  SERVE_CUSTOMER = 7,     // 8. 손님 주문 완료
+  STAR_EXPLANATION = 8,   // 9. 별/목표금액 설명
+  COMPLETE = 9,           // 완료
+}
+
+// 튜토리얼 메시지
+export const TUTORIAL_MESSAGES: Record<TutorialStep, string> = {
+  [TutorialStep.GRILL_TOUCH]: "굽는판을 터치해서\n반죽을 올려보세요!",
+  [TutorialStep.HEAT_EXPLANATION]: "위치마다 굽기 속도가 달라요!\n가운데가 가장 빨라요",
+  [TutorialStep.STRONG_FIRE]: "강불 버튼을 눌러\n3초간 빠르게 구워보세요!",
+  [TutorialStep.PICK_PERFECT]: "퍼펙트가 되면 터치해서\n준비트레이로 이동하세요!",
+  [TutorialStep.BURN_WARNING]: "퍼펙트를 놓치면\n와플이 타버려요!",
+  [TutorialStep.APPLY_JAM]: "잼 버튼을 눌러\n완성품 트레이로 보내세요!",
+  [TutorialStep.TRASH_BURNT]: "탄 와플은 쓰레기통에\n버려야 해요!",
+  [TutorialStep.SERVE_CUSTOMER]: "손님을 터치해서\n와플을 판매하세요!",
+  [TutorialStep.STAR_EXPLANATION]: "",  // 별도 메서드에서 처리
+  [TutorialStep.COMPLETE]: "",
+};
+
+// 튜토리얼 설정
+export const TUTORIAL_CONFIG = {
+  HIGHLIGHT_ALPHA: 0.7,      // 어둡게 처리할 알파값
+  HIGHLIGHT_DEPTH: 300,      // 하이라이트 오버레이 depth
+  INSTRUCTION_DEPTH: 400,    // 안내 팝업 depth
+  STORAGE_KEY: 'waffleTycoon_tutorial', // localStorage 키
+};

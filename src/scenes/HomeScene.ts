@@ -4,7 +4,7 @@ import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { AuthManager } from "../utils/AuthManager";
 import { CloudSaveManager, LocalSaveData } from "../utils/CloudSaveManager";
-import { HEART_CONFIG } from "../types/game";
+import { HEART_CONFIG, TUTORIAL_CONFIG } from "../types/game";
 
 export class HomeScene extends Phaser.Scene {
   private currentDay = 1;
@@ -56,6 +56,9 @@ export class HomeScene extends Phaser.Scene {
 
     // 클라우드 동기화 콜백 설정
     this.setupCloudSyncCallbacks();
+
+    // 첫 실행 시 튜토리얼 안내 팝업
+    this.checkFirstTimeTutorial();
   }
 
   update(): void {
@@ -1036,5 +1039,146 @@ export class HomeScene extends Phaser.Scene {
     }
     this.progressManager.setCloudSyncCallback(null);
     this.heartManager.setCloudSyncCallback(null);
+  }
+
+  private checkFirstTimeTutorial(): void {
+    const tutorialCompleted = localStorage.getItem(TUTORIAL_CONFIG.STORAGE_KEY);
+
+    // 튜토리얼을 한 번도 안 했으면 안내 팝업 표시
+    if (!tutorialCompleted) {
+      this.showTutorialPromptPopup();
+    }
+  }
+
+  private showTutorialPromptPopup(): void {
+    const popupObjects: Phaser.GameObjects.GameObject[] = [];
+
+    // 반투명 오버레이
+    const overlay = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0x000000,
+      0.6
+    );
+    overlay.setInteractive();
+    popupObjects.push(overlay);
+
+    // 팝업 배경
+    const popup = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      450,
+      320,
+      0xfff8e7
+    );
+    popup.setStrokeStyle(4, 0x8b6914);
+    popupObjects.push(popup);
+
+    // 타이틀
+    const title = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 110,
+      "환영합니다!",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "32px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      }
+    );
+    title.setOrigin(0.5);
+    popupObjects.push(title);
+
+    // 메시지
+    const message = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 30,
+      "처음이시네요!\n튜토리얼을 통해\n와플 굽는 법을 배워볼까요?",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "22px",
+        color: "#5D4E37",
+        align: "center",
+      }
+    );
+    message.setOrigin(0.5);
+    popupObjects.push(message);
+
+    // 튜토리얼 시작 버튼
+    const tutorialBtn = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 60,
+      280,
+      55,
+      0x4caf50
+    );
+    tutorialBtn.setStrokeStyle(3, 0x388e3c);
+    tutorialBtn.setInteractive({ useHandCursor: true });
+    popupObjects.push(tutorialBtn);
+
+    const tutorialBtnText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 60,
+      "튜토리얼 시작",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "22px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      }
+    );
+    tutorialBtnText.setOrigin(0.5);
+    popupObjects.push(tutorialBtnText);
+
+    // 건너뛰기 버튼
+    const skipBtn = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 125,
+      280,
+      45,
+      0xcccccc
+    );
+    skipBtn.setStrokeStyle(2, 0x999999);
+    skipBtn.setInteractive({ useHandCursor: true });
+    popupObjects.push(skipBtn);
+
+    const skipBtnText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 125,
+      "건너뛰고 바로 시작",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "18px",
+        color: "#5D4E37",
+      }
+    );
+    skipBtnText.setOrigin(0.5);
+    popupObjects.push(skipBtnText);
+
+    // 팝업 닫기 함수
+    const closePopup = () => {
+      popupObjects.forEach((obj) => obj.destroy());
+    };
+
+    // 튜토리얼 시작 클릭
+    tutorialBtn.on("pointerdown", () => {
+      closePopup();
+      this.scene.start("TutorialScene");
+    });
+
+    // 건너뛰기 클릭
+    skipBtn.on("pointerdown", () => {
+      closePopup();
+      // 튜토리얼 완료로 표시
+      localStorage.setItem(TUTORIAL_CONFIG.STORAGE_KEY, "true");
+    });
+
+    // 호버 효과
+    tutorialBtn.on("pointerover", () => tutorialBtn.setFillStyle(0x388e3c));
+    tutorialBtn.on("pointerout", () => tutorialBtn.setFillStyle(0x4caf50));
+    skipBtn.on("pointerover", () => skipBtn.setFillStyle(0xbbbbbb));
+    skipBtn.on("pointerout", () => skipBtn.setFillStyle(0xcccccc));
   }
 }

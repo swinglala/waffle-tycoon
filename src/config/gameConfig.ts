@@ -4,6 +4,7 @@ import { HomeScene } from '../scenes/HomeScene';
 import { GameScene } from '../scenes/GameScene';
 import { ShopScene } from '../scenes/ShopScene';
 import { DayTreeScene } from '../scenes/DayTreeScene';
+import { TutorialScene } from '../scenes/TutorialScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './constants';
 
 export { GAME_WIDTH, GAME_HEIGHT };
@@ -25,5 +26,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, HomeScene, GameScene, ShopScene, DayTreeScene],
+  scene: [BootScene, HomeScene, GameScene, ShopScene, DayTreeScene, TutorialScene],
 };

@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import { ProgressManager } from "../utils/ProgressManager";
 import { HeartManager } from "../utils/HeartManager";
-import { getDayTarget } from "../types/game";
+import { getDayTarget, TUTORIAL_CONFIG } from "../types/game";
 
 // 그리드 레이아웃 상수
 const GRID_COLS = 3;
@@ -106,20 +106,26 @@ export class DayTreeScene extends Phaser.Scene {
     const mask = maskGraphics.createGeometryMask();
     this.scrollContainer.setMask(mask);
 
-    // 현재 Day까지만 표시 (잠긴 Day는 표시 안함)
-    const maxDisplayDay = currentDay;
-    const totalRows = Math.ceil(maxDisplayDay / GRID_COLS);
-
     // 그리드 시작 X 좌표 (중앙 정렬)
     const totalWidth = GRID_COLS * CELL_WIDTH + (GRID_COLS - 1) * CELL_GAP_X;
     const startX = (GAME_WIDTH - totalWidth) / 2 + CELL_WIDTH / 2;
+
+    // Day 0 (튜토리얼) - 첫 번째 행에 단독 표시
+    const tutorialX = GAME_WIDTH / 2;
+    const tutorialY = START_Y;
+    this.createTutorialCell(tutorialX, tutorialY);
+
+    // Day 1부터 표시 (튜토리얼 아래에)
+    const dayStartY = START_Y + CELL_HEIGHT + CELL_GAP_Y;
+    const maxDisplayDay = currentDay;
+    const totalRows = Math.ceil(maxDisplayDay / GRID_COLS) + 1; // +1 for tutorial row
 
     for (let day = 1; day <= maxDisplayDay; day++) {
       const row = Math.floor((day - 1) / GRID_COLS);
       const col = (day - 1) % GRID_COLS;
 
       const x = startX + col * (CELL_WIDTH + CELL_GAP_X);
-      const y = START_Y + row * (CELL_HEIGHT + CELL_GAP_Y);
+      const y = dayStartY + row * (CELL_HEIGHT + CELL_GAP_Y);
 
       this.createDayCell(day, x, y, currentDay);
     }
@@ -127,6 +133,80 @@ export class DayTreeScene extends Phaser.Scene {
     // 스크롤 범위 계산
     const contentHeight = totalRows * (CELL_HEIGHT + CELL_GAP_Y) + START_Y;
     this.maxScrollY = Math.max(0, contentHeight - scrollAreaHeight);
+  }
+
+  private createTutorialCell(x: number, y: number): void {
+    const tutorialCompleted = localStorage.getItem(TUTORIAL_CONFIG.STORAGE_KEY) === "true";
+
+    // 셀 배경 색상
+    const bgColor = tutorialCompleted ? 0xe8f5e9 : 0xfff3e0; // 완료: 연한 녹색, 미완료: 연한 주황
+    const strokeColor = tutorialCompleted ? 0x4caf50 : 0xff9800;
+
+    // 셀 배경
+    const cellBg = this.add
+      .rectangle(x, y, CELL_WIDTH - 10, CELL_HEIGHT - 10, bgColor)
+      .setStrokeStyle(3, strokeColor);
+    this.scrollContainer.add(cellBg);
+
+    // Day 0 텍스트
+    const dayText = this.add
+      .text(x, y - 30, "튜토리얼", {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "24px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+    this.scrollContainer.add(dayText);
+
+    // 상태 표시
+    if (tutorialCompleted) {
+      const statusText = this.add
+        .text(x, y + 10, "완료", {
+          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontSize: "20px",
+          color: "#4CAF50",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+      this.scrollContainer.add(statusText);
+
+      const replayText = this.add
+        .text(x, y + 40, "다시 보기", {
+          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontSize: "16px",
+          color: "#7D6E57",
+        })
+        .setOrigin(0.5);
+      this.scrollContainer.add(replayText);
+    } else {
+      const statusText = this.add
+        .text(x, y + 10, "시작하기", {
+          fontFamily: "UhBeePuding", padding: { y: 5 },
+          fontSize: "20px",
+          color: "#FF9800",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+      this.scrollContainer.add(statusText);
+    }
+
+    // 클릭 이벤트
+    cellBg.setInteractive({ useHandCursor: true });
+
+    cellBg.on("pointerover", () => {
+      cellBg.setFillStyle(this.darkenColor(bgColor, 0.1));
+    });
+
+    cellBg.on("pointerout", () => {
+      cellBg.setFillStyle(bgColor);
+    });
+
+    cellBg.on("pointerup", () => {
+      if (this.dragDistance < DRAG_THRESHOLD) {
+        this.scene.start("TutorialScene");
+      }
+    });
   }
 
   private createDayCell(
