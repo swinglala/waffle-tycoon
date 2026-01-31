@@ -15,6 +15,7 @@ import {
   JAM_PRICE_MULTIPLIER,
   STAR_CONFIG,
   COMBO_CONFIG,
+  FOX_CONFIG,
   getDayTarget,
   getSpawnInterval,
 } from "../types/game";
@@ -699,7 +700,13 @@ export class GameScene extends Phaser.Scene {
       this.finishedTray.splice(i, 1);
       const basePrice = WAFFLE_PRICES[waffle.stage];
       const jamMultiplier = JAM_PRICE_MULTIPLIER[waffle.jamType];
-      const wafflePrice = Math.floor((basePrice + batterBonus) * jamMultiplier);
+      let wafflePrice = Math.floor((basePrice + batterBonus) * jamMultiplier);
+
+      // 여우 손님은 1.5배 지불
+      if (customer.type === 'fox') {
+        wafflePrice = Math.floor(wafflePrice * FOX_CONFIG.PRICE_MULTIPLIER);
+      }
+
       totalPrice += wafflePrice;
       soldCount++;
     }

@@ -160,6 +160,11 @@ export const COMBO_CONFIG = {
   BONUS_PER_COMBO: 100,   // 콤보당 보너스 금액
 };
 
+// 여우 보너스 설정
+export const FOX_CONFIG = {
+  PRICE_MULTIPLIER: 1.5,  // 여우 만족 시 금액 1.5배
+};
+
 // 익힘 단계별 필요 시간 (초)
 export const COOKING_TIMES: Record<CookingStage, number> = {
   [CookingStage.EMPTY]: 0,
@@ -365,8 +370,11 @@ export const TIME_CONFIG = {
 
 // 별 계산 설정
 export const STAR_CONFIG = {
-  MAX_STARS_PER_DAY: 3,       // 하루 최대 별
-  TWO_STAR_THRESHOLD: 3000,   // 2별 기준 초과 금액 (0 < excess <= 3000)
+  MAX_STARS_PER_DAY: 3,         // 하루 최대 별
+  ONE_STAR_MAX: 2400,           // 1별 최대 초과 금액 (0 ~ +2400)
+  TWO_STAR_MIN: 2500,           // 2별 최소 초과 금액
+  TWO_STAR_MAX: 4900,           // 2별 최대 초과 금액 (+2500 ~ +4900)
+  THREE_STAR_MIN: 5000,         // 3별 최소 초과 금액 (+5000 이상)
 };
 
 // ========================================
