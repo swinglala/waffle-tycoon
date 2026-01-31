@@ -184,7 +184,7 @@ export class TutorialScene extends Phaser.Scene {
     // 튜토리얼 표시
     this.add
       .text(GAME_WIDTH / 2, this.HEADER_Y, "튜토리얼", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
@@ -227,12 +227,12 @@ export class TutorialScene extends Phaser.Scene {
         this.FINISHED_TRAY_Y - 25,
         "0/" + this.finishedTrayCapacity,
         {
-          fontFamily: "UhBeePuding",
+          fontFamily: "Pretendard",
           padding: { y: 5 },
           fontSize: "16px",
           color: "#FFFFFF",
           fontStyle: "bold",
-        }
+        },
       )
       .setOrigin(1, 0)
       .setDepth(6);
@@ -286,12 +286,12 @@ export class TutorialScene extends Phaser.Scene {
         this.WORK_TRAY_Y - 20,
         "0/" + this.workTrayCapacity,
         {
-          fontFamily: "UhBeePuding",
+          fontFamily: "Pretendard",
           padding: { y: 5 },
           fontSize: "14px",
           color: "#FFFFFF",
           fontStyle: "bold",
-        }
+        },
       )
       .setOrigin(1, 0);
   }
@@ -308,7 +308,7 @@ export class TutorialScene extends Phaser.Scene {
         grillCenterY,
         grillTotalWidth + 30,
         grillTotalHeight + 30,
-        0x5d4e37
+        0x5d4e37,
       )
       .setStrokeStyle(4, 0x3d2e17);
 
@@ -363,9 +363,9 @@ export class TutorialScene extends Phaser.Scene {
     // 안내 텍스트
     this.instructionText = this.add
       .text(0, -30, "", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
-        fontSize: "28px",
+        fontSize: "32px",
         color: "#5D4E37",
         align: "center",
       })
@@ -379,7 +379,7 @@ export class TutorialScene extends Phaser.Scene {
 
     this.confirmButtonText = this.add
       .text(0, 50, "확인", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "22px",
         color: "#FFFFFF",
@@ -403,7 +403,7 @@ export class TutorialScene extends Phaser.Scene {
   private createSkipButton(): void {
     this.skipButton = this.add
       .text(GAME_WIDTH - 20, 90, "건너뛰기 >", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
         color: "#999999",
@@ -413,7 +413,9 @@ export class TutorialScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     this.skipButton.on("pointerdown", () => this.showSkipConfirmPopup());
-    this.skipButton.on("pointerover", () => this.skipButton.setColor("#666666"));
+    this.skipButton.on("pointerover", () =>
+      this.skipButton.setColor("#666666"),
+    );
     this.skipButton.on("pointerout", () => this.skipButton.setColor("#999999"));
   }
 
@@ -427,7 +429,7 @@ export class TutorialScene extends Phaser.Scene {
         GAME_WIDTH,
         GAME_HEIGHT,
         0x000000,
-        0.5
+        0.5,
       )
       .setInteractive()
       .setDepth(500);
@@ -441,7 +443,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const titleText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50, "튜토리얼 건너뛰기", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",
         color: "#5D4E37",
@@ -453,7 +455,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const messageText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "튜토리얼을 건너뛰시겠습니까?", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "20px",
         color: "#5D4E37",
@@ -471,7 +473,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const cancelText = this.add
       .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
         color: "#5D4E37",
@@ -490,7 +492,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const confirmText = this.add
       .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "건너뛰기", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
         color: "#FFFFFF",
@@ -549,7 +551,7 @@ export class TutorialScene extends Phaser.Scene {
           "퍼펙트를 놓치면\n와플이 타버려요!",
           true,
           undefined,
-          false // 확인 버튼 비활성화
+          false, // 확인 버튼 비활성화
         );
         // 자동으로 새 반죽 배치하고 타게 만들기
         this.placeBatterForBurnDemo();
@@ -569,7 +571,7 @@ export class TutorialScene extends Phaser.Scene {
         this.showInstruction(
           "탄 와플은 쓰레기통에\n버려야 해요!",
           false,
-          "waffle_burnt"
+          "waffle_burnt",
         );
         this.highlightTrashButton();
         this.isCookingPaused = true;
@@ -613,7 +615,7 @@ export class TutorialScene extends Phaser.Scene {
     message: string,
     showConfirmButton: boolean,
     imageKey?: string,
-    confirmEnabled = true
+    confirmEnabled = true,
   ): void {
     this.clearInstructionExtras();
 
@@ -705,7 +707,7 @@ export class TutorialScene extends Phaser.Scene {
       const isPerfect = stages[i].key === "waffle_perfect";
       const label = this.add
         .text(x, y + 50, stages[i].label, {
-          fontFamily: "UhBeePuding",
+          fontFamily: "Pretendard",
           fontSize: isPerfect ? "18px" : "14px",
           color: isPerfect ? "#4CAF50" : "#5D4E37",
           fontStyle: isPerfect ? "bold" : "normal",
@@ -718,7 +720,7 @@ export class TutorialScene extends Phaser.Scene {
       if (i < stages.length - 1) {
         const arrow = this.add
           .text(x + spacing / 2, y, "→", {
-            fontFamily: "UhBeePuding",
+            fontFamily: "Pretendard",
             fontSize: "24px",
             color: "#999999",
           })
@@ -730,12 +732,17 @@ export class TutorialScene extends Phaser.Scene {
 
     // 설명 텍스트
     const descText = this.add
-      .text(0, 100, "퍼펙트 와플이 가격이 가장 높아요!\n퍼펙트일 때 터치해서 꺼내세요!", {
-        fontFamily: "UhBeePuding",
-        fontSize: "20px",
-        color: "#5D4E37",
-        align: "center",
-      })
+      .text(
+        0,
+        100,
+        "퍼펙트 와플이 가격이 가장 높아요!\n퍼펙트일 때 터치해서 꺼내세요!",
+        {
+          fontFamily: "Pretendard",
+          fontSize: "20px",
+          color: "#5D4E37",
+          align: "center",
+        },
+      )
       .setOrigin(0.5);
     this.instructionContainer.add(descText);
     this.instructionExtraObjects.push(descText);
@@ -760,7 +767,7 @@ export class TutorialScene extends Phaser.Scene {
 
     // 안내 텍스트
     this.instructionText.setText(
-      "완성트레이에 주문만큼 와플이 있으면\n손님을 터치해서 판매하세요!"
+      "완성트레이에 주문만큼 와플이 있으면\n손님을 터치해서 판매하세요!",
     );
     this.instructionText.setPosition(0, 0);
 
@@ -801,7 +808,7 @@ export class TutorialScene extends Phaser.Scene {
     // 설명 텍스트들
     const line1 = this.add
       .text(0, -95, "매일 목표금액이 있어요!", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "26px",
         color: "#5D4E37",
         align: "center",
@@ -814,7 +821,7 @@ export class TutorialScene extends Phaser.Scene {
     const starIconSize = 36;
     const line2Text = this.add
       .text(-40, -50, "목표 달성 →", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#5D4E37",
       })
@@ -830,7 +837,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const line2Count = this.add
       .text(90, -50, "1개", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#5D4E37",
       })
@@ -841,7 +848,7 @@ export class TutorialScene extends Phaser.Scene {
     // 목표 초과 달성 → 별 최대 3개!
     const line3Text = this.add
       .text(-55, 0, "목표 초과 달성 →", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#4CAF50",
         fontStyle: "bold",
@@ -858,7 +865,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const line3Count = this.add
       .text(95, 0, "최대 3개!", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#4CAF50",
         fontStyle: "bold",
@@ -871,7 +878,7 @@ export class TutorialScene extends Phaser.Scene {
     const shopIconSize = 50;
     const line4Text1 = this.add
       .text(-70, 60, "별은 홈화면 상점", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#5D4E37",
       })
@@ -887,7 +894,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const line4Text2 = this.add
       .text(100, 60, "에서", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#5D4E37",
       })
@@ -897,7 +904,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const line5 = this.add
       .text(0, 115, "업그레이드에 사용할 수 있어요!", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         fontSize: "24px",
         color: "#5D4E37",
         align: "center",
@@ -933,7 +940,7 @@ export class TutorialScene extends Phaser.Scene {
     highlightX: number,
     highlightY: number,
     highlightW: number,
-    highlightH: number
+    highlightH: number,
   ): void {
     // 기존 하이라이트 제거
     this.clearHighlight();
@@ -966,7 +973,7 @@ export class TutorialScene extends Phaser.Scene {
           GAME_WIDTH,
           bottomHeight,
           color,
-          alpha
+          alpha,
         )
         .setDepth(depth);
       this.highlightRects.push(bottomRect);
@@ -990,7 +997,7 @@ export class TutorialScene extends Phaser.Scene {
           rightWidth,
           highlightH,
           color,
-          alpha
+          alpha,
         )
         .setDepth(depth);
       this.highlightRects.push(rightRect);
@@ -1028,7 +1035,7 @@ export class TutorialScene extends Phaser.Scene {
       grillCenterX,
       grillCenterY,
       grillTotalWidth + 40,
-      grillTotalHeight + 40
+      grillTotalHeight + 40,
     );
 
     // 모든 그릴 셀의 depth를 높임
@@ -1072,7 +1079,7 @@ export class TutorialScene extends Phaser.Scene {
       this.CUSTOMER_SLOT_X[1],
       this.CUSTOMER_Y + 20,
       260,
-      260
+      260,
     );
     // 손님 UI는 createCustomerUI에서 이미 높은 depth로 설정됨
   }
@@ -1292,7 +1299,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const orderText = this.add
       .text(x + 20, y + 50, `x ${customer.waffleCount}`, {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "26px",
         color: "#5D4E37",
@@ -1310,7 +1317,7 @@ export class TutorialScene extends Phaser.Scene {
 
     // 완성품 확인
     const matchingWaffles = this.finishedTray.filter(
-      (w) => w.jamType === this.tutorialCustomer!.preferredJam
+      (w) => w.jamType === this.tutorialCustomer!.preferredJam,
     );
 
     if (matchingWaffles.length >= this.tutorialCustomer.waffleCount) {
@@ -1384,7 +1391,7 @@ export class TutorialScene extends Phaser.Scene {
     }
 
     this.workTrayCountText.setText(
-      `${this.workTray.length}/${this.workTrayCapacity}`
+      `${this.workTray.length}/${this.workTrayCapacity}`,
     );
   }
 
@@ -1421,7 +1428,7 @@ export class TutorialScene extends Phaser.Scene {
     }
 
     this.finishedTrayCountText.setText(
-      `${this.finishedTray.length}/${this.finishedTrayCapacity}`
+      `${this.finishedTray.length}/${this.finishedTrayCapacity}`,
     );
   }
 
@@ -1485,7 +1492,9 @@ export class TutorialScene extends Phaser.Scene {
               this.time.delayedCall(1000, () => {
                 this.moveToWorkTray(row, col);
                 // 메시지 변경 및 확인 버튼 활성화
-                this.instructionText.setText("와플이 타버렸어요!\n확인을 눌러주세요.");
+                this.instructionText.setText(
+                  "와플이 타버렸어요!\n확인을 눌러주세요.",
+                );
                 this.enableConfirmButton();
               });
             }
@@ -1530,7 +1539,7 @@ export class TutorialScene extends Phaser.Scene {
         GAME_WIDTH,
         GAME_HEIGHT,
         0x000000,
-        0.7
+        0.7,
       )
       .setDepth(600);
     popupObjects.push(overlay);
@@ -1543,7 +1552,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const titleText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "튜토리얼 완료!", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "36px",
         color: "#4CAF50",
@@ -1559,12 +1568,12 @@ export class TutorialScene extends Phaser.Scene {
         GAME_HEIGHT / 2 - 20,
         "이제 와플을 만들 준비가 되었어요!\n1일차부터 시작해볼까요?",
         {
-          fontFamily: "UhBeePuding",
+          fontFamily: "Pretendard",
           padding: { y: 5 },
           fontSize: "22px",
           color: "#5D4E37",
           align: "center",
-        }
+        },
       )
       .setOrigin(0.5)
       .setDepth(602);
@@ -1579,7 +1588,7 @@ export class TutorialScene extends Phaser.Scene {
 
     const startBtnText = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 80, "시작하기", {
-        fontFamily: "UhBeePuding",
+        fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",
         color: "#FFFFFF",

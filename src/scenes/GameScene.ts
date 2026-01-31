@@ -19,6 +19,7 @@ import {
 } from "../types/game";
 import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
+import { CustomerIntroManager } from "../utils/CustomerIntroManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
@@ -137,6 +138,8 @@ export class GameScene extends Phaser.Scene {
   private heartManager!: HeartManager;
   private heartUsed = false; // 이번 게임에서 하트 사용 여부
   private progressManager!: ProgressManager;
+  private customerIntroManager!: CustomerIntroManager;
+  private customerIntroPopupObjects: Phaser.GameObjects.GameObject[] = [];
   private workTrayCapacity = 5; // 준비 트레이 용량
   private finishedTrayCapacity = 5; // 완성 트레이 용량
   private customerCooldowns: Record<CustomerType, number> = {} as Record<
@@ -219,6 +222,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     this.heartManager = HeartManager.getInstance();
     this.progressManager = ProgressManager.getInstance();
+    this.customerIntroManager = CustomerIntroManager.getInstance();
 
     // 트레이 용량 설정 (업그레이드 반영)
     this.workTrayCapacity = this.progressManager.getWorkTrayCapacity();
@@ -251,6 +255,9 @@ export class GameScene extends Phaser.Scene {
     this.createGrillUI();
     this.createFireButton();
     this.initializeCustomerSystem();
+
+    // 새로운 손님 소개 체크
+    this.checkCustomerIntroduction();
   }
 
   private initializeCustomerSystem(): void {
@@ -1789,5 +1796,126 @@ export class GameScene extends Phaser.Scene {
       closeConfirmPopup();
       onConfirm();
     });
+  }
+
+  private checkCustomerIntroduction(): void {
+    const intro = this.customerIntroManager.getIntroForDay(this.gameState.day);
+    if (!intro) {
+      return; // 소개할 손님 없음
+    }
+
+    // 게임 일시정지 후 팝업 표시
+    this.isPaused = true;
+    this.showCustomerIntroPopup(intro.type, intro.config);
+  }
+
+  private showCustomerIntroPopup(
+    customerType: CustomerType,
+    config: { title: string; description: string[]; emoji: string },
+  ): void {
+    // 반투명 오버레이
+    const overlay = this.add
+      .rectangle(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT / 2,
+        GAME_WIDTH,
+        GAME_HEIGHT,
+        0x000000,
+        0.7,
+      )
+      .setInteractive()
+      .setDepth(500);
+
+    // 팝업 배경 (550x520)
+    const popupWidth = 550;
+    const popupHeight = 520;
+    const popup = this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, popupWidth, popupHeight, 0xfff8e7)
+      .setStrokeStyle(4, 0x8b6914)
+      .setDepth(501);
+
+    // 타이틀 (36px)
+    const title = this.add
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 210, config.title, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "36px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(502);
+
+    // 손님 이미지 (200x200)
+    const customerImage = this.add
+      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, `customer_${customerType}`)
+      .setDisplaySize(200, 200)
+      .setDepth(502);
+
+    // 설명 텍스트 (28px)
+    const descriptionObjects: Phaser.GameObjects.Text[] = [];
+    const descStartY = GAME_HEIGHT / 2 + 75;
+    const descLineHeight = 42;
+
+    config.description.forEach((line, index) => {
+      const descText = this.add
+        .text(GAME_WIDTH / 2, descStartY + index * descLineHeight, line, {
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
+          fontSize: "28px",
+          color: "#5D4E37",
+        })
+        .setOrigin(0.5)
+        .setDepth(502);
+      descriptionObjects.push(descText);
+    });
+
+    // 확인 버튼
+    const btnY = GAME_HEIGHT / 2 + 220;
+    const confirmBtn = this.add
+      .rectangle(GAME_WIDTH / 2, btnY, 200, 55, 0x4caf50)
+      .setStrokeStyle(3, 0x388e3c)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(502);
+
+    const confirmText = this.add
+      .text(GAME_WIDTH / 2, btnY, "확인", {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "24px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(503);
+
+    this.customerIntroPopupObjects = [
+      overlay,
+      popup,
+      title,
+      customerImage,
+      ...descriptionObjects,
+      confirmBtn,
+      confirmText,
+    ];
+
+    // 확인 버튼 클릭
+    confirmBtn.on("pointerdown", () => {
+      this.closeCustomerIntroPopup(customerType);
+    });
+  }
+
+  private closeCustomerIntroPopup(customerType: CustomerType): void {
+    // 소개 본 것으로 표시
+    this.customerIntroManager.markIntroSeen(customerType);
+
+    // 팝업 오브젝트 제거
+    for (const obj of this.customerIntroPopupObjects) {
+      obj.destroy();
+    }
+    this.customerIntroPopupObjects = [];
+
+    // 게임 재개
+    this.isPaused = false;
   }
 }

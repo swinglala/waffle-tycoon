@@ -400,3 +400,36 @@ export const TUTORIAL_CONFIG = {
   INSTRUCTION_DEPTH: 400,    // 안내 팝업 depth
   STORAGE_KEY: 'waffleTycoon_tutorial', // localStorage 키
 };
+
+// ========================================
+// 손님 소개 시스템
+// ========================================
+
+// 손님 소개 설정 인터페이스
+export interface CustomerIntroConfig {
+  title: string;
+  description: string[];
+  emoji: string;
+}
+
+// 손님 소개 설정
+export const CUSTOMER_INTRO_CONFIG: Partial<Record<CustomerType, CustomerIntroConfig>> = {
+  rabbit: {
+    title: "토끼 손님 등장!",
+    description: ["빨리빨리!", "기다리기 싫어요!"],
+    emoji: "🐰"
+  },
+  bear: {
+    title: "곰 손님 등장!",
+    description: ["왕창 주세요!", "기본 5개부터!", "💡 완성트레이 업그레이드 추천!"],
+    emoji: "🐻"
+  },
+  fox: {
+    title: "여우 손님 등장!",
+    description: ["완벽 아니면 필요 없어.", "퍼펙트 와플만 받아요!"],
+    emoji: "🦊"
+  }
+};
+
+// 손님 소개 localStorage 키
+export const CUSTOMER_INTRO_STORAGE_KEY = "waffleTycoon_seenCustomerIntros";

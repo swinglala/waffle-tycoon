@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { gameConfig } from './config/gameConfig';
+import 'pretendard/dist/web/static/pretendard.css';
 
 // 게임 인스턴스 생성
 const game = new Phaser.Game(gameConfig);
