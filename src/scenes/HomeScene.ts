@@ -4,6 +4,7 @@ import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { AuthManager } from "../utils/AuthManager";
 import { CloudSaveManager, LocalSaveData } from "../utils/CloudSaveManager";
+import { SoundManager } from "../utils/SoundManager";
 import { HEART_CONFIG, TUTORIAL_CONFIG } from "../types/game";
 
 export class HomeScene extends Phaser.Scene {
@@ -41,7 +42,8 @@ export class HomeScene extends Phaser.Scene {
 
     // BGM 재생 (기존 BGM 정지 후)
     this.sound.stopAll();
-    this.sound.play('bgm_home', { loop: true, volume: 0.5 });
+    const soundManager = SoundManager.getInstance();
+    soundManager.playBgm(this, 'bgm_home', { volume: 0.5 });
 
     this.loadProgress();
     this.createBackground();
@@ -246,7 +248,7 @@ export class HomeScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     settingsIcon.on("pointerdown", () => {
-      this.showPlaceholderPopup("설정");
+      this.scene.start("SettingsScene");
     });
 
     settingsIcon.on("pointerover", () => {

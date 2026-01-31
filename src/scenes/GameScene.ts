@@ -22,6 +22,7 @@ import {
 import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { CustomerIntroManager } from "../utils/CustomerIntroManager";
+import { SoundManager } from "../utils/SoundManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
@@ -143,6 +144,7 @@ export class GameScene extends Phaser.Scene {
   private heartUsed = false; // 이번 게임에서 하트 사용 여부
   private progressManager!: ProgressManager;
   private customerIntroManager!: CustomerIntroManager;
+  private soundManager!: SoundManager;
   private customerIntroPopupObjects: Phaser.GameObjects.GameObject[] = [];
   private workTrayCapacity = 5; // 준비 트레이 용량
   private finishedTrayCapacity = 5; // 완성 트레이 용량
@@ -231,10 +233,11 @@ export class GameScene extends Phaser.Scene {
     this.heartManager = HeartManager.getInstance();
     this.progressManager = ProgressManager.getInstance();
     this.customerIntroManager = CustomerIntroManager.getInstance();
+    this.soundManager = SoundManager.getInstance();
 
     // BGM 재생 (기존 BGM 정지 후)
     this.sound.stopAll();
-    this.sound.play('bgm_play', { loop: true, volume: 0.4 });
+    this.soundManager.playBgm(this, 'bgm_play', { volume: 0.4 });
 
     // 트레이 용량 설정 (업그레이드 반영)
     this.workTrayCapacity = this.progressManager.getWorkTrayCapacity();
@@ -723,7 +726,7 @@ export class GameScene extends Phaser.Scene {
     this.customerSlots[index] = null; // 슬롯 비우기 (위치 유지)
 
     // 판매 효과음
-    this.sound.play('sfx_coin', { volume: 0.5 });
+    this.soundManager.playSfx(this, 'sfx_coin', { volume: 0.5 });
 
     this.updateCustomerDisplay();
     this.updateFinishedTrayDisplay();
@@ -998,7 +1001,7 @@ export class GameScene extends Phaser.Scene {
       slot.stage = CookingStage.BATTER;
       slot.cookTime = 0;
       this.updateGrillCell(row, col);
-      this.sound.play('sfx_dough', { volume: 0.5 });
+      this.soundManager.playSfx(this, 'sfx_dough', { volume: 0.5 });
     } else if (slot.stage !== CookingStage.BATTER) {
       this.moveToWorkTray(row, col);
     }
@@ -1016,7 +1019,7 @@ export class GameScene extends Phaser.Scene {
     const slot = this.grillSlots[row][col];
 
     // 와플 집기 효과음
-    this.sound.play('sfx_waffle', { volume: 0.5 });
+    this.soundManager.playSfx(this, 'sfx_waffle', { volume: 0.5 });
 
     this.workTray.push({
       stage: slot.stage,
@@ -1038,7 +1041,7 @@ export class GameScene extends Phaser.Scene {
       this.fireImage.setTexture("big_fire");
 
       // 강불 효과음
-      this.sound.play('sfx_fire', { volume: 0.5 });
+      this.soundManager.playSfx(this, 'sfx_fire', { volume: 0.5 });
     }
   }
 
@@ -1081,7 +1084,7 @@ export class GameScene extends Phaser.Scene {
     this.updateWorkTrayDisplay();
 
     // 버리기 효과음
-    this.sound.play('sfx_trash', { volume: 0.5 });
+    this.soundManager.playSfx(this, 'sfx_trash', { volume: 0.5 });
 
     this.showMessage("🗑️ 버렸어요");
   }
@@ -1109,7 +1112,7 @@ export class GameScene extends Phaser.Scene {
 
   private showComboMessage(comboCount: number, bonus: number): void {
     // 콤보 효과음 재생
-    this.sound.play('sfx_combo', { volume: 0.6 });
+    this.soundManager.playSfx(this, 'sfx_combo', { volume: 0.6 });
 
     // 콤보 수에 따른 색상 (점점 강렬하게)
     let color = "#FF6B35";  // 1~2콤보: 주황
@@ -1375,9 +1378,9 @@ export class GameScene extends Phaser.Scene {
     // BGM 정지 후 성공/실패 효과음만 재생
     this.sound.stopAll();
     if (success) {
-      this.sound.play('sfx_success', { volume: 0.7 });
+      this.soundManager.playSfx(this, 'sfx_success', { volume: 0.7 });
     } else {
-      this.sound.play('sfx_fail', { volume: 0.7 });
+      this.soundManager.playSfx(this, 'sfx_fail', { volume: 0.7 });
     }
 
     // 별 계산 및 적립 (성공 시에만)
