@@ -310,6 +310,8 @@ getSpawnInterval(day, dayTime) = {
 
 ### 효과음 (public/assets/audio/)
 - `combo.mp3` - 콤보 효과음
+- `stage_success.mp3` - 스테이지 성공 효과음
+- `stage_fail.mp3` - 스테이지 실패 효과음
 
 ---
 

@@ -1367,6 +1367,13 @@ export class GameScene extends Phaser.Scene {
 
     const success = this.gameState.money >= this.gameState.targetMoney;
 
+    // 성공/실패 효과음 재생
+    if (success) {
+      this.sound.play('sfx_success', { volume: 0.7 });
+    } else {
+      this.sound.play('sfx_fail', { volume: 0.7 });
+    }
+
     // 별 계산 및 적립 (성공 시에만)
     let starsEarned = 0;
     if (success) {

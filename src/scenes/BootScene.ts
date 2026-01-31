@@ -122,6 +122,8 @@ export class BootScene extends Phaser.Scene {
 
     // 효과음
     this.load.audio('sfx_combo', 'assets/audio/combo.mp3');
+    this.load.audio('sfx_success', 'assets/audio/stage_success.mp3');
+    this.load.audio('sfx_fail', 'assets/audio/stage_fail.mp3');
   }
 
   create(): void {
