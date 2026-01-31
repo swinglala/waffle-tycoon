@@ -304,14 +304,31 @@ getSpawnInterval(day, dayTime) = {
 ### 콤보 이미지
 - `combo.png` - 콤보 텍스트 이미지
 
-### 효과음 (public/assets/audio/)
-- `combo.mp3` - 콤보 효과음
-- `stage_success.mp3` - 스테이지 성공 효과음
-- `stage_fail.mp3` - 스테이지 실패 효과음
+---
 
-### BGM (public/assets/audio/)
-- `home_bgm.mp3` - 홈 화면 BGM (루프, volume: 0.5)
-- `play_bgm.mp3` - 게임 플레이 BGM (루프, volume: 0.4)
+## 오디오 (public/assets/audio/)
+
+### 효과음
+| 파일 | 키 | 재생 시점 |
+|------|-----|----------|
+| `dough.mp3` | sfx_dough | 그릴에 도우 추가 |
+| `waffle.mp3` | sfx_waffle | 구운 와플 클릭 (작업 트레이로 이동) |
+| `fire.mp3` | sfx_fire | 강불 버튼 활성화 |
+| `coin.wav` | sfx_coin | 손님에게 와플 판매 |
+| `trash.mp3` | sfx_trash | 쓰레기통에 버리기 |
+| `combo.mp3` | sfx_combo | 콤보 발동 |
+| `stage_success.mp3` | sfx_success | 목표 달성 (Day 종료) |
+| `stage_fail.mp3` | sfx_fail | 목표 미달성 (Day 종료) |
+
+### BGM
+| 파일 | 키 | 재생 씬 | 설정 |
+|------|-----|---------|------|
+| `home_bgm.mp3` | bgm_home | HomeScene | 루프, volume: 0.5 |
+| `play_bgm.mp3` | bgm_play | GameScene | 루프, volume: 0.4 |
+
+**BGM 전환 규칙:**
+- 씬 전환 시 `this.sound.stopAll()` 후 새 BGM 재생
+- Day 종료 시 BGM 정지 → 결과 효과음만 재생
 
 ---
 
@@ -446,7 +463,7 @@ CREATE TABLE game_progress (
 
 ### 우선 개발
 - [ ] 튜토리얼 만들기
-- [ ] 효과음, 배경음 만들기
+- [x] 효과음, 배경음 만들기 ✅
 - [x] Day 트리 만들기 ✅
 - [x] 콤보 시스템 ✅
 

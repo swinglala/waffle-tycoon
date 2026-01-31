@@ -1015,12 +1015,8 @@ export class GameScene extends Phaser.Scene {
 
     const slot = this.grillSlots[row][col];
 
-    // 익힘 상태에 따른 효과음
-    if (slot.stage === CookingStage.PERFECT) {
-      this.sound.play('sfx_perfect', { volume: 0.6 });
-    } else if (slot.stage === CookingStage.COOKED || slot.stage === CookingStage.UNDERCOOKED) {
-      this.sound.play('sfx_good', { volume: 0.5 });
-    }
+    // 와플 집기 효과음
+    this.sound.play('sfx_waffle', { volume: 0.5 });
 
     this.workTray.push({
       stage: slot.stage,
@@ -1040,6 +1036,9 @@ export class GameScene extends Phaser.Scene {
 
       // 강불 활성화 - 큰 불 이미지로 전환
       this.fireImage.setTexture("big_fire");
+
+      // 강불 효과음
+      this.sound.play('sfx_fire', { volume: 0.5 });
     }
   }
 
