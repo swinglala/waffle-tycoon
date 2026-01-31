@@ -38,14 +38,12 @@ export class ProgressManager {
       dayMoney: {},
       upgrades: {
         [UpgradeType.BATTER]: 0,
-        [UpgradeType.BERRY_JAM]: 0,
-        [UpgradeType.PISTACHIO_JAM]: 0,
         [UpgradeType.FIRE_STRENGTH]: 0,
         [UpgradeType.TIME_EXTENSION]: 0,
         [UpgradeType.WORK_TRAY_CAPACITY]: 0,
         [UpgradeType.FINISHED_TRAY_CAPACITY]: 0,
       },
-      unlockedJams: [JamType.APPLE], // 기본으로 사과잼 해금
+      unlockedJams: [JamType.APPLE, JamType.BERRY, JamType.PISTACHIO], // 모든 잼 기본 해금
     };
   }
 
@@ -213,14 +211,6 @@ export class ProgressManager {
     const cost = this.getUpgradeCost(type);
     this.state.totalStars -= cost;
     this.state.upgrades[type] += 1;
-
-    // 잼 해금 처리
-    if (type === UpgradeType.BERRY_JAM && !this.state.unlockedJams.includes(JamType.BERRY)) {
-      this.state.unlockedJams.push(JamType.BERRY);
-    }
-    if (type === UpgradeType.PISTACHIO_JAM && !this.state.unlockedJams.includes(JamType.PISTACHIO)) {
-      this.state.unlockedJams.push(JamType.PISTACHIO);
-    }
 
     this.saveState();
     return true;

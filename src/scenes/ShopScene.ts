@@ -5,9 +5,8 @@ import { ProgressManager } from "../utils/ProgressManager";
 
 // 3열 그리드 레이아웃 정의
 const SHOP_LAYOUT: UpgradeType[][] = [
-  [UpgradeType.BERRY_JAM, UpgradeType.PISTACHIO_JAM], // 1행: 잼 해금
-  [UpgradeType.BATTER, UpgradeType.FIRE_STRENGTH, UpgradeType.TIME_EXTENSION], // 2행: 능력 강화
-  [UpgradeType.WORK_TRAY_CAPACITY, UpgradeType.FINISHED_TRAY_CAPACITY], // 3행: 트레이 확장
+  [UpgradeType.BATTER, UpgradeType.FIRE_STRENGTH, UpgradeType.TIME_EXTENSION], // 1행: 능력 강화
+  [UpgradeType.WORK_TRAY_CAPACITY, UpgradeType.FINISHED_TRAY_CAPACITY], // 2행: 트레이 확장
 ];
 
 export class ShopScene extends Phaser.Scene {

@@ -46,8 +46,6 @@ export interface CustomerConfig {
   waitTime: number;           // 대기 시간 (초)
   orderMin: number;           // 최소 주문 개수
   orderMax: number;           // 최대 주문 개수
-  jamPreference: JamType | null;  // 선호 잼 (null = 아무거나)
-  jamPreferenceChance: number;    // 선호 잼 확률 (0~1)
   appearDay: number;          // 등장 시작일
   requiresPerfect: boolean;   // 퍼펙트 와플만 가능 여부
   spawnWeight: number;        // 등장 가중치 (1.0 = 기본, 낮을수록 덜 등장)
@@ -60,8 +58,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 15,
     orderMin: 1,
     orderMax: 2,
-    jamPreference: null,      // 아무거나
-    jamPreferenceChance: 0,
     appearDay: 1,
     requiresPerfect: false,
     spawnWeight: 1.0,
@@ -71,8 +67,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 15,
     orderMin: 1,
     orderMax: 2,
-    jamPreference: JamType.PISTACHIO,  // 피스타치오 선호
-    jamPreferenceChance: 0.7,          // 70%
     appearDay: 1,
     requiresPerfect: false,
     spawnWeight: 1.0,
@@ -82,8 +76,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 12,
     orderMin: 1,
     orderMax: 2,
-    jamPreference: JamType.BERRY,      // 딸기(베리) 선호
-    jamPreferenceChance: 0.6,          // 60%
     appearDay: 1,
     requiresPerfect: false,
     spawnWeight: 1.0,
@@ -93,8 +85,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 22,
     orderMin: 2,
     orderMax: 3,
-    jamPreference: null,      // 아무거나
-    jamPreferenceChance: 0,
     appearDay: 1,
     requiresPerfect: false,
     spawnWeight: 1.0,
@@ -104,8 +94,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 8,
     orderMin: 1,
     orderMax: 2,
-    jamPreference: JamType.BERRY,      // 딸기(베리) 선호
-    jamPreferenceChance: 0.8,          // 80%
     appearDay: 5,
     requiresPerfect: false,
     spawnWeight: 1.0,
@@ -115,8 +103,6 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 18,
     orderMin: 5,
     orderMax: 7,
-    jamPreference: JamType.APPLE,      // 사과 선호
-    jamPreferenceChance: 0.9,          // 90%
     appearDay: 10,
     requiresPerfect: false,
     spawnWeight: 0.15,         // 낮은 등장 확률 (하루 2~3번)
@@ -126,10 +112,8 @@ export const CUSTOMER_CONFIG: Record<CustomerType, CustomerConfig> = {
     waitTime: 12,
     orderMin: 1,
     orderMax: 2,
-    jamPreference: JamType.PISTACHIO,  // 피스타치오 선호
-    jamPreferenceChance: 0.8,          // 80%
     appearDay: 15,
-    requiresPerfect: true,             // 퍼펙트만 가능!
+    requiresPerfect: true,     // 퍼펙트만 가능!
     spawnWeight: 1.0,
     spawnCooldown: 0,
   },
@@ -282,8 +266,6 @@ export function getSpawnInterval(day: number, dayTime: number): { min: number; m
 
 // 업그레이드 종류
 export enum UpgradeType {
-  BERRY_JAM = 'berry_jam',                   // 베리잼 해금
-  PISTACHIO_JAM = 'pistachio_jam',           // 피스타치오잼 해금
   BATTER = 'batter',                         // 반죽 개선 (와플 가격 +50원/레벨)
   FIRE_STRENGTH = 'fire_strength',           // 화력 강화 (굽기속도 +10%/레벨)
   TIME_EXTENSION = 'time_extension',         // 시간 연장 (+5초/레벨)
@@ -301,18 +283,6 @@ export interface UpgradeConfig {
 
 // 업그레이드 설정
 export const UPGRADE_CONFIGS: Record<UpgradeType, UpgradeConfig> = {
-  [UpgradeType.BERRY_JAM]: {
-    name: '🍓 베리잼',
-    description: '가격 1.3배 잼 해금',
-    costs: [7],
-    maxLevel: 1,
-  },
-  [UpgradeType.PISTACHIO_JAM]: {
-    name: '🥜 피스타치오잼',
-    description: '가격 1.5배 잼 해금',
-    costs: [13],
-    maxLevel: 1,
-  },
   [UpgradeType.BATTER]: {
     name: '🧈 반죽 개선',
     description: '와플 가격 +50원/레벨',

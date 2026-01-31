@@ -308,21 +308,9 @@ export class GameScene extends Phaser.Scene {
     return availableTypes[availableTypes.length - 1];
   }
 
-  // 손님의 주문 잼 결정 (선호도 + 해금 여부 고려)
-  private determineOrderJam(customerType: CustomerType): JamType {
-    const config = CUSTOMER_CONFIG[customerType];
+  // 손님의 주문 잼 결정 (해금된 잼 중 랜덤)
+  private determineOrderJam(_customerType: CustomerType): JamType {
     const unlockedJams = this.progressManager.getUnlockedJams();
-
-    // 선호 잼이 있고, 해금되어 있고, 확률 통과 시
-    if (
-      config.jamPreference &&
-      unlockedJams.includes(config.jamPreference) &&
-      Math.random() < config.jamPreferenceChance
-    ) {
-      return config.jamPreference;
-    }
-
-    // 그 외에는 해금된 잼 중 랜덤 선택
     return unlockedJams[Math.floor(Math.random() * unlockedJams.length)];
   }
 
