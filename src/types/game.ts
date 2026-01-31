@@ -141,7 +141,7 @@ export interface GameState {
 // 콤보 시스템 설정
 export const COMBO_CONFIG = {
   COMBO_THRESHOLD: 2,     // 콤보 발동 시간 (초)
-  BONUS_PER_COMBO: 100,   // 콤보당 보너스 금액
+  BONUS_PER_COMBO: 500,   // 콤보당 보너스 금액
 };
 
 // 여우 보너스 설정
