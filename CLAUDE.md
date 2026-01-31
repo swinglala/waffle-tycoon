@@ -309,6 +309,10 @@ getSpawnInterval(day, dayTime) = {
 - `stage_success.mp3` - 스테이지 성공 효과음
 - `stage_fail.mp3` - 스테이지 실패 효과음
 
+### BGM (public/assets/audio/)
+- `home_bgm.mp3` - 홈 화면 BGM (루프, volume: 0.5)
+- `play_bgm.mp3` - 게임 플레이 BGM (루프, volume: 0.4)
+
 ---
 
 ## 개발 명령어

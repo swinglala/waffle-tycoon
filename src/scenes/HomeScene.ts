@@ -39,6 +39,10 @@ export class HomeScene extends Phaser.Scene {
     this.authManager = AuthManager.getInstance();
     this.cloudSaveManager = CloudSaveManager.getInstance();
 
+    // BGM 재생 (기존 BGM 정지 후)
+    this.sound.stopAll();
+    this.sound.play('bgm_home', { loop: true, volume: 0.5 });
+
     this.loadProgress();
     this.createBackground();
     this.createTitle();

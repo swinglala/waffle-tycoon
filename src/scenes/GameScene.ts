@@ -232,6 +232,10 @@ export class GameScene extends Phaser.Scene {
     this.progressManager = ProgressManager.getInstance();
     this.customerIntroManager = CustomerIntroManager.getInstance();
 
+    // BGM 재생 (기존 BGM 정지 후)
+    this.sound.stopAll();
+    this.sound.play('bgm_play', { loop: true, volume: 0.4 });
+
     // 트레이 용량 설정 (업그레이드 반영)
     this.workTrayCapacity = this.progressManager.getWorkTrayCapacity();
     this.finishedTrayCapacity = this.progressManager.getFinishedTrayCapacity();
