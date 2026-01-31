@@ -14,6 +14,7 @@ import {
   CUSTOMER_CONFIG,
   JAM_PRICE_MULTIPLIER,
   STAR_CONFIG,
+  COMBO_CONFIG,
   getDayTarget,
   getSpawnInterval,
 } from "../types/game";
@@ -100,6 +101,8 @@ export class GameScene extends Phaser.Scene {
     maxTime: 60,
     isStrongFire: false,
     strongFireRemaining: 0,
+    lastSaleTime: 0,
+    comboCount: 0,
   };
 
   // 3x3 굽는판
@@ -202,6 +205,8 @@ export class GameScene extends Phaser.Scene {
       this.gameState.maxTime = GAME_CONFIG.DAY_TIME;
       this.gameState.isStrongFire = false;
       this.gameState.strongFireRemaining = 0;
+      this.gameState.lastSaleTime = 0;
+      this.gameState.comboCount = 0;
       // 다음 날 진행 시 하트 사용 안함 (skipHeart)
       this.heartUsed = data.skipHeart || false;
     } else {
@@ -214,6 +219,8 @@ export class GameScene extends Phaser.Scene {
         maxTime: GAME_CONFIG.DAY_TIME,
         isStrongFire: false,
         strongFireRemaining: 0,
+        lastSaleTime: 0,
+        comboCount: 0,
       };
       this.heartUsed = false;
     }
@@ -697,6 +704,22 @@ export class GameScene extends Phaser.Scene {
       soldCount++;
     }
 
+    // 콤보 판정
+    const timeSinceLastSale = this.gameState.lastSaleTime - this.gameState.timeRemaining;
+
+    if (this.gameState.lastSaleTime > 0 && timeSinceLastSale <= COMBO_CONFIG.COMBO_THRESHOLD) {
+      // 콤보 증가
+      this.gameState.comboCount++;
+      const comboBonus = COMBO_CONFIG.BONUS_PER_COMBO * this.gameState.comboCount;
+      totalPrice += comboBonus;
+      // 콤보 메시지 표시
+      this.showComboMessage(this.gameState.comboCount, comboBonus);
+    } else {
+      // 콤보 리셋
+      this.gameState.comboCount = 0;
+    }
+
+    this.gameState.lastSaleTime = this.gameState.timeRemaining;
     this.gameState.money += totalPrice;
     this.customerSlots[index] = null; // 슬롯 비우기 (위치 유지)
 
@@ -1069,6 +1092,79 @@ export class GameScene extends Phaser.Scene {
       alpha: 0,
       duration: 800,
       onComplete: () => msg.destroy(),
+    });
+  }
+
+  private showComboMessage(comboCount: number, bonus: number): void {
+    // 콤보 효과음 재생
+    this.sound.play('sfx_combo', { volume: 0.6 });
+
+    // 콤보 수에 따른 색상 (점점 강렬하게)
+    let color = "#FF6B35";  // 1~2콤보: 주황
+    if (comboCount >= 3 && comboCount < 5) {
+      color = "#FF4444";    // 3~4콤보: 빨강
+    } else if (comboCount >= 5 && comboCount < 10) {
+      color = "#FF00FF";    // 5~9콤보: 마젠타
+    } else if (comboCount >= 10) {
+      color = "#FFD700";    // 10+콤보: 금색
+    }
+
+    // 콤보 이미지 표시
+    const comboY = this.CUSTOMER_Y - 60;
+    const comboImage = this.add
+      .image(GAME_WIDTH / 2, comboY, 'combo')
+      .setDisplaySize(180, 60)
+      .setDepth(150);
+
+    // 콤보 수 텍스트 (이미지 오른쪽에)
+    const comboText = this.add
+      .text(
+        GAME_WIDTH / 2 + 110,
+        comboY,
+        `x${comboCount}`,
+        {
+          fontFamily: "UhBeePuding",
+          fontSize: "36px",
+          color: color,
+          fontStyle: "bold",
+          stroke: "#FFFFFF",
+          strokeThickness: 4,
+        },
+      )
+      .setOrigin(0.5)
+      .setDepth(150);
+
+    // 보너스 금액 텍스트 (아래에)
+    const bonusText = this.add
+      .text(
+        GAME_WIDTH / 2,
+        comboY + 45,
+        `+${bonus.toLocaleString()}원`,
+        {
+          fontFamily: "UhBeePuding",
+          fontSize: "28px",
+          color: color,
+          fontStyle: "bold",
+          stroke: "#FFFFFF",
+          strokeThickness: 3,
+        },
+      )
+      .setOrigin(0.5)
+      .setDepth(150);
+
+    // 애니메이션: 위로 떠오르며 사라짐
+    this.tweens.add({
+      targets: [comboImage, comboText, bonusText],
+      y: `-=80`,
+      alpha: 0,
+      scale: 1.1,
+      duration: 1000,
+      ease: "Power2",
+      onComplete: () => {
+        comboImage.destroy();
+        comboText.destroy();
+        bonusText.destroy();
+      },
     });
   }
 

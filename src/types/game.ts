@@ -150,7 +150,15 @@ export interface GameState {
   maxTime: number;         // 하루 제한 시간
   isStrongFire: boolean;   // 강불 상태
   strongFireRemaining: number; // 강불 남은 시간
+  lastSaleTime: number;    // 마지막 판매 시간 (timeRemaining 값)
+  comboCount: number;      // 현재 콤보 수
 }
+
+// 콤보 시스템 설정
+export const COMBO_CONFIG = {
+  COMBO_THRESHOLD: 2,     // 콤보 발동 시간 (초)
+  BONUS_PER_COMBO: 100,   // 콤보당 보너스 금액
+};
 
 // 익힘 단계별 필요 시간 (초)
 export const COOKING_TIMES: Record<CookingStage, number> = {

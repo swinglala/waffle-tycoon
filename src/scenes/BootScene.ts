@@ -116,6 +116,12 @@ export class BootScene extends Phaser.Scene {
     // 불 이미지
     this.load.image('small_fire', 'assets/images/small_fire.png');
     this.load.image('big_fire', 'assets/images/big_fire.png');
+
+    // 콤보 이미지
+    this.load.image('combo', 'assets/images/combo.png');
+
+    // 효과음
+    this.load.audio('sfx_combo', 'assets/audio/combo.mp3');
   }
 
   create(): void {
