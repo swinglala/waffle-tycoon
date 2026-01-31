@@ -1359,7 +1359,8 @@ export class GameScene extends Phaser.Scene {
 
     const success = this.gameState.money >= this.gameState.targetMoney;
 
-    // 성공/실패 효과음 재생
+    // BGM 정지 후 성공/실패 효과음만 재생
+    this.sound.stopAll();
     if (success) {
       this.sound.play('sfx_success', { volume: 0.7 });
     } else {
