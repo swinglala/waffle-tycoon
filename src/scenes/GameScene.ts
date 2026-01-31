@@ -722,6 +722,9 @@ export class GameScene extends Phaser.Scene {
     this.gameState.money += totalPrice;
     this.customerSlots[index] = null; // 슬롯 비우기 (위치 유지)
 
+    // 판매 효과음
+    this.sound.play('sfx_coin', { volume: 0.5 });
+
     this.updateCustomerDisplay();
     this.updateFinishedTrayDisplay();
 
@@ -995,6 +998,7 @@ export class GameScene extends Phaser.Scene {
       slot.stage = CookingStage.BATTER;
       slot.cookTime = 0;
       this.updateGrillCell(row, col);
+      this.sound.play('sfx_dough', { volume: 0.5 });
     } else if (slot.stage !== CookingStage.BATTER) {
       this.moveToWorkTray(row, col);
     }
@@ -1010,6 +1014,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     const slot = this.grillSlots[row][col];
+
+    // 익힘 상태에 따른 효과음
+    if (slot.stage === CookingStage.PERFECT) {
+      this.sound.play('sfx_perfect', { volume: 0.6 });
+    } else if (slot.stage === CookingStage.COOKED || slot.stage === CookingStage.UNDERCOOKED) {
+      this.sound.play('sfx_good', { volume: 0.5 });
+    }
 
     this.workTray.push({
       stage: slot.stage,
@@ -1069,6 +1080,9 @@ export class GameScene extends Phaser.Scene {
 
     this.workTray.shift(); // 첫 번째 제거
     this.updateWorkTrayDisplay();
+
+    // 버리기 효과음
+    this.sound.play('sfx_trash', { volume: 0.5 });
 
     this.showMessage("🗑️ 버렸어요");
   }

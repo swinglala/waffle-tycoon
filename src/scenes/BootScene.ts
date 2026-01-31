@@ -124,6 +124,11 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('sfx_combo', 'assets/audio/combo.mp3');
     this.load.audio('sfx_success', 'assets/audio/stage_success.mp3');
     this.load.audio('sfx_fail', 'assets/audio/stage_fail.mp3');
+    this.load.audio('sfx_dough', 'assets/audio/dough.mp3');
+    this.load.audio('sfx_coin', 'assets/audio/coin.wav');
+    this.load.audio('sfx_trash', 'assets/audio/trash.mp3');
+    this.load.audio('sfx_good', 'assets/audio/good.mp3');
+    this.load.audio('sfx_perfect', 'assets/audio/perfect.mp3');
 
     // BGM
     this.load.audio('bgm_home', 'assets/audio/home_bgm.mp3');
