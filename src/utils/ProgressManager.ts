@@ -6,6 +6,14 @@ import {
   TRAY_CONFIG,
   TIME_CONFIG,
   STAR_CONFIG,
+  KINDNESS_CONFIG,
+  TIP_CONFIG,
+  KEEP_WARM_CONFIG,
+  BURN_PROTECTION_CONFIG,
+  COMBO_UPGRADE_CONFIG,
+  LUCKY_CONFIG,
+  STRONG_FIRE_CONFIG,
+  COMBO_CONFIG,
   getDayTarget,
 } from "../types/game";
 
@@ -37,11 +45,25 @@ export class ProgressManager {
       dayStars: {},
       dayMoney: {},
       upgrades: {
+        // 🧈 기본 업그레이드
         [UpgradeType.BATTER]: 0,
         [UpgradeType.FIRE_STRENGTH]: 0,
         [UpgradeType.TIME_EXTENSION]: 0,
         [UpgradeType.WORK_TRAY_CAPACITY]: 0,
         [UpgradeType.FINISHED_TRAY_CAPACITY]: 0,
+        // 🐾 손님 업그레이드
+        [UpgradeType.KINDNESS]: 0,
+        [UpgradeType.TIP_BONUS]: 0,
+        // 🔥 굽기 업그레이드
+        [UpgradeType.KEEP_WARM]: 0,
+        [UpgradeType.BURN_PROTECTION]: 0,
+        // 💰 판매 업그레이드
+        [UpgradeType.COMBO_MASTER]: 0,
+        [UpgradeType.COMBO_BONUS]: 0,
+        [UpgradeType.LUCKY_WAFFLE]: 0,
+        // 🔥 강불 업그레이드
+        [UpgradeType.STRONG_FIRE_DURATION]: 0,
+        [UpgradeType.STRONG_FIRE_POWER]: 0,
       },
       unlockedJams: [JamType.APPLE, JamType.BERRY, JamType.PISTACHIO], // 모든 잼 기본 해금
     };
@@ -272,6 +294,109 @@ export class ProgressManager {
    */
   isJamUnlocked(jamType: JamType): boolean {
     return this.state.unlockedJams.includes(jamType);
+  }
+
+  // ========================================
+  // 🐾 손님 업그레이드 효과
+  // ========================================
+
+  /**
+   * 친절 서비스 - 손님 대기시간 보너스 (초)
+   */
+  getKindnessBonus(): number {
+    const level = this.getUpgradeLevel(UpgradeType.KINDNESS);
+    return level * KINDNESS_CONFIG.WAIT_TIME_PER_LEVEL;
+  }
+
+  /**
+   * 단골 보너스 - 팁 확률 (0.0 ~ 1.0)
+   */
+  getTipChance(): number {
+    const level = this.getUpgradeLevel(UpgradeType.TIP_BONUS);
+    return TIP_CONFIG.BASE_CHANCE + level * TIP_CONFIG.CHANCE_PER_LEVEL;
+  }
+
+  /**
+   * 팁 금액
+   */
+  getTipAmount(): number {
+    return TIP_CONFIG.TIP_AMOUNT;
+  }
+
+  // ========================================
+  // 🔥 굽기 업그레이드 효과
+  // ========================================
+
+  /**
+   * 보온 기능 - 퍼펙트 유지시간 보너스 (초)
+   */
+  getKeepWarmBonus(): number {
+    const level = this.getUpgradeLevel(UpgradeType.KEEP_WARM);
+    return level * KEEP_WARM_CONFIG.TIME_PER_LEVEL;
+  }
+
+  /**
+   * 탄 방지 - BURNT까지 시간 보너스 (초)
+   */
+  getBurnProtectionBonus(): number {
+    const level = this.getUpgradeLevel(UpgradeType.BURN_PROTECTION);
+    return level * BURN_PROTECTION_CONFIG.TIME_PER_LEVEL;
+  }
+
+  // ========================================
+  // 💰 판매 업그레이드 효과
+  // ========================================
+
+  /**
+   * 콤보 마스터 - 콤보 유지시간 (초)
+   */
+  getComboThreshold(): number {
+    const level = this.getUpgradeLevel(UpgradeType.COMBO_MASTER);
+    return COMBO_CONFIG.COMBO_THRESHOLD + level * COMBO_UPGRADE_CONFIG.TIME_PER_LEVEL;
+  }
+
+  /**
+   * 콤보 보너스 - 콤보당 보너스 금액 (원)
+   */
+  getComboBonusPerCombo(): number {
+    const level = this.getUpgradeLevel(UpgradeType.COMBO_BONUS);
+    return COMBO_CONFIG.BONUS_PER_COMBO + level * COMBO_UPGRADE_CONFIG.BONUS_PER_LEVEL;
+  }
+
+  /**
+   * 럭키 와플 - 럭키 발동 확률 (0.0 ~ 1.0)
+   */
+  getLuckyChance(): number {
+    const level = this.getUpgradeLevel(UpgradeType.LUCKY_WAFFLE);
+    if (level === 0) return 0; // 업그레이드 안 하면 0%
+    return LUCKY_CONFIG.BASE_CHANCE + (level - 1) * LUCKY_CONFIG.CHANCE_PER_LEVEL;
+  }
+
+  /**
+   * 럭키 발동 여부 체크
+   */
+  rollLucky(): boolean {
+    return Math.random() < this.getLuckyChance();
+  }
+
+  // ========================================
+  // 🔥 강불 업그레이드 효과
+  // ========================================
+
+  /**
+   * 강불 지속시간 (초)
+   */
+  getStrongFireDuration(): number {
+    const level = this.getUpgradeLevel(UpgradeType.STRONG_FIRE_DURATION);
+    return STRONG_FIRE_CONFIG.BASE_DURATION + level * STRONG_FIRE_CONFIG.DURATION_PER_LEVEL;
+  }
+
+  /**
+   * 강불 배율
+   */
+  getStrongFireMultiplier(): number {
+    const level = this.getUpgradeLevel(UpgradeType.STRONG_FIRE_POWER);
+    return STRONG_FIRE_CONFIG.BASE_MULTIPLIER + level * STRONG_FIRE_CONFIG.MULTIPLIER_PER_LEVEL;
   }
 
   // ========================================

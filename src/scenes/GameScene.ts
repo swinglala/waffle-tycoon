@@ -14,7 +14,6 @@ import {
   CUSTOMER_CONFIG,
   JAM_PRICE_MULTIPLIER,
   STAR_CONFIG,
-  COMBO_CONFIG,
   FOX_CONFIG,
   getDayTarget,
   getSpawnInterval,
@@ -465,8 +464,8 @@ export class GameScene extends Phaser.Scene {
     const customerType = this.selectWeightedCustomer(availableTypes);
     const config = CUSTOMER_CONFIG[customerType];
 
-    // 손님별 설정 적용
-    const waitTime = config.waitTime;
+    // 손님별 설정 적용 (친절 서비스 보너스 추가)
+    const waitTime = config.waitTime + this.progressManager.getKindnessBonus();
 
     // 곰 주문 수량은 Day별로 다름
     let orderMin = config.orderMin;
@@ -543,12 +542,15 @@ export class GameScene extends Phaser.Scene {
       orderMin + Math.floor(Math.random() * (orderMax - orderMin + 1));
     const preferredJam = this.determineOrderJam("bear");
 
+    // 친절 서비스 보너스 추가
+    const waitTime = config.waitTime + this.progressManager.getKindnessBonus();
+
     const customer: Customer = {
       id: this.nextCustomerId++,
       type: "bear",
       waffleCount: orderCount,
-      waitTime: config.waitTime,
-      maxWaitTime: config.waitTime,
+      waitTime: waitTime,
+      maxWaitTime: waitTime,
       preferredJam: preferredJam,
     };
 
@@ -702,23 +704,37 @@ export class GameScene extends Phaser.Scene {
         wafflePrice = Math.floor(wafflePrice * FOX_CONFIG.PRICE_MULTIPLIER);
       }
 
+      // 럭키 와플 (가격 2배 확률)
+      if (this.progressManager.rollLucky()) {
+        wafflePrice *= 2;
+        this.showMessage("🍀 럭키!");
+      }
+
       totalPrice += wafflePrice;
       soldCount++;
     }
 
-    // 콤보 판정
+    // 콤보 판정 (콤보 마스터 업그레이드 적용)
     const timeSinceLastSale = this.gameState.lastSaleTime - this.gameState.timeRemaining;
+    const comboThreshold = this.progressManager.getComboThreshold();
 
-    if (this.gameState.lastSaleTime > 0 && timeSinceLastSale <= COMBO_CONFIG.COMBO_THRESHOLD) {
-      // 콤보 증가
+    if (this.gameState.lastSaleTime > 0 && timeSinceLastSale <= comboThreshold) {
+      // 콤보 증가 (콤보 보너스 업그레이드 적용)
       this.gameState.comboCount++;
-      const comboBonus = COMBO_CONFIG.BONUS_PER_COMBO * this.gameState.comboCount;
+      const comboBonus = this.progressManager.getComboBonusPerCombo() * this.gameState.comboCount;
       totalPrice += comboBonus;
       // 콤보 메시지 표시
       this.showComboMessage(this.gameState.comboCount, comboBonus);
     } else {
       // 콤보 리셋
       this.gameState.comboCount = 0;
+    }
+
+    // 팁 보너스 (단골 보너스 업그레이드)
+    if (this.progressManager.getTipChance() > 0 && Math.random() < this.progressManager.getTipChance()) {
+      const tipAmount = this.progressManager.getTipAmount();
+      totalPrice += tipAmount;
+      this.showMessage(`💝 팁 +${tipAmount}원!`);
     }
 
     this.gameState.lastSaleTime = this.gameState.timeRemaining;
@@ -1035,7 +1051,8 @@ export class GameScene extends Phaser.Scene {
   private onFireButtonClick(): void {
     if (!this.gameState.isStrongFire) {
       this.gameState.isStrongFire = true;
-      this.gameState.strongFireRemaining = 3;
+      // 강불 지속시간 업그레이드 적용
+      this.gameState.strongFireRemaining = this.progressManager.getStrongFireDuration();
 
       // 강불 활성화 - 큰 불 이미지로 전환
       this.fireImage.setTexture("big_fire");
@@ -1318,10 +1335,12 @@ export class GameScene extends Phaser.Scene {
         this.customerCooldowns[type] -= deltaSeconds;
       }
     }
-    // 기본 굽기 속도 (업그레이드 반영) * 강불 배율
+    // 기본 굽기 속도 (업그레이드 반영) * 강불 배율 (강불 화력 업그레이드 적용)
     const baseSpeedMultiplier =
       this.progressManager.getCookingSpeedMultiplier();
-    const strongFireMultiplier = this.gameState.isStrongFire ? 2 : 1;
+    const strongFireMultiplier = this.gameState.isStrongFire 
+      ? this.progressManager.getStrongFireMultiplier() 
+      : 1;
     const cookingSpeed = baseSpeedMultiplier * strongFireMultiplier;
 
     // 굽는판 업데이트
@@ -1337,7 +1356,13 @@ export class GameScene extends Phaser.Scene {
           const heatMultiplier = GRILL_HEAT_MULTIPLIER[row][col];
           slot.cookTime += deltaSeconds * cookingSpeed * heatMultiplier;
 
-          const requiredTime = COOKING_TIMES[slot.stage];
+          // 굽기 시간 (보온 기능, 탄 방지 업그레이드 적용)
+          let requiredTime = COOKING_TIMES[slot.stage];
+          if (slot.stage === CookingStage.PERFECT) {
+            // 퍼펙트 유지시간 증가 (보온 기능 + 탄 방지)
+            requiredTime += this.progressManager.getKeepWarmBonus();
+            requiredTime += this.progressManager.getBurnProtectionBonus();
+          }
           if (slot.cookTime >= requiredTime) {
             slot.stage = this.getNextStage(slot.stage);
             slot.cookTime = 0;

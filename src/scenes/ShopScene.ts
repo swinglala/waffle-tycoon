@@ -1,16 +1,78 @@
 import Phaser from "phaser";
 import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
-import { UpgradeType, UPGRADE_CONFIGS } from "../types/game";
+import { UpgradeType, UpgradeCategory, UPGRADE_CONFIGS } from "../types/game";
 import { ProgressManager } from "../utils/ProgressManager";
 
-// 3열 그리드 레이아웃 정의
-const SHOP_LAYOUT: UpgradeType[][] = [
-  [UpgradeType.BATTER, UpgradeType.FIRE_STRENGTH, UpgradeType.TIME_EXTENSION], // 1행: 능력 강화
-  [UpgradeType.WORK_TRAY_CAPACITY, UpgradeType.FINISHED_TRAY_CAPACITY], // 2행: 트레이 확장
+// 카테고리별 업그레이드 그룹
+const UPGRADE_BY_CATEGORY: Record<UpgradeCategory, UpgradeType[]> = {
+  [UpgradeCategory.BASIC]: [
+    UpgradeType.BATTER,
+    UpgradeType.FIRE_STRENGTH,
+    UpgradeType.TIME_EXTENSION,
+    UpgradeType.WORK_TRAY_CAPACITY,
+    UpgradeType.FINISHED_TRAY_CAPACITY,
+  ],
+  [UpgradeCategory.CUSTOMER]: [
+    UpgradeType.KINDNESS,
+    UpgradeType.TIP_BONUS,
+  ],
+  [UpgradeCategory.COOKING]: [
+    UpgradeType.KEEP_WARM,
+    UpgradeType.BURN_PROTECTION,
+  ],
+  [UpgradeCategory.SALES]: [
+    UpgradeType.COMBO_MASTER,
+    UpgradeType.COMBO_BONUS,
+    UpgradeType.LUCKY_WAFFLE,
+  ],
+  [UpgradeCategory.STRONG_FIRE]: [
+    UpgradeType.STRONG_FIRE_DURATION,
+    UpgradeType.STRONG_FIRE_POWER,
+  ],
+};
+
+// 카테고리 표시 이름
+const CATEGORY_NAMES: Record<UpgradeCategory, string> = {
+  [UpgradeCategory.BASIC]: "🧈 기본",
+  [UpgradeCategory.CUSTOMER]: "🐾 손님",
+  [UpgradeCategory.COOKING]: "🔥 굽기",
+  [UpgradeCategory.SALES]: "💰 판매",
+  [UpgradeCategory.STRONG_FIRE]: "🔥 강불",
+};
+
+// 카테고리 순서
+const CATEGORY_ORDER: UpgradeCategory[] = [
+  UpgradeCategory.BASIC,
+  UpgradeCategory.CUSTOMER,
+  UpgradeCategory.COOKING,
+  UpgradeCategory.SALES,
+  UpgradeCategory.STRONG_FIRE,
 ];
+
+// 드래그 vs 클릭 구분 임계값
+const DRAG_THRESHOLD = 10;
 
 export class ShopScene extends Phaser.Scene {
   private progressManager!: ProgressManager;
+  private scrollContainer!: Phaser.GameObjects.Container;
+  private contentHeight: number = 0;
+  private dragStartY: number = 0;
+  private dragStartScrollY: number = 0;
+  private dragDistance: number = 0;
+  private scrollY: number = 0;
+  private minScrollY: number = 0;
+  private maxScrollY: number = 0;
+
+  // 레이아웃 상수
+  private readonly HEADER_HEIGHT = 100;
+  private readonly FOOTER_HEIGHT = 100;
+  private readonly SCROLL_AREA_TOP = 110;
+  private readonly SCROLL_AREA_HEIGHT = GAME_HEIGHT - 210;
+  private readonly COL_COUNT = 3;
+  private readonly CARD_WIDTH = 210;
+  private readonly CARD_HEIGHT = 160;
+  private readonly CARD_GAP = 15;
+  private readonly CATEGORY_HEADER_HEIGHT = 50;
 
   constructor() {
     super({ key: "ShopScene" });
@@ -18,10 +80,14 @@ export class ShopScene extends Phaser.Scene {
 
   create(): void {
     this.progressManager = ProgressManager.getInstance();
+    this.scrollY = 0;
+    this.dragDistance = 0;
+
     this.createBackground();
     this.createHeader();
-    this.createUpgradeGrid();
+    this.createScrollableContent();
     this.createBackButton();
+    this.setupScrolling();
   }
 
   private createBackground(): void {
@@ -31,60 +97,110 @@ export class ShopScene extends Phaser.Scene {
   private createHeader(): void {
     // 헤더 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, 50, GAME_WIDTH - 20, 70, 0xd4a574)
-      .setStrokeStyle(3, 0x8b6914);
+      .rectangle(GAME_WIDTH / 2, 50, GAME_WIDTH, this.HEADER_HEIGHT, 0xd4a574)
+      .setDepth(100);
 
     // 타이틀
     this.add
       .text(GAME_WIDTH / 2, 35, "상점", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
         fontSize: "32px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setDepth(101);
+
+    // 별 잔액 표시
+    const starIconX = GAME_WIDTH / 2 - 30;
+    this.add
+      .image(starIconX, 70, "icon_star")
+      .setDisplaySize(24, 24)
+      .setDepth(101);
+    this.add
+      .text(starIconX + 20, 70, `${this.progressManager.getTotalStars()}`, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "22px",
+        color: "#FFD700",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(101);
+  }
+
+  private createScrollableContent(): void {
+    // 스크롤 영역 마스크
+    const maskShape = this.add
+      .rectangle(
+        GAME_WIDTH / 2,
+        this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT / 2,
+        GAME_WIDTH,
+        this.SCROLL_AREA_HEIGHT,
+        0xffffff
+      )
+      .setVisible(false);
+
+    const mask = maskShape.createGeometryMask();
+
+    // 스크롤 컨테이너
+    this.scrollContainer = this.add.container(0, this.SCROLL_AREA_TOP);
+    this.scrollContainer.setMask(mask);
+
+    // 콘텐츠 생성
+    let currentY = 20;
+
+    for (const category of CATEGORY_ORDER) {
+      const upgrades = UPGRADE_BY_CATEGORY[category];
+
+      // 카테고리 헤더
+      this.createCategoryHeader(category, currentY);
+      currentY += this.CATEGORY_HEADER_HEIGHT;
+
+      // 3열 그리드로 업그레이드 카드 배치
+      const rows = Math.ceil(upgrades.length / this.COL_COUNT);
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < this.COL_COUNT; col++) {
+          const index = row * this.COL_COUNT + col;
+          if (index >= upgrades.length) break;
+
+          const type = upgrades[index];
+          const x = 20 + col * (this.CARD_WIDTH + this.CARD_GAP) + this.CARD_WIDTH / 2;
+          const y = currentY + this.CARD_HEIGHT / 2;
+
+          this.createUpgradeCard(type, x, y);
+        }
+        currentY += this.CARD_HEIGHT + this.CARD_GAP;
+      }
+
+      currentY += 10;
+    }
+
+    this.contentHeight = currentY + 20;
+    this.minScrollY = 0;
+    this.maxScrollY = Math.max(0, this.contentHeight - this.SCROLL_AREA_HEIGHT);
+  }
+
+  private createCategoryHeader(category: UpgradeCategory, y: number): void {
+    const headerBg = this.add
+      .rectangle(GAME_WIDTH / 2, y + 20, GAME_WIDTH - 40, 40, 0xe8d4b8)
+      .setStrokeStyle(2, 0xc9a66b);
+
+    const headerText = this.add
+      .text(GAME_WIDTH / 2, y + 20, CATEGORY_NAMES[category], {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "22px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    // 별 잔액 표시 (아이콘 + 텍스트)
-    const starIconX = GAME_WIDTH / 2 - 30;
-    this.add
-      .image(starIconX, 65, "icon_star")
-      .setDisplaySize(24, 24);
-    this.add
-      .text(starIconX + 20, 65, `${this.progressManager.getTotalStars()}`, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "22px",
-        color: "#FFD700",
-        fontStyle: "bold",
-      })
-      .setOrigin(0, 0.5);
+    this.scrollContainer.add([headerBg, headerText]);
   }
 
-  private createUpgradeGrid(): void {
-    const startY = 190; // 헤더 아래 여유 공간
-    const rowHeight = 200;
-    const colWidth = (GAME_WIDTH - 40) / 3;
-    const cardWidth = colWidth - 20;
-    const cardHeight = 180;
-    const leftPadding = 30; // 왼쪽 여백
-
-    SHOP_LAYOUT.forEach((row, rowIndex) => {
-      const y = startY + rowIndex * rowHeight;
-
-      // 왼쪽 정렬
-      row.forEach((type, colIndex) => {
-        const x = leftPadding + colWidth / 2 + colIndex * colWidth;
-        this.createUpgradeCard(type, x, y, cardWidth, cardHeight);
-      });
-    });
-  }
-
-  private createUpgradeCard(
-    type: UpgradeType,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ): void {
+  private createUpgradeCard(type: UpgradeType, x: number, y: number): void {
     const config = UPGRADE_CONFIGS[type];
     const currentLevel = this.progressManager.getUpgradeLevel(type);
     const isMaxed = currentLevel >= config.maxLevel;
@@ -92,15 +208,16 @@ export class ShopScene extends Phaser.Scene {
     const nextCost = this.progressManager.getUpgradeCost(type);
 
     // 카드 배경
-    this.add
-      .rectangle(x, y, width, height, 0xffffff)
+    const cardBg = this.add
+      .rectangle(x, y, this.CARD_WIDTH, this.CARD_HEIGHT, 0xffffff)
       .setStrokeStyle(3, isMaxed ? 0x4caf50 : 0x8b6914);
 
     // 업그레이드 이름
-    this.add
-      .text(x, y - 55, config.name, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
+    const nameText = this.add
+      .text(x, y - 45, config.name, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "18px",
         color: "#5D4E37",
         fontStyle: "bold",
         align: "center",
@@ -108,34 +225,35 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // 설명
-    this.add
-      .text(x, y - 20, config.description, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "14px",
+    const descText = this.add
+      .text(x, y - 15, config.description, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "13px",
         color: "#7D6E57",
         align: "center",
-        wordWrap: { width: width - 20 },
+        wordWrap: { width: this.CARD_WIDTH - 20 },
       })
       .setOrigin(0.5);
 
     // 레벨 표시
-    this.add
-      .text(x, y + 20, `Lv. ${currentLevel} / ${config.maxLevel}`, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "18px",
+    const levelText = this.add
+      .text(x, y + 15, `Lv. ${currentLevel} / ${config.maxLevel}`, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "16px",
         color: isMaxed ? "#4CAF50" : "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
     // 구매 버튼
-    const btnY = y + 60;
-    const btnWidth = width - 30;
-    const btnHeight = 40;
+    const btnY = y + 50;
+    const btnWidth = this.CARD_WIDTH - 30;
+    const btnHeight = 36;
 
     let btnColor = 0xd4a574;
     let btnTextColor = "#5D4E37";
-    const showStarIcon = !isMaxed;
 
     if (isMaxed) {
       btnColor = 0x4caf50;
@@ -149,39 +267,49 @@ export class ShopScene extends Phaser.Scene {
       .rectangle(x, btnY, btnWidth, btnHeight, btnColor)
       .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x8b6914 : 0x999999);
 
-    if (showStarIcon) {
-      // 별 아이콘 + 비용 표시
-      const starIconSize = 20;
-      this.add
-        .image(x - 18, btnY, "icon_star")
-        .setDisplaySize(starIconSize, starIconSize);
-      this.add
-        .text(x + 5, btnY, `${nextCost}`, {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "18px",
-          color: btnTextColor,
-          fontStyle: "bold",
-        })
-        .setOrigin(0, 0.5);
-    } else {
-      // MAX 텍스트
-      this.add
+    let btnContent: Phaser.GameObjects.GameObject[];
+
+    if (isMaxed) {
+      const maxText = this.add
         .text(x, btnY, "MAX", {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "18px",
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
+          fontSize: "16px",
           color: btnTextColor,
           fontStyle: "bold",
         })
         .setOrigin(0.5);
+      btnContent = [buyBtn, maxText];
+    } else {
+      const starIcon = this.add
+        .image(x - 15, btnY, "icon_star")
+        .setDisplaySize(18, 18);
+      const costText = this.add
+        .text(x + 8, btnY, `${nextCost}`, {
+          fontFamily: "UhBeePuding",
+          padding: { y: 5 },
+          fontSize: "16px",
+          color: btnTextColor,
+          fontStyle: "bold",
+        })
+        .setOrigin(0, 0.5);
+      btnContent = [buyBtn, starIcon, costText];
     }
 
+    // 컨테이너에 추가
+    this.scrollContainer.add([cardBg, nameText, descText, levelText, ...btnContent]);
+
+    // 인터랙션 (MAX가 아닐 때만)
     if (!isMaxed) {
       buyBtn.setInteractive({ useHandCursor: canBuy });
 
-      buyBtn.on("pointerdown", () => {
+      buyBtn.on("pointerup", () => {
+        // 드래그 중이었으면 무시 (클릭만 처리)
+        if (this.dragDistance >= DRAG_THRESHOLD) return;
+
         if (this.progressManager.canPurchaseUpgrade(type)) {
           this.progressManager.purchaseUpgrade(type);
-          this.refreshScene();
+          this.scene.restart();
         } else {
           this.showMessage("별이 부족해요!");
         }
@@ -198,31 +326,67 @@ export class ShopScene extends Phaser.Scene {
     }
   }
 
-  private refreshScene(): void {
-    // 모든 자식 오브젝트 제거 후 다시 생성
-    this.children.removeAll(true);
-    this.createBackground();
-    this.createHeader();
-    this.createUpgradeGrid();
-    this.createBackButton();
+  private setupScrolling(): void {
+    // 전역 포인터 이벤트로 스크롤 처리
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      this.dragStartY = pointer.y;
+      this.dragStartScrollY = this.scrollY;
+      this.dragDistance = 0;
+    });
+
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      if (!pointer.isDown) return;
+
+      const dy = pointer.y - this.dragStartY;
+      this.dragDistance = Math.abs(dy);
+
+      // 스크롤 영역 내에서만 스크롤
+      if (pointer.y >= this.SCROLL_AREA_TOP && 
+          pointer.y <= this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT) {
+        this.scrollY = Phaser.Math.Clamp(
+          this.dragStartScrollY - dy,
+          this.minScrollY,
+          this.maxScrollY
+        );
+        this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
+      }
+    });
+
+    // 마우스 휠 스크롤
+    this.input.on("wheel", (_pointer: Phaser.Input.Pointer, _gameObjects: any, _deltaX: number, deltaY: number) => {
+      this.scrollY = Phaser.Math.Clamp(
+        this.scrollY + deltaY * 0.5,
+        this.minScrollY,
+        this.maxScrollY
+      );
+      this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
+    });
   }
 
   private createBackButton(): void {
-    const btnY = GAME_HEIGHT - 80;
+    const btnY = GAME_HEIGHT - 50;
+
+    // 푸터 배경
+    this.add
+      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT - this.FOOTER_HEIGHT / 2, GAME_WIDTH, this.FOOTER_HEIGHT, 0xfff8e7)
+      .setDepth(100);
 
     const backBtn = this.add
-      .rectangle(GAME_WIDTH / 2, btnY, 200, 60, 0xd4a574)
+      .rectangle(GAME_WIDTH / 2, btnY, 200, 50, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setDepth(101);
 
     this.add
       .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "24px",
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "22px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(101);
 
     backBtn.on("pointerdown", () => {
       this.scene.start("HomeScene");
@@ -246,7 +410,7 @@ export class ShopScene extends Phaser.Scene {
         padding: { x: 20, y: 10 },
       })
       .setOrigin(0.5)
-      .setDepth(100);
+      .setDepth(200);
 
     this.tweens.add({
       targets: msg,
