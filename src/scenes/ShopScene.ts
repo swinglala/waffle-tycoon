@@ -12,10 +12,7 @@ const UPGRADE_BY_CATEGORY: Record<UpgradeCategory, UpgradeType[]> = {
     UpgradeType.WORK_TRAY_CAPACITY,
     UpgradeType.FINISHED_TRAY_CAPACITY,
   ],
-  [UpgradeCategory.CUSTOMER]: [
-    UpgradeType.KINDNESS,
-    UpgradeType.TIP_BONUS,
-  ],
+  [UpgradeCategory.CUSTOMER]: [UpgradeType.KINDNESS, UpgradeType.TIP_BONUS],
   [UpgradeCategory.COOKING]: [
     UpgradeType.KEEP_WARM,
     UpgradeType.BURN_PROTECTION,
@@ -138,7 +135,7 @@ export class ShopScene extends Phaser.Scene {
         this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT / 2,
         GAME_WIDTH,
         this.SCROLL_AREA_HEIGHT,
-        0xffffff
+        0xffffff,
       )
       .setVisible(false);
 
@@ -166,7 +163,8 @@ export class ShopScene extends Phaser.Scene {
           if (index >= upgrades.length) break;
 
           const type = upgrades[index];
-          const x = 20 + col * (this.CARD_WIDTH + this.CARD_GAP) + this.CARD_WIDTH / 2;
+          const x =
+            20 + col * (this.CARD_WIDTH + this.CARD_GAP) + this.CARD_WIDTH / 2;
           const y = currentY + this.CARD_HEIGHT / 2;
 
           this.createUpgradeCard(type, x, y);
@@ -213,7 +211,7 @@ export class ShopScene extends Phaser.Scene {
       .setStrokeStyle(3, isMaxed ? 0x4caf50 : 0x8b6914);
 
     // 업그레이드 이름 + 레벨 (예: "🧈 반죽 개선 LV.1")
-    const levelDisplay = isMaxed ? "MAX" : `LV.${currentLevel+1}`;
+    const levelDisplay = isMaxed ? "MAX" : `LV.${currentLevel + 1}`;
     const nameWithLevel = `${config.name} ${levelDisplay}`;
     const nameText = this.add
       .text(x, y - 40, nameWithLevel, {
@@ -332,26 +330,36 @@ export class ShopScene extends Phaser.Scene {
       this.dragDistance = Math.abs(dy);
 
       // 스크롤 영역 내에서만 스크롤
-      if (pointer.y >= this.SCROLL_AREA_TOP && 
-          pointer.y <= this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT) {
+      if (
+        pointer.y >= this.SCROLL_AREA_TOP &&
+        pointer.y <= this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT
+      ) {
         this.scrollY = Phaser.Math.Clamp(
           this.dragStartScrollY - dy,
           this.minScrollY,
-          this.maxScrollY
+          this.maxScrollY,
         );
         this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
       }
     });
 
     // 마우스 휠 스크롤
-    this.input.on("wheel", (_pointer: Phaser.Input.Pointer, _gameObjects: any, _deltaX: number, deltaY: number) => {
-      this.scrollY = Phaser.Math.Clamp(
-        this.scrollY + deltaY * 0.5,
-        this.minScrollY,
-        this.maxScrollY
-      );
-      this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
-    });
+    this.input.on(
+      "wheel",
+      (
+        _pointer: Phaser.Input.Pointer,
+        _gameObjects: any,
+        _deltaX: number,
+        deltaY: number,
+      ) => {
+        this.scrollY = Phaser.Math.Clamp(
+          this.scrollY + deltaY * 0.5,
+          this.minScrollY,
+          this.maxScrollY,
+        );
+        this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
+      },
+    );
   }
 
   private createBackButton(): void {
@@ -359,17 +367,30 @@ export class ShopScene extends Phaser.Scene {
 
     // 푸터 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT - this.FOOTER_HEIGHT / 2, GAME_WIDTH, this.FOOTER_HEIGHT, 0xfff8e7)
+      .rectangle(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT - this.FOOTER_HEIGHT / 2,
+        GAME_WIDTH,
+        this.FOOTER_HEIGHT,
+        0xfff8e7,
+      )
       .setDepth(100);
 
     const backBtn = this.add
-      .rectangle(GAME_WIDTH / 2, btnY, 200, 50, 0xd4a574)
-      .setStrokeStyle(3, 0x8b6914)
+      .image(GAME_WIDTH / 2, btnY, "button")
+      .setDisplaySize(300, 100)
       .setInteractive({ useHandCursor: true })
       .setDepth(101);
 
+    // 홈 아이콘
+    const homeIcon = this.add
+      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .setDisplaySize(60, 60)
+      .setDepth(102);
+
+    // 텍스트
     this.add
-      .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
+      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "26px",
@@ -377,17 +398,19 @@ export class ShopScene extends Phaser.Scene {
         fontStyle: "bold",
       })
       .setOrigin(0.5)
-      .setDepth(101);
+      .setDepth(102);
 
     backBtn.on("pointerdown", () => {
       this.scene.start("HomeScene");
     });
 
     backBtn.on("pointerover", () => {
-      backBtn.setFillStyle(0xc49a6c);
+      backBtn.setTint(0xdddddd);
+      homeIcon.setTint(0xdddddd);
     });
     backBtn.on("pointerout", () => {
-      backBtn.setFillStyle(0xd4a574);
+      backBtn.clearTint();
+      homeIcon.clearTint();
     });
   }
 

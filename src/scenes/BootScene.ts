@@ -63,6 +63,9 @@ export class BootScene extends Phaser.Scene {
     this.load.image('btn_berry_jam', 'assets/images/btn_berry_jam.png');
     this.load.image('btn_pistachio_jam', 'assets/images/btn_pistachio_jam.png');
     this.load.image('btn_trash', 'assets/images/btn_trash.png');
+    this.load.image('button', 'assets/images/button.png');
+    this.load.image('home', 'assets/images/home.png');
+    this.load.image('home_100', 'assets/images/home_100.png');
 
     // 트레이 배경
     this.load.image('ready_tray', 'assets/images/ready_tray.png');

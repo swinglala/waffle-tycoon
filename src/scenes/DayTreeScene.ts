@@ -659,14 +659,21 @@ export class DayTreeScene extends Phaser.Scene {
     const btnY = GAME_HEIGHT - 80;
 
     const backBtn = this.add
-      .rectangle(GAME_WIDTH / 2, btnY, 200, 60, 0xd4a574)
-      .setStrokeStyle(3, 0x8b6914)
+      .image(GAME_WIDTH / 2, btnY, "button")
+      .setDisplaySize(300, 100)
       .setInteractive({ useHandCursor: true });
 
+    // 홈 아이콘
+    const homeIcon = this.add
+      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .setDisplaySize(60, 60);
+
+    // 텍스트
     this.add
-      .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "24px",
+      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -677,10 +684,12 @@ export class DayTreeScene extends Phaser.Scene {
     });
 
     backBtn.on("pointerover", () => {
-      backBtn.setFillStyle(0xc49a6c);
+      backBtn.setTint(0xdddddd);
+      homeIcon.setTint(0xdddddd);
     });
     backBtn.on("pointerout", () => {
-      backBtn.setFillStyle(0xd4a574);
+      backBtn.clearTint();
+      homeIcon.clearTint();
     });
   }
 

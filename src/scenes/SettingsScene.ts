@@ -15,6 +15,7 @@ export class SettingsScene extends Phaser.Scene {
     this.createBackground();
     this.createHeader();
     this.createSettingsUI();
+    this.createBackButton();
   }
 
   private createBackground(): void {
@@ -37,29 +38,6 @@ export class SettingsScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
-
-    // 뒤로가기 버튼
-    const backBtn = this.add
-      .rectangle(60, 60, 80, 50, 0xE8DCC4)
-      .setStrokeStyle(2, 0x8B6914)
-      .setInteractive({ useHandCursor: true });
-
-    this.add
-      .text(60, 60, '← 뒤로', {
-        fontFamily: 'UhBeePuding',
-        padding: { y: 5 },
-        fontSize: '18px',
-        color: '#5D4E37',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-
-    backBtn.on('pointerdown', () => {
-      this.scene.start('HomeScene');
-    });
-
-    backBtn.on('pointerover', () => backBtn.setFillStyle(0xD4C4A8));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(0xE8DCC4));
   }
 
   private createSettingsUI(): void {
@@ -203,6 +181,44 @@ export class SettingsScene extends Phaser.Scene {
 
       // 콜백 호출
       onChange(isEnabled);
+    });
+  }
+
+  private createBackButton(): void {
+    const btnY = GAME_HEIGHT - 80;
+
+    const backBtn = this.add
+      .image(GAME_WIDTH / 2, btnY, "button")
+      .setDisplaySize(300, 100)
+      .setInteractive({ useHandCursor: true });
+
+    // 홈 아이콘
+    const homeIcon = this.add
+      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .setDisplaySize(60, 60);
+
+    // 텍스트
+    this.add
+      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "26px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    backBtn.on("pointerdown", () => {
+      this.scene.start("HomeScene");
+    });
+
+    backBtn.on("pointerover", () => {
+      backBtn.setTint(0xdddddd);
+      homeIcon.setTint(0xdddddd);
+    });
+    backBtn.on("pointerout", () => {
+      backBtn.clearTint();
+      homeIcon.clearTint();
     });
   }
 }
