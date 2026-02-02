@@ -74,9 +74,8 @@ BootScene (에셋 로딩) → HomeScene (메인 메뉴) → GameScene (게임 �
 - **돌아가기 버튼**: HomeScene으로 이동
 
 ### ShopScene (상점)
-- **2행 그리드 레이아웃**:
-  - 1행: 🧈 반죽 개선, 🔥 화력 강화, ⏱️ 시간 연장
-  - 2행: 📥 준비트레이, 📤 완성트레이
+- **카테고리별 그리드 레이아웃** (3열 스크롤)
+- **카테고리**: 기본, 손님, 굽기, 판매, 강불
 - **별로 구매**: 레벨별 다른 비용
 - **돌아가기 버튼**: HomeScene으로 이동
 
@@ -161,42 +160,19 @@ BootScene (에셋 로딩) → HomeScene (메인 메뉴) → GameScene (게임 �
 
 ---
 
-## 월(Month) 시스템
-
-### 기본 구조
-- **한 달 = 30일** (Day 1~30)
-- 30일 완료 → 다음 달로 자동 진행
-- **업그레이드/별: 전체 통합 유지** (리셋 없음)
-
-### 월별 설정
-| 월 | 잼 | 가격 배율 | 손님 주문량 | 테마 |
-|----|-----|-----------|-------------|------|
-| 1월 | 🍎 사과잼 | 1.0x | 기본 (1~3개) | 기본 |
-| 2월 | 🍓 베리잼 | 2.0x | +1개 (2~4개) | TBD |
-| 3월 | 🥜 피스타치오잼 | 3.0x | +2개 (3~5개) | TBD |
-| 4월 | 🍫 초콜릿잼 | 4.0x | +3개 (4~6개) | TBD |
-
-### 난이도 설계
-- 가격 배율 증가 > 목표 금액 증가 비율
-- **결과**: 체감 난이도 완만 + 성취감 증가
-- 예: 2월은 와플 가격 2배지만 목표는 1.8배 → 실제로 더 쉬움
-- **월별 챌린지**: 손님당 주문 개수 증가 → 동시에 더 많이 구워야 함
-
----
-
 ## 잼 시스템
 
-### 월별 단일 잼
-- **한 달에 한 가지 잼만 사용** (선택 UI 없음)
-- 잼 버튼 1개 (현재 월의 잼 자동 적용)
+### 단일 잼 (사과잼)
+- **사과잼만 사용** (선택 UI 없음)
+- 잼 버튼 1개 (사과잼 자동 적용)
 - 손님도 잼 종류 주문 안 함 (개수만 주문)
 
 ### 가격 계산
 ```
-최종가격 = (기본가격 + 반죽보너스) × 월별가격배율
+최종가격 = 기본가격 + 반죽보너스
 ```
 
-### 기본 가격표 (1월 기준)
+### 기본 가격표
 | 익힘 단계 | 기본 가격 |
 |-----------|-----------|
 | 덜익음 (UNDERCOOKED) | 1,500원 |
@@ -233,9 +209,6 @@ BootScene (에셋 로딩) → HomeScene (메인 메뉴) → GameScene (게임 �
 - **rabbit**: 매우 급함 (8초), 연속 등장 방지 (10초 쿨다운)
 - **bear**: 대량 주문 (Day 10~19: 5개, Day 20~29: 5~6개, Day 30+: 5~7개), 드물게 등장 (가중치 0.15, 20초 쿨다운)
 - **fox**: **퍼펙트 와플만** 받음, **조건 만족 시 1.5배 금액 지불**
-
-### 주문 잼
-- 모든 손님이 해금된 잼 중 **랜덤**으로 주문
 
 ---
 
@@ -356,8 +329,7 @@ getSpawnInterval(day, dayTime) = {
 
 ### UI 이미지
 - `grill_slot_empty.png` - 빈 굽는판 칸
-- `btn_jam.png` - 잼 버튼 (월별 색상 변경 또는 동적 생성)
-- `btn_apple_jam.png`, `btn_berry_jam.png`, `btn_pistachio_jam.png` - 잼 버튼 (레거시, 월별 사용)
+- `btn_apple_jam.png` - 잼 버튼
 - `btn_trash.png` - 버리기 버튼
 - `ready_tray.png` - 작업 트레이 배경
 - `finished_plate.png` - 완성품 트레이 배경
@@ -365,7 +337,7 @@ getSpawnInterval(day, dayTime) = {
 - `home_background.png` - 홈 화면 배경
 
 ### 주문 이미지
-- `order_apple_jam.png`, `order_berry_jam.png`, `order_pistachio_jam.png`
+- `order_apple_jam.png` - 사과잼 주문 표시
 
 ### 손님 이미지
 - `customer_{type}.png` - 일반 (7종)
@@ -440,7 +412,7 @@ GRILL_START_Y = 680    // 3x3 굽는판 시작
 // 익힘 단계
 enum CookingStage { EMPTY, BATTER, UNDERCOOKED, COOKED, PERFECT, BURNT }
 
-// 잼 종류
+// 잼 종류 (현재 APPLE만 사용)
 enum JamType { NONE, APPLE, BERRY, PISTACHIO }
 
 // 손님 종류
@@ -455,9 +427,9 @@ enum UpgradeType {
 // 주요 인터페이스
 interface GrillSlot { stage: CookingStage; cookTime: number }
 interface TrayWaffle { stage: CookingStage; jamType: JamType }
-interface Customer { id, type, waffleCount, waitTime, maxWaitTime, preferredJam }
+interface Customer { id, type, waffleCount, waitTime, maxWaitTime }
 interface GameState { day, money, targetMoney, timeRemaining, maxTime, isStrongFire, strongFireRemaining, lastSaleTime, comboCount }
-interface ProgressState { totalStars, currentDay, dayStars, upgrades, unlockedJams }
+interface ProgressState { totalStars, currentDay, dayStars, dayMoney, upgrades }
 ```
 
 ---
@@ -503,7 +475,6 @@ CREATE TABLE game_progress (
   day_stars JSONB,
   day_money JSONB,
   upgrades JSONB,
-  unlocked_jams TEXT[],
   hearts INTEGER,
   last_recharge_time BIGINT,
   created_at TIMESTAMPTZ,
@@ -533,22 +504,17 @@ CREATE TABLE game_progress (
 
 ## 향후 개발 아이디어
 
-### 우선 개발 (v2.0)
-- [ ] 월(Month) 시스템 구현
-- [ ] 잼 시스템 단순화 (월별 단일 잼)
-- [ ] 상점 UI 리뉴얼 (3열 그리드 스크롤)
-- [ ] 신규 업그레이드 추가 (손님/굽기/판매/강불)
-- [ ] 튜토리얼 만들기
-
 ### 완료됨
 - [x] 효과음, 배경음 만들기 ✅
 - [x] Day 트리 만들기 ✅
 - [x] 콤보 시스템 ✅
 - [x] 회원 시스템 (Google 로그인, 클라우드 저장) ✅
 - [x] 설정 화면 (사운드 on/off) ✅
+- [x] 튜토리얼 만들기 ✅
+- [x] 상점 UI 리뉴얼 (3열 그리드 스크롤) ✅
+- [x] 신규 업그레이드 추가 (손님/굽기/판매/강불) ✅
 
 ### 추후 개발
-- [ ] 2월~4월 테마/배경/손님 디자인
 - [ ] 랭킹 시스템 구현
 - [ ] 특수 이벤트 (행운의 날, 러시아워 등)
 - [ ] 업적 시스템

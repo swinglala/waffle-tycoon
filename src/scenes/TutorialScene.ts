@@ -239,23 +239,25 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private createToppingButtons(): void {
-    const buttonSize = 100;
+    const jamImageWidth = 350;
+    const jamImageHeight = 115;
+    const trashBtnSize = 130;
 
-    // 사과잼 버튼만 (튜토리얼)
-    const startX = 70;
+    // 사과잼 버튼 (GameScene과 동일한 크기)
+    const jamX = 260;
     this.jamButton = this.add
-      .image(startX, this.TOPPING_BTN_Y, "btn_apple_jam")
-      .setDisplaySize(buttonSize, buttonSize)
+      .image(jamX, this.TOPPING_BTN_Y, "btn_apple_jam")
+      .setDisplaySize(jamImageWidth, jamImageHeight)
       .setInteractive({ useHandCursor: true })
       .setDepth(5); // 기본 depth는 낮게
 
     this.jamButton.on("pointerdown", () => this.onJamButtonClick());
 
     // 쓰레기통 버튼
-    const trashX = GAME_WIDTH - 70;
+    const trashX = GAME_WIDTH - 85;
     this.trashButton = this.add
       .image(trashX, this.TOPPING_BTN_Y, "btn_trash")
-      .setDisplaySize(buttonSize, buttonSize)
+      .setDisplaySize(trashBtnSize, trashBtnSize)
       .setInteractive({ useHandCursor: true })
       .setDepth(5); // 기본 depth는 낮게
 
@@ -1061,14 +1063,16 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private highlightJamButton(): void {
-    this.createHighlightFrame(70, this.TOPPING_BTN_Y, 120, 120);
+    // 잼 버튼 크기 350x115에 맞춰 하이라이트 (여백 포함)
+    this.createHighlightFrame(260, this.TOPPING_BTN_Y, 370, 135);
 
     // 잼 버튼의 depth를 높임
     this.jamButton.setDepth(TUTORIAL_CONFIG.HIGHLIGHT_DEPTH + 10);
   }
 
   private highlightTrashButton(): void {
-    this.createHighlightFrame(GAME_WIDTH - 70, this.TOPPING_BTN_Y, 120, 120);
+    // 쓰레기통 버튼 크기 130x130에 맞춰 하이라이트 (여백 포함)
+    this.createHighlightFrame(GAME_WIDTH - 85, this.TOPPING_BTN_Y, 150, 150);
 
     // 쓰레기통 버튼의 depth를 높임
     this.trashButton.setDepth(TUTORIAL_CONFIG.HIGHLIGHT_DEPTH + 10);

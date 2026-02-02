@@ -236,7 +236,7 @@ export class GameScene extends Phaser.Scene {
 
     // BGM 재생 (기존 BGM 정지 후)
     this.sound.stopAll();
-    this.soundManager.playBgm(this, 'bgm_play', { volume: 0.4 });
+    this.soundManager.playBgm(this, "bgm_play", { volume: 0.4 });
 
     // 트레이 용량 설정 (업그레이드 반영)
     this.workTrayCapacity = this.progressManager.getWorkTrayCapacity();
@@ -699,7 +699,7 @@ export class GameScene extends Phaser.Scene {
       let wafflePrice = Math.floor((basePrice + batterBonus) * jamMultiplier);
 
       // 여우 손님은 1.5배 지불
-      if (customer.type === 'fox') {
+      if (customer.type === "fox") {
         wafflePrice = Math.floor(wafflePrice * FOX_CONFIG.PRICE_MULTIPLIER);
       }
 
@@ -714,13 +714,19 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 콤보 판정 (콤보 마스터 업그레이드 적용)
-    const timeSinceLastSale = this.gameState.lastSaleTime - this.gameState.timeRemaining;
+    const timeSinceLastSale =
+      this.gameState.lastSaleTime - this.gameState.timeRemaining;
     const comboThreshold = this.progressManager.getComboThreshold();
 
-    if (this.gameState.lastSaleTime > 0 && timeSinceLastSale <= comboThreshold) {
+    if (
+      this.gameState.lastSaleTime > 0 &&
+      timeSinceLastSale <= comboThreshold
+    ) {
       // 콤보 증가 (콤보 보너스 업그레이드 적용)
       this.gameState.comboCount++;
-      const comboBonus = this.progressManager.getComboBonusPerCombo() * this.gameState.comboCount;
+      const comboBonus =
+        this.progressManager.getComboBonusPerCombo() *
+        this.gameState.comboCount;
       totalPrice += comboBonus;
       // 콤보 메시지 표시
       this.showComboMessage(this.gameState.comboCount, comboBonus);
@@ -730,7 +736,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     // 팁 보너스 (단골 보너스 업그레이드)
-    if (this.progressManager.getTipChance() > 0 && Math.random() < this.progressManager.getTipChance()) {
+    if (
+      this.progressManager.getTipChance() > 0 &&
+      Math.random() < this.progressManager.getTipChance()
+    ) {
       const tipAmount = this.progressManager.getTipAmount();
       totalPrice += tipAmount;
       this.showMessage(`💝 팁 +${tipAmount}원!`);
@@ -741,7 +750,7 @@ export class GameScene extends Phaser.Scene {
     this.customerSlots[index] = null; // 슬롯 비우기 (위치 유지)
 
     // 판매 효과음
-    this.soundManager.playSfx(this, 'sfx_coin', { volume: 0.5 });
+    this.soundManager.playSfx(this, "sfx_coin", { volume: 0.5 });
 
     this.updateCustomerDisplay();
     this.updateFinishedTrayDisplay();
@@ -863,20 +872,23 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createToppingButtons(): void {
-    const buttonSize = 100; // 잼 버튼 크기
-    const trashBtnSize = 100;
+    const jamImageWidth = 350;
+    const jamImageHeight = 115;
+    const trashBtnSize = 130;
 
-    // 사과잼 버튼만 표시
-    const startX = 70;
+    // 사과잼 버튼
+    const jamX = 260;
+
+    // 잼 이미지 (300x100)
     const jamBtn = this.add
-      .image(startX, this.TOPPING_BTN_Y, "btn_apple_jam")
-      .setDisplaySize(buttonSize, buttonSize)
+      .image(jamX, this.TOPPING_BTN_Y, "btn_apple_jam")
+      .setDisplaySize(jamImageWidth, jamImageHeight)
       .setInteractive({ useHandCursor: true });
 
     jamBtn.on("pointerdown", () => this.applyJam(JamType.APPLE));
 
     // 쓰레기통 버튼 (오른쪽)
-    const trashX = GAME_WIDTH - 70;
+    const trashX = GAME_WIDTH - 85;
     const trashButtonImg = this.add
       .image(trashX, this.TOPPING_BTN_Y, "btn_trash")
       .setDisplaySize(trashBtnSize, trashBtnSize)
@@ -993,7 +1005,7 @@ export class GameScene extends Phaser.Scene {
       slot.stage = CookingStage.BATTER;
       slot.cookTime = 0;
       this.updateGrillCell(row, col);
-      this.soundManager.playSfx(this, 'sfx_dough', { volume: 0.5 });
+      this.soundManager.playSfx(this, "sfx_dough", { volume: 0.5 });
     } else if (slot.stage !== CookingStage.BATTER) {
       this.moveToWorkTray(row, col);
     }
@@ -1011,7 +1023,7 @@ export class GameScene extends Phaser.Scene {
     const slot = this.grillSlots[row][col];
 
     // 와플 집기 효과음
-    this.soundManager.playSfx(this, 'sfx_waffle', { volume: 0.5 });
+    this.soundManager.playSfx(this, "sfx_waffle", { volume: 0.5 });
 
     this.workTray.push({
       stage: slot.stage,
@@ -1028,13 +1040,14 @@ export class GameScene extends Phaser.Scene {
     if (!this.gameState.isStrongFire) {
       this.gameState.isStrongFire = true;
       // 강불 지속시간 업그레이드 적용
-      this.gameState.strongFireRemaining = this.progressManager.getStrongFireDuration();
+      this.gameState.strongFireRemaining =
+        this.progressManager.getStrongFireDuration();
 
       // 강불 활성화 - 큰 불 이미지로 전환
       this.fireImage.setTexture("big_fire");
 
       // 강불 효과음
-      this.soundManager.playSfx(this, 'sfx_fire', { volume: 0.5 });
+      this.soundManager.playSfx(this, "sfx_fire", { volume: 0.5 });
     }
   }
 
@@ -1077,7 +1090,7 @@ export class GameScene extends Phaser.Scene {
     this.updateWorkTrayDisplay();
 
     // 버리기 효과음
-    this.soundManager.playSfx(this, 'sfx_trash', { volume: 0.5 });
+    this.soundManager.playSfx(this, "sfx_trash", { volume: 0.5 });
 
     this.showMessage("🗑️ 버렸어요");
   }
@@ -1105,58 +1118,48 @@ export class GameScene extends Phaser.Scene {
 
   private showComboMessage(comboCount: number, bonus: number): void {
     // 콤보 효과음 재생
-    this.soundManager.playSfx(this, 'sfx_combo', { volume: 0.6 });
+    this.soundManager.playSfx(this, "sfx_combo", { volume: 0.6 });
 
     // 콤보 수에 따른 색상 (점점 강렬하게)
-    let color = "#FF6B35";  // 1~2콤보: 주황
+    let color = "#FF6B35"; // 1~2콤보: 주황
     if (comboCount >= 3 && comboCount < 5) {
-      color = "#FF4444";    // 3~4콤보: 빨강
+      color = "#FF4444"; // 3~4콤보: 빨강
     } else if (comboCount >= 5 && comboCount < 10) {
-      color = "#FF00FF";    // 5~9콤보: 마젠타
+      color = "#FF00FF"; // 5~9콤보: 마젠타
     } else if (comboCount >= 10) {
-      color = "#FFD700";    // 10+콤보: 금색
+      color = "#FFD700"; // 10+콤보: 금색
     }
 
     // 콤보 이미지 표시
     const comboY = this.CUSTOMER_Y - 60;
     const comboImage = this.add
-      .image(GAME_WIDTH / 2, comboY, 'combo')
+      .image(GAME_WIDTH / 2, comboY, "combo")
       .setDisplaySize(180, 60)
       .setDepth(150);
 
     // 콤보 수 텍스트 (이미지 오른쪽에)
     const comboText = this.add
-      .text(
-        GAME_WIDTH / 2 + 110,
-        comboY,
-        `x${comboCount}`,
-        {
-          fontFamily: "UhBeePuding",
-          fontSize: "36px",
-          color: color,
-          fontStyle: "bold",
-          stroke: "#FFFFFF",
-          strokeThickness: 4,
-        },
-      )
+      .text(GAME_WIDTH / 2 + 110, comboY, `x${comboCount}`, {
+        fontFamily: "UhBeePuding",
+        fontSize: "36px",
+        color: color,
+        fontStyle: "bold",
+        stroke: "#FFFFFF",
+        strokeThickness: 4,
+      })
       .setOrigin(0.5)
       .setDepth(150);
 
     // 보너스 금액 텍스트 (아래에)
     const bonusText = this.add
-      .text(
-        GAME_WIDTH / 2,
-        comboY + 45,
-        `+${bonus.toLocaleString()}원`,
-        {
-          fontFamily: "UhBeePuding",
-          fontSize: "28px",
-          color: color,
-          fontStyle: "bold",
-          stroke: "#FFFFFF",
-          strokeThickness: 3,
-        },
-      )
+      .text(GAME_WIDTH / 2, comboY + 45, `+${bonus.toLocaleString()}원`, {
+        fontFamily: "UhBeePuding",
+        fontSize: "28px",
+        color: color,
+        fontStyle: "bold",
+        stroke: "#FFFFFF",
+        strokeThickness: 3,
+      })
       .setOrigin(0.5)
       .setDepth(150);
 
@@ -1314,8 +1317,8 @@ export class GameScene extends Phaser.Scene {
     // 기본 굽기 속도 (업그레이드 반영) * 강불 배율 (강불 화력 업그레이드 적용)
     const baseSpeedMultiplier =
       this.progressManager.getCookingSpeedMultiplier();
-    const strongFireMultiplier = this.gameState.isStrongFire 
-      ? this.progressManager.getStrongFireMultiplier() 
+    const strongFireMultiplier = this.gameState.isStrongFire
+      ? this.progressManager.getStrongFireMultiplier()
       : 1;
     const cookingSpeed = baseSpeedMultiplier * strongFireMultiplier;
 
@@ -1379,9 +1382,9 @@ export class GameScene extends Phaser.Scene {
     // BGM 정지 후 성공/실패 효과음만 재생
     this.sound.stopAll();
     if (success) {
-      this.soundManager.playSfx(this, 'sfx_success', { volume: 0.7 });
+      this.soundManager.playSfx(this, "sfx_success", { volume: 0.7 });
     } else {
-      this.soundManager.playSfx(this, 'sfx_fail', { volume: 0.7 });
+      this.soundManager.playSfx(this, "sfx_fail", { volume: 0.7 });
     }
 
     // 별 계산 및 적립 (성공 시에만)
@@ -1950,7 +1953,13 @@ export class GameScene extends Phaser.Scene {
     const popupWidth = 550;
     const popupHeight = 520;
     const popup = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, popupWidth, popupHeight, 0xfff8e7)
+      .rectangle(
+        GAME_WIDTH / 2,
+        GAME_HEIGHT / 2,
+        popupWidth,
+        popupHeight,
+        0xfff8e7,
+      )
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(501);
 
