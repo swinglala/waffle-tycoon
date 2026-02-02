@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { gameConfig } from './config/gameConfig';
-import 'pretendard/dist/web/static/pretendard.css';
+// Pretendard는 index.html에서 CDN subset으로 로드
 
 // 게임 인스턴스 생성
 const game = new Phaser.Game(gameConfig);

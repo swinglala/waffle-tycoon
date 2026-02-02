@@ -1,8 +1,25 @@
 {
-  "hash": "15422ca6",
+  "hash": "c399f392",
   "configHash": "a5321af4",
-  "lockfileHash": "e3b0c442",
-  "browserHash": "34caa9a2",
-  "optimized": {},
-  "chunks": {}
+  "lockfileHash": "bd3cdc85",
+  "browserHash": "256e4c10",
+  "optimized": {
+    "phaser": {
+      "src": "../../node_modules/phaser/dist/phaser.js",
+      "file": "phaser.js",
+      "fileHash": "1c216027",
+      "needsInterop": true
+    },
+    "@supabase/supabase-js": {
+      "src": "../../node_modules/@supabase/supabase-js/dist/index.mjs",
+      "file": "@supabase_supabase-js.js",
+      "fileHash": "4602c93a",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-BUSYA2B4": {
+      "file": "chunk-BUSYA2B4.js"
+    }
+  }
 }
