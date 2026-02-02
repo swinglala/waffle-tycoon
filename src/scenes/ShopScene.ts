@@ -105,7 +105,7 @@ export class ShopScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, 35, "상점", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "32px",
+        fontSize: "36px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -113,16 +113,16 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(101);
 
     // 별 잔액 표시
-    const starIconX = GAME_WIDTH / 2 - 30;
+    const starIconX = GAME_WIDTH / 2 - 35;
     this.add
       .image(starIconX, 70, "icon_star")
-      .setDisplaySize(24, 24)
+      .setDisplaySize(28, 28)
       .setDepth(101);
     this.add
-      .text(starIconX + 20, 70, `${this.progressManager.getTotalStars()}`, {
+      .text(starIconX + 22, 70, `${this.progressManager.getTotalStars()}`, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "22px",
+        fontSize: "26px",
         color: "#FFD700",
         fontStyle: "bold",
       })
@@ -184,14 +184,14 @@ export class ShopScene extends Phaser.Scene {
 
   private createCategoryHeader(category: UpgradeCategory, y: number): void {
     const headerBg = this.add
-      .rectangle(GAME_WIDTH / 2, y + 20, GAME_WIDTH - 40, 40, 0xe8d4b8)
-      .setStrokeStyle(2, 0xc9a66b);
+      .rectangle(GAME_WIDTH / 2, y + 20, GAME_WIDTH - 40, 44, 0xffd982)
+      .setStrokeStyle(2, 0x6b3e26);
 
     const headerText = this.add
       .text(GAME_WIDTH / 2, y + 20, CATEGORY_NAMES[category], {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "22px",
+        fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -212,13 +212,15 @@ export class ShopScene extends Phaser.Scene {
       .rectangle(x, y, this.CARD_WIDTH, this.CARD_HEIGHT, 0xffffff)
       .setStrokeStyle(3, isMaxed ? 0x4caf50 : 0x8b6914);
 
-    // 업그레이드 이름
+    // 업그레이드 이름 + 레벨 (예: "🧈 반죽 개선 LV.1")
+    const levelDisplay = isMaxed ? "MAX" : `LV.${currentLevel+1}`;
+    const nameWithLevel = `${config.name} ${levelDisplay}`;
     const nameText = this.add
-      .text(x, y - 45, config.name, {
+      .text(x, y - 40, nameWithLevel, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "18px",
-        color: "#5D4E37",
+        fontSize: "28px",
+        color: isMaxed ? "#4CAF50" : "#5D4E37",
         fontStyle: "bold",
         align: "center",
       })
@@ -226,31 +228,20 @@ export class ShopScene extends Phaser.Scene {
 
     // 설명
     const descText = this.add
-      .text(x, y - 15, config.description, {
+      .text(x, y + 5, config.description, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "13px",
+        fontSize: "25px",
         color: "#7D6E57",
         align: "center",
         wordWrap: { width: this.CARD_WIDTH - 20 },
       })
       .setOrigin(0.5);
 
-    // 레벨 표시
-    const levelText = this.add
-      .text(x, y + 15, `Lv. ${currentLevel} / ${config.maxLevel}`, {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "16px",
-        color: isMaxed ? "#4CAF50" : "#5D4E37",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
-
     // 구매 버튼
     const btnY = y + 50;
     const btnWidth = this.CARD_WIDTH - 30;
-    const btnHeight = 36;
+    const btnHeight = 40;
 
     let btnColor = 0xd4a574;
     let btnTextColor = "#5D4E37";
@@ -265,7 +256,7 @@ export class ShopScene extends Phaser.Scene {
 
     const buyBtn = this.add
       .rectangle(x, btnY, btnWidth, btnHeight, btnColor)
-      .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x8b6914 : 0x999999);
+      .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x6b3e26 : 0x999999);
 
     let btnContent: Phaser.GameObjects.GameObject[];
 
@@ -274,7 +265,7 @@ export class ShopScene extends Phaser.Scene {
         .text(x, btnY, "MAX", {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
-          fontSize: "16px",
+          fontSize: "25px",
           color: btnTextColor,
           fontStyle: "bold",
         })
@@ -282,13 +273,13 @@ export class ShopScene extends Phaser.Scene {
       btnContent = [buyBtn, maxText];
     } else {
       const starIcon = this.add
-        .image(x - 15, btnY, "icon_star")
-        .setDisplaySize(18, 18);
+        .image(x - 25, btnY, "icon_star")
+        .setDisplaySize(28, 28);
       const costText = this.add
-        .text(x + 8, btnY, `${nextCost}`, {
+        .text(x + 5, btnY, `${nextCost}`, {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
-          fontSize: "16px",
+          fontSize: "25px",
           color: btnTextColor,
           fontStyle: "bold",
         })
@@ -297,7 +288,7 @@ export class ShopScene extends Phaser.Scene {
     }
 
     // 컨테이너에 추가
-    this.scrollContainer.add([cardBg, nameText, descText, levelText, ...btnContent]);
+    this.scrollContainer.add([cardBg, nameText, descText, ...btnContent]);
 
     // 인터랙션 (MAX가 아닐 때만)
     if (!isMaxed) {
@@ -381,7 +372,7 @@ export class ShopScene extends Phaser.Scene {
       .text(GAME_WIDTH / 2, btnY, "← 돌아가기", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "22px",
+        fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -404,7 +395,7 @@ export class ShopScene extends Phaser.Scene {
     const msg = this.add
       .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, text, {
         fontFamily: "UhBeePuding",
-        fontSize: "24px",
+        fontSize: "28px",
         color: "#E85A4F",
         backgroundColor: "#FFFFFF",
         padding: { x: 20, y: 10 },
