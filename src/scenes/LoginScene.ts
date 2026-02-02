@@ -103,17 +103,68 @@ export class LoginScene extends Phaser.Scene {
   }
 
   private async handleGoogleLogin(): Promise<void> {
+    // 로딩 오버레이 표시
+    this.showLoadingOverlay();
+
     const { error } = await this.authManager.signInWithGoogle();
 
     if (error) {
       console.error('Google 로그인 실패:', error.message);
-      // 에러 시에도 게스트로 진행 가능하도록
+      this.hideLoadingOverlay();
+      this.showErrorMessage('로그인에 실패했습니다.');
       return;
     }
 
-    // 로그인 성공 시 localStorage에 표시하고 홈으로
-    localStorage.setItem('waffle_hasLoggedIn', 'true');
-    this.scene.start('HomeScene');
+    // OAuth는 리다이렉트 방식이므로 여기서 HomeScene으로 가면 안됨
+    // 리다이렉트 후 BootScene에서 세션 확인하고 HomeScene으로 이동함
+    // 로딩 오버레이는 유지 (리다이렉트될 때까지)
+  }
+
+  private loadingOverlay?: Phaser.GameObjects.Rectangle;
+  private loadingText?: Phaser.GameObjects.Text;
+
+  private showLoadingOverlay(): void {
+    this.loadingOverlay = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0x000000,
+      0.7
+    ).setDepth(100).setInteractive();
+
+    this.loadingText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      '로그인 중...',
+      {
+        fontFamily: 'UhBeePuding',
+        fontSize: '28px',
+        color: '#FFFFFF',
+      }
+    ).setOrigin(0.5).setDepth(101);
+  }
+
+  private hideLoadingOverlay(): void {
+    this.loadingOverlay?.destroy();
+    this.loadingText?.destroy();
+  }
+
+  private showErrorMessage(message: string): void {
+    const errorText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT * 0.5,
+      message,
+      {
+        fontFamily: 'UhBeePuding',
+        fontSize: '20px',
+        color: '#E85A4F',
+      }
+    ).setOrigin(0.5);
+
+    this.time.delayedCall(2000, () => {
+      errorText.destroy();
+    });
   }
 
   private handleGuestLogin(): void {
