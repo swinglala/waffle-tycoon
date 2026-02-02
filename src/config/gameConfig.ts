@@ -7,6 +7,7 @@ import { ShopScene } from '../scenes/ShopScene';
 import { DayTreeScene } from '../scenes/DayTreeScene';
 import { TutorialScene } from '../scenes/TutorialScene';
 import { SettingsScene } from '../scenes/SettingsScene';
+import { TestScene } from '../scenes/TestScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './constants';
 
 export { GAME_WIDTH, GAME_HEIGHT };
@@ -28,5 +29,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
       debug: false,
     },
   },
-  scene: [BootScene, LoginScene, HomeScene, GameScene, ShopScene, DayTreeScene, TutorialScene, SettingsScene],
+  scene: [BootScene, LoginScene, HomeScene, GameScene, ShopScene, DayTreeScene, TutorialScene, SettingsScene, TestScene],
 };

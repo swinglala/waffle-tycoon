@@ -1415,27 +1415,20 @@ export class GameScene extends Phaser.Scene {
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(201);
 
-    // 결과 텍스트
-    const resultTitle = success ? "목표 달성!" : "목표 미달성";
-    const titleColor = success ? "#4CAF50" : "#E85A4F";
-
+    // 결과 이미지
+    const resultImage = success ? "mission_complete" : "mission_fail";
     this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 140, resultTitle, {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "36px",
-        color: titleColor,
-        fontStyle: "bold",
-      })
+      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 155, resultImage)
+      .setScale(0.8)
       .setOrigin(0.5)
       .setDepth(202);
 
     // 별 표시 (항상 표시 - 0개면 빈별 3개)
-    const starSize = 40;
-    const starGap = 8;
+    const starSize = 85;
+    const starGap = 15;
     const totalStarWidth = 3 * starSize + 2 * starGap;
     const starStartX = GAME_WIDTH / 2 - totalStarWidth / 2 + starSize / 2;
-    const starY = GAME_HEIGHT / 2 - 90;
+    const starY = GAME_HEIGHT / 2 - 50;
 
     for (let i = 0; i < 3; i++) {
       const starImg = this.add
@@ -1450,34 +1443,29 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // 금액 표시
+    const moneyColor = success ? "#4CAF50" : "#E85A4F";
+
+    // 벌은 돈 (강조)
     this.add
-      .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 - 40,
-        `Day ${this.gameState.day} 결과`,
-        {
-          fontFamily: "UhBeePuding",
-          padding: { y: 5 },
-          fontSize: "24px",
-          color: "#5D4E37",
-        },
-      )
+      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 25, `${this.gameState.money.toLocaleString()}원`, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "60px",
+        color: moneyColor,
+        fontStyle: "bold",
+      })
       .setOrigin(0.5)
       .setDepth(202);
 
+    // 목표 금액 (아래줄)
     this.add
-      .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 20,
-        `벌은 돈: ${this.gameState.money.toLocaleString()}원\n목표 금액: ${this.gameState.targetMoney.toLocaleString()}원`,
-        {
-          fontFamily: "UhBeePuding",
-          padding: { y: 5 },
-          fontSize: "20px",
-          color: "#5D4E37",
-          align: "center",
-        },
-      )
+      .text(GAME_WIDTH / 2 + 50, GAME_HEIGHT / 2 + 70, `/ ${this.gameState.targetMoney.toLocaleString()}원`, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "24px",
+        color: "#5D4E37",
+      })
       .setOrigin(0.5)
       .setDepth(202);
 

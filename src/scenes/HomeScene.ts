@@ -662,7 +662,7 @@ export class HomeScene extends Phaser.Scene {
       GAME_WIDTH / 2,
       GAME_HEIGHT / 2,
       400,
-      350,
+      420,
       0xfff8e7,
     );
     popup.setStrokeStyle(4, 0x8b6914);
@@ -750,10 +750,17 @@ export class HomeScene extends Phaser.Scene {
       this.updateStartButton();
     });
 
+    // 5. UI 테스트 버튼
+    const btnY3 = GAME_HEIGHT / 2 + 80;
+    createTestBtn(GAME_WIDTH / 2, btnY3, "🎨 UI 테스트", 0x9C27B0, () => {
+      closePopup();
+      this.scene.start("TestScene");
+    });
+
     // 닫기 버튼
     const closeBtn = this.add.rectangle(
       GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 120,
+      GAME_HEIGHT / 2 + 150,
       120,
       45,
       0xd4a574,
@@ -764,7 +771,7 @@ export class HomeScene extends Phaser.Scene {
 
     const closeBtnText = this.add.text(
       GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 120,
+      GAME_HEIGHT / 2 + 150,
       "닫기",
       {
         fontFamily: "UhBeePuding", padding: { y: 5 },

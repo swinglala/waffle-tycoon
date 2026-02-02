@@ -132,6 +132,10 @@ export class BootScene extends Phaser.Scene {
     // 일차 텍스트 이미지
     this.load.image('day_text', 'assets/images/day.png');
 
+    // 미션 결과 이미지
+    this.load.image('mission_complete', 'assets/images/mission_complete.png');
+    this.load.image('mission_fail', 'assets/images/mission_fail.png');
+
     // 효과음
     this.load.audio('sfx_combo', 'assets/audio/combo.mp3');
     this.load.audio('sfx_success', 'assets/audio/stage_success.mp3');
