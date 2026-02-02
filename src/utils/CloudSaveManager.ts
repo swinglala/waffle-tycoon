@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConnected } from '../config/supabase';
 import { AuthManager } from './AuthManager';
-import { ProgressState, JamType, UpgradeType } from '../types/game';
+import { ProgressState, UpgradeType } from '../types/game';
 
 // 클라우드 저장 데이터 인터페이스
 export interface CloudSaveData {
@@ -10,7 +10,6 @@ export interface CloudSaveData {
   day_stars: Record<number, number>;
   day_money: Record<number, number>;
   upgrades: Record<UpgradeType, number>;
-  unlocked_jams: JamType[];
   // 하트 상태
   hearts: number;
   last_recharge_time: number;
@@ -61,7 +60,6 @@ export class CloudSaveManager {
         day_stars: data.progress.dayStars,
         day_money: data.progress.dayMoney,
         upgrades: data.progress.upgrades,
-        unlocked_jams: data.progress.unlockedJams,
         hearts: data.hearts.hearts,
         last_recharge_time: data.hearts.lastRechargeTime,
       };
@@ -133,7 +131,6 @@ export class CloudSaveManager {
           dayStars: cloudData.day_stars || {},
           dayMoney: cloudData.day_money || {},
           upgrades: cloudData.upgrades || {},
-          unlockedJams: cloudData.unlocked_jams || [JamType.APPLE],
         },
         hearts: {
           hearts: cloudData.hearts ?? 5,
@@ -232,12 +229,6 @@ export class CloudSaveManager {
       mergedDayMoney[day] = Math.max(localVal, cloudVal);
     });
 
-    // unlockedJams는 합집합
-    const mergedJams = [...new Set([
-      ...(local.progress.unlockedJams || []),
-      ...(cloud.progress.unlockedJams || []),
-    ])];
-
     // 하트는 더 많은 쪽
     const mergedHearts = Math.max(
       local.hearts?.hearts || 0,
@@ -251,7 +242,6 @@ export class CloudSaveManager {
         dayStars: mergedDayStars,
         dayMoney: mergedDayMoney,
         upgrades: mergedUpgrades as typeof local.progress.upgrades,
-        unlockedJams: mergedJams,
       },
       hearts: {
         hearts: mergedHearts,

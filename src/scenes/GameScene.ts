@@ -314,10 +314,9 @@ export class GameScene extends Phaser.Scene {
     return availableTypes[availableTypes.length - 1];
   }
 
-  // 손님의 주문 잼 결정 (해금된 잼 중 랜덤)
+  // 손님의 주문 잼 결정 (사과잼만 사용)
   private determineOrderJam(_customerType: CustomerType): JamType {
-    const unlockedJams = this.progressManager.getUnlockedJams();
-    return unlockedJams[Math.floor(Math.random() * unlockedJams.length)];
+    return JamType.APPLE;
   }
 
   private initializeGrill(): void {
@@ -867,37 +866,14 @@ export class GameScene extends Phaser.Scene {
     const buttonSize = 100; // 잼 버튼 크기
     const trashBtnSize = 100;
 
-    // 해금된 잼 목록
-    const unlockedJams = this.progressManager.getUnlockedJams();
-
-    // 잼 버튼 이미지 키 매핑
-    const jamImageKeys: Record<JamType, string> = {
-      [JamType.NONE]: "",
-      [JamType.APPLE]: "btn_apple_jam",
-      [JamType.BERRY]: "btn_berry_jam",
-      [JamType.PISTACHIO]: "btn_pistachio_jam",
-    };
-
-    // 잼 버튼들 (왼쪽에서 시작)
+    // 사과잼 버튼만 표시
     const startX = 70;
-    const gap = 110;
+    const jamBtn = this.add
+      .image(startX, this.TOPPING_BTN_Y, "btn_apple_jam")
+      .setDisplaySize(buttonSize, buttonSize)
+      .setInteractive({ useHandCursor: true });
 
-    unlockedJams.forEach((jamType, index) => {
-      if (jamType === JamType.NONE) return;
-
-      const x = startX + index * gap;
-      const imageKey = jamImageKeys[jamType];
-
-      if (imageKey) {
-        const jamBtn = this.add
-          .image(x, this.TOPPING_BTN_Y, imageKey)
-          .setDisplaySize(buttonSize, buttonSize)
-          .setInteractive({ useHandCursor: true });
-
-        // 잼 버튼 클릭 시 바로 바르기
-        jamBtn.on("pointerdown", () => this.applyJam(jamType));
-      }
-    });
+    jamBtn.on("pointerdown", () => this.applyJam(JamType.APPLE));
 
     // 쓰레기통 버튼 (오른쪽)
     const trashX = GAME_WIDTH - 70;

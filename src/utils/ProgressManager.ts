@@ -1,7 +1,6 @@
 import {
   ProgressState,
   UpgradeType,
-  JamType,
   UPGRADE_CONFIGS,
   TRAY_CONFIG,
   TIME_CONFIG,
@@ -65,7 +64,6 @@ export class ProgressManager {
         [UpgradeType.STRONG_FIRE_DURATION]: 0,
         [UpgradeType.STRONG_FIRE_POWER]: 0,
       },
-      unlockedJams: [JamType.APPLE, JamType.BERRY, JamType.PISTACHIO], // 모든 잼 기본 해금
     };
   }
 
@@ -282,19 +280,6 @@ export class ProgressManager {
     return level * 50;
   }
 
-  /**
-   * 해금된 잼 목록
-   */
-  getUnlockedJams(): JamType[] {
-    return [...this.state.unlockedJams];
-  }
-
-  /**
-   * 잼이 해금되었는지 확인
-   */
-  isJamUnlocked(jamType: JamType): boolean {
-    return this.state.unlockedJams.includes(jamType);
-  }
 
   // ========================================
   // 🐾 손님 업그레이드 효과

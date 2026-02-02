@@ -431,7 +431,6 @@ export interface ProgressState {
   dayStars: Record<number, number>;       // 일차별 획득한 별 (재도전 시 비교용)
   dayMoney: Record<number, number>;       // 일차별 최고 금액 (Day Tree 표시용)
   upgrades: Record<UpgradeType, number>;  // 업그레이드 레벨
-  unlockedJams: JamType[];                // 해금된 잼 목록
 }
 
 // 트레이 설정
