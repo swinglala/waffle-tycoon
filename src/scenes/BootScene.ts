@@ -120,6 +120,14 @@ export class BootScene extends Phaser.Scene {
     // 콤보 이미지
     this.load.image('combo', 'assets/images/combo.png');
 
+    // 숫자 이미지 (0-9)
+    for (let i = 0; i <= 9; i++) {
+      this.load.image(`number_${i}`, `assets/images/number_${i}.png`);
+    }
+
+    // 일차 텍스트 이미지
+    this.load.image('day_text', 'assets/images/day.png');
+
     // 효과음
     this.load.audio('sfx_combo', 'assets/audio/combo.mp3');
     this.load.audio('sfx_success', 'assets/audio/stage_success.mp3');

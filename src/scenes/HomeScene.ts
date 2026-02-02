@@ -19,7 +19,7 @@ export class HomeScene extends Phaser.Scene {
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
   private profileIcon!: Phaser.GameObjects.Image;
-  private dayText!: Phaser.GameObjects.Text;
+  private dayContainer!: Phaser.GameObjects.Container;
   private loginBtn!: Phaser.GameObjects.Rectangle;
   private loginBtnText!: Phaser.GameObjects.Text;
   private authUnsubscribe?: () => void;
@@ -103,15 +103,66 @@ export class HomeScene extends Phaser.Scene {
       logo.setScale(scale);
     }
 
-    // 로고 아래 N일차 표시
-    this.dayText = this.add
-      .text(GAME_WIDTH / 2, 400, `${this.currentDay}일차`, {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "100px",
-        color: "#2C2C2C",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    // 로고 아래 N일차 표시 (이미지로)
+    this.dayContainer = this.add.container(GAME_WIDTH / 2, 400);
+    this.updateDayDisplay();
+  }
+
+  // 숫자를 이미지로 표시하는 헬퍼 메서드
+  private createNumberImages(num: number, height: number): Phaser.GameObjects.Image[] {
+    const digits = num.toString().split('');
+    const images: Phaser.GameObjects.Image[] = [];
+    
+    for (const digit of digits) {
+      const img = this.add.image(0, 0, `number_${digit}`);
+      // 높이 기준으로 비율 유지하며 크기 조절
+      const scale = height / img.height;
+      img.setScale(scale);
+      images.push(img);
+    }
+    
+    return images;
+  }
+
+  // 일차 표시 업데이트
+  private updateDayDisplay(): void {
+    // 기존 컨테이너 내용 삭제
+    this.dayContainer.removeAll(true);
+    
+    const digitHeight = 100; // 숫자 이미지 높이
+    const dayTextHeight = 80; // "일차" 이미지 높이
+    const gap = 10; // 숫자와 "일차" 사이 간격
+    
+    // 숫자 이미지들 생성
+    const numberImages = this.createNumberImages(this.currentDay, digitHeight);
+    
+    // "일차" 이미지 생성
+    const dayTextImg = this.add.image(0, 0, 'day_text');
+    const dayTextScale = dayTextHeight / dayTextImg.height;
+    dayTextImg.setScale(dayTextScale);
+    
+    // 전체 너비 계산
+    let totalWidth = 0;
+    for (const img of numberImages) {
+      totalWidth += img.displayWidth;
+    }
+    totalWidth += gap + dayTextImg.displayWidth;
+    
+    // 이미지들 배치 (가운데 정렬)
+    let currentX = -totalWidth / 2;
+    
+    for (const img of numberImages) {
+      img.setX(currentX + img.displayWidth / 2);
+      img.setY(0);
+      this.dayContainer.add(img);
+      currentX += img.displayWidth;
+    }
+    
+    // "일차" 이미지 배치
+    currentX += gap;
+    dayTextImg.setX(currentX + dayTextImg.displayWidth / 2);
+    dayTextImg.setY(0);
+    this.dayContainer.add(dayTextImg);
   }
 
   private createHeartsUI(): void {
@@ -321,7 +372,7 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private updateStartButton(): void {
-    this.dayText.setText(`${this.currentDay}일차`);
+    this.updateDayDisplay();
   }
 
   private showNoHeartsPopup(): void {
