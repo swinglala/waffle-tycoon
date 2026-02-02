@@ -129,9 +129,10 @@ export class HomeScene extends Phaser.Scene {
     // 기존 컨테이너 내용 삭제
     this.dayContainer.removeAll(true);
     
-    const digitHeight = 100; // 숫자 이미지 높이
-    const dayTextHeight = 80; // "일차" 이미지 높이
-    const gap = 10; // 숫자와 "일차" 사이 간격
+    const digitHeight = 130; // 숫자 이미지 높이
+    const dayTextHeight = 160; // "일차" 이미지 높이
+    const gap = -45; // 숫자와 "일차" 사이 간격
+    const digitGap = -60; // 숫자끼리 간격 (더 붙이기)
     
     // 숫자 이미지들 생성
     const numberImages = this.createNumberImages(this.currentDay, digitHeight);
@@ -143,19 +144,26 @@ export class HomeScene extends Phaser.Scene {
     
     // 전체 너비 계산
     let totalWidth = 0;
-    for (const img of numberImages) {
-      totalWidth += img.displayWidth;
+    for (let i = 0; i < numberImages.length; i++) {
+      totalWidth += numberImages[i].displayWidth;
+      if (i < numberImages.length - 1) {
+        totalWidth += digitGap; // 숫자 사이 간격
+      }
     }
     totalWidth += gap + dayTextImg.displayWidth;
     
     // 이미지들 배치 (가운데 정렬)
     let currentX = -totalWidth / 2;
     
-    for (const img of numberImages) {
+    for (let i = 0; i < numberImages.length; i++) {
+      const img = numberImages[i];
       img.setX(currentX + img.displayWidth / 2);
       img.setY(0);
       this.dayContainer.add(img);
       currentX += img.displayWidth;
+      if (i < numberImages.length - 1) {
+        currentX += digitGap; // 숫자 사이 간격
+      }
     }
     
     // "일차" 이미지 배치
