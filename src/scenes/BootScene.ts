@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_WIDTH, GAME_HEIGHT } from '../config/constants';
+import { supabase, isSupabaseConnected } from '../config/supabase';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -146,8 +147,26 @@ export class BootScene extends Phaser.Scene {
     this.load.audio('bgm_play', 'assets/audio/play_bgm.mp3');
   }
 
-  create(): void {
-    // 홈 씬으로 전환
-    this.scene.start('HomeScene');
+  async create(): Promise<void> {
+    // Supabase 세션 확인 (OAuth 리다이렉트 후 복귀 시)
+    if (isSupabaseConnected() && supabase) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // 로그인된 세션이 있으면 바로 홈으로
+        localStorage.setItem('waffle_hasLoggedIn', 'true');
+        localStorage.removeItem('waffle_isGuest');
+        this.scene.start('HomeScene');
+        return;
+      }
+    }
+
+    // 이미 로그인한 적 있으면 홈으로, 아니면 로그인 화면으로
+    const hasLoggedIn = localStorage.getItem('waffle_hasLoggedIn');
+    
+    if (hasLoggedIn) {
+      this.scene.start('HomeScene');
+    } else {
+      this.scene.start('LoginScene');
+    }
   }
 }
