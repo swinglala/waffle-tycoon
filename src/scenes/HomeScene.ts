@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
+import { GAME_WIDTH, GAME_HEIGHT, TEST_ACCOUNTS } from "../config/constants";
 import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { AuthManager } from "../utils/AuthManager";
@@ -266,29 +266,32 @@ export class HomeScene extends Phaser.Scene {
       this.heartImages.push(heartImg);
     }
 
-    // 플러스 버튼 (하트 5개 오른쪽) - 비율 유지
+    // 플러스 버튼 (테스트 계정만 표시)
     const plusX = heartsStartX + totalHeartsWidth + plusGap;
+    const userEmail = this.authManager.getUser()?.email ?? '';
+    const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
+
     this.plusButton = this.add
       .image(plusX, heartsY - 5, "icon_plus")
-      .setInteractive({ useHandCursor: true });
-    // 비율 유지하면서 크기 조절
-    const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
-    this.plusButton.setScale(plusScale);
+      .setVisible(isTestAccount);
 
-    this.plusButton.on("pointerdown", () => {
-      this.showTestPopup();
-    });
+    if (isTestAccount) {
+      this.plusButton.setInteractive({ useHandCursor: true });
+      // 비율 유지하면서 크기 조절
+      const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
+      this.plusButton.setScale(plusScale);
 
-    this.plusButton.on("pointerover", () => {
-      if (this.heartManager.getHearts() < HEART_CONFIG.MAX_HEARTS) {
+      this.plusButton.on("pointerdown", () => {
+        this.showTestPopup();
+      });
+
+      this.plusButton.on("pointerover", () => {
         this.plusButton.setTint(0xcccccc);
-      }
-    });
-    this.plusButton.on("pointerout", () => {
-      if (this.heartManager.getHearts() < HEART_CONFIG.MAX_HEARTS) {
+      });
+      this.plusButton.on("pointerout", () => {
         this.plusButton.clearTint();
-      }
-    });
+      });
+    }
 
     // 충전 타이머
     this.timerText = this.add
@@ -340,10 +343,15 @@ export class HomeScene extends Phaser.Scene {
       }
     }
 
-    // 플러스 버튼 항상 활성화 (테스트 팝업 접근용)
-    this.plusButton.clearTint();
-    this.plusButton.setAlpha(1);
-    this.plusButton.setInteractive({ useHandCursor: true });
+    // 플러스 버튼 (테스트 계정만)
+    const userEmail = this.authManager.getUser()?.email ?? '';
+    const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
+    this.plusButton.setVisible(isTestAccount);
+    if (isTestAccount) {
+      this.plusButton.clearTint();
+      this.plusButton.setAlpha(1);
+      this.plusButton.setInteractive({ useHandCursor: true });
+    }
 
     // 타이머 표시
     if (hearts < maxHearts) {
@@ -941,7 +949,15 @@ export class HomeScene extends Phaser.Scene {
     confirmBtn.on("pointerdown", async () => {
       closePopup();
       await this.authManager.signOut();
-      this.updateUserUI();
+
+      // 메모리 및 로컬 데이터 초기화
+      this.progressManager.resetProgress();
+      this.heartManager.resetHearts();
+      localStorage.removeItem('waffle_hasLoggedIn');
+      localStorage.removeItem('waffle_isGuest');
+
+      // 로그인 화면으로 이동
+      this.scene.start('LoginScene');
     });
 
     cancelBtn.on("pointerdown", closePopup);
