@@ -107,6 +107,7 @@ export class BootScene extends Phaser.Scene {
     // 추가 아이콘
     this.load.image('icon_star', 'assets/images/star.png');
     this.load.image('icon_plus', 'assets/images/plus.png');
+    this.load.image('icon_x', 'assets/images/x.png');
 
     // 로고
     this.load.image('logo', 'assets/images/logo.png');

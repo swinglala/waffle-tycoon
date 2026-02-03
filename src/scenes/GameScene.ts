@@ -345,31 +345,31 @@ export class GameScene extends Phaser.Scene {
       .setStrokeStyle(3, 0x8b6914)
       .setDepth(10);
 
-    // Day 표시
+    // Day 표시 (padding으로 폰트 clipping 방지)
     this.dayText = this.add
-      .text(30, this.HEADER_Y - 10, `Day ${this.gameState.day}`, {
+      .text(30, this.HEADER_Y, `${this.gameState.day}일차`, {
         fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "22px",
+        fontSize: "30px",
         color: "#5D4E37",
         fontStyle: "bold",
+        padding: { top: 4, bottom: 4 },
       })
+      .setOrigin(0, 0.5)
       .setDepth(11);
 
     // 돈 표시
     this.moneyText = this.add
       .text(
         GAME_WIDTH / 2,
-        this.HEADER_Y - 10,
+        this.HEADER_Y,
         `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
         {
           fontFamily: "UhBeePuding",
-          padding: { y: 5 },
-          fontSize: "20px",
+          fontSize: "24px",
           color: "#5D4E37",
         },
       )
-      .setOrigin(0.5, 0)
+      .setOrigin(0.5)
       .setDepth(11);
 
     // 시간 바 (헤더 바로 아래)
@@ -407,23 +407,14 @@ export class GameScene extends Phaser.Scene {
 
     // X 버튼 (헤더 오른쪽 끝)
     const closeBtn = this.add
-      .circle(GAME_WIDTH - 45, this.HEADER_Y, 20, 0xe85a4f)
-      .setStrokeStyle(2, 0xb8453c)
+      .image(GAME_WIDTH - 45, this.HEADER_Y, "icon_x")
+      .setDisplaySize(50, 50)
       .setInteractive({ useHandCursor: true })
       .setDepth(11);
 
-    this.add
-      .text(GAME_WIDTH - 45, this.HEADER_Y, "✕", {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "24px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5)
-      .setDepth(12);
-
     closeBtn.on("pointerdown", () => this.showPausePopup());
+    closeBtn.on("pointerover", () => closeBtn.setTint(0xcccccc));
+    closeBtn.on("pointerout", () => closeBtn.clearTint());
   }
 
   private createCustomerZone(): void {
@@ -1662,7 +1653,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateUI(): void {
-    this.dayText.setText(`Day ${this.gameState.day}`);
+    this.dayText.setText(`${this.gameState.day}일차`);
     this.moneyText.setText(
       `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
     );

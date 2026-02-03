@@ -393,7 +393,7 @@ export class DayTreeScene extends Phaser.Scene {
     popup.setDepth(101);
 
     // 팝업 타이틀
-    const title = isRetry ? `Day ${day} 재도전` : `Day ${day} 시작`;
+    const title = isRetry ? `${day}일차 재도전` : `${day}일차 시작`;
     const popupTitle = this.add.text(
       GAME_WIDTH / 2,
       GAME_HEIGHT / 2 - 90,
