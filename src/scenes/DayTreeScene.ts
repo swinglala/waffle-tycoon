@@ -237,11 +237,11 @@ export class DayTreeScene extends Phaser.Scene {
       .setStrokeStyle(3, strokeColor);
     this.scrollContainer.add(cellBg);
 
-    // Day 텍스트
+    // Day 텍스트 (위쪽)
     const dayText = this.add
-      .text(x, y - 30, `Day ${day}`, {
+      .text(x, y - 50, `- ${day}일차 -`, {
         fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "24px",
+        fontSize: "28px",
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -250,18 +250,18 @@ export class DayTreeScene extends Phaser.Scene {
 
     // 상태별 표시
     if (state === "completed") {
-      // 별 표시 (이미지로)
-      const starSize = 24;
-      const starGap = 4;
+      // 별 표시 (중앙)
+      const starSize = 45;
+      const starGap = 5;
       const totalStarWidth = 3 * starSize + 2 * starGap;
       const starStartX = x - totalStarWidth / 2 + starSize / 2;
+      const starY = y - 10;
 
       for (let i = 0; i < 3; i++) {
         const starImg = this.add
-          .image(starStartX + i * (starSize + starGap), y, "icon_star")
+          .image(starStartX + i * (starSize + starGap), starY, "icon_star")
           .setDisplaySize(starSize, starSize);
 
-        // 획득하지 못한 별은 회색 처리
         if (i >= stars) {
           starImg.setTint(0x555555);
           starImg.setAlpha(0.4);
@@ -270,25 +270,27 @@ export class DayTreeScene extends Phaser.Scene {
         this.scrollContainer.add(starImg);
       }
 
-      // 금액 표시
+      // 금액 표시 (아래쪽)
       const money = this.progressManager.getDayMoney(day);
       const target = getDayTarget(day);
       const moneyColor = money >= target ? "#4CAF50" : "#E85A4F";
+
+      // 벌은 돈
       const moneyText = this.add
-        .text(x, y + 35, `₩${money.toLocaleString()}`, {
+        .text(x, y + 25, `${money.toLocaleString()}원`, {
           fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "14px",
+          fontSize: "22px",
           color: moneyColor,
           fontStyle: "bold",
         })
         .setOrigin(0.5);
       this.scrollContainer.add(moneyText);
 
-      // 목표 금액 표시
+      // 목표 금액
       const targetText = this.add
-        .text(x, y + 52, `목표: ₩${target.toLocaleString()}`, {
+        .text(x, y + 50, `/ ${target.toLocaleString()}원`, {
           fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "11px",
+          fontSize: "14px",
           color: "#7D6E57",
         })
         .setOrigin(0.5);
@@ -297,9 +299,9 @@ export class DayTreeScene extends Phaser.Scene {
       // 목표 금액 표시
       const target = getDayTarget(day);
       const targetText = this.add
-        .text(x, y + 5, `목표: ₩${target.toLocaleString()}`, {
+        .text(x, y - 5, `목표금액: ${target.toLocaleString()}원`, {
           fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "14px",
+          fontSize: "25px",
           color: "#2196f3",
         })
         .setOrigin(0.5);
@@ -307,9 +309,9 @@ export class DayTreeScene extends Phaser.Scene {
 
       // "진행중" 표시
       const currentText = this.add
-        .text(x, y + 30, "진행중", {
+        .text(x, y + 25, "진행중", {
           fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "18px",
+          fontSize: "22px",
           color: "#2196f3",
           fontStyle: "bold",
         })
