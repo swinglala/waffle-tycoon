@@ -404,6 +404,19 @@ export class ProgressManager {
     this.saveState();
   }
 
+  /**
+   * 별 사용 (하트 구매 등)
+   * @returns 성공 여부
+   */
+  useStars(amount: number): boolean {
+    if (this.state.totalStars < amount) {
+      return false;
+    }
+    this.state.totalStars -= amount;
+    this.saveState();
+    return true;
+  }
+
   // ========================================
   // 클라우드 동기화 관련 메서드
   // ========================================

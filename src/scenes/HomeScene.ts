@@ -266,32 +266,33 @@ export class HomeScene extends Phaser.Scene {
       this.heartImages.push(heartImg);
     }
 
-    // 플러스 버튼 (테스트 계정만 표시)
+    // 플러스 버튼
     const plusX = heartsStartX + totalHeartsWidth + plusGap;
-    const userEmail = this.authManager.getUser()?.email ?? '';
-    const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
-
     this.plusButton = this.add
       .image(plusX, heartsY - 5, "icon_plus")
-      .setVisible(isTestAccount);
+      .setInteractive({ useHandCursor: true });
 
-    if (isTestAccount) {
-      this.plusButton.setInteractive({ useHandCursor: true });
-      // 비율 유지하면서 크기 조절
-      const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
-      this.plusButton.setScale(plusScale);
+    // 비율 유지하면서 크기 조절
+    const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
+    this.plusButton.setScale(plusScale);
 
-      this.plusButton.on("pointerdown", () => {
+    this.plusButton.on("pointerdown", () => {
+      const userEmail = this.authManager.getUser()?.email ?? '';
+      const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
+
+      if (isTestAccount) {
         this.showTestPopup();
-      });
+      } else {
+        this.showHeartPurchasePopup();
+      }
+    });
 
-      this.plusButton.on("pointerover", () => {
-        this.plusButton.setTint(0xcccccc);
-      });
-      this.plusButton.on("pointerout", () => {
-        this.plusButton.clearTint();
-      });
-    }
+    this.plusButton.on("pointerover", () => {
+      this.plusButton.setTint(0xcccccc);
+    });
+    this.plusButton.on("pointerout", () => {
+      this.plusButton.clearTint();
+    });
 
     // 충전 타이머
     this.timerText = this.add
@@ -343,14 +344,20 @@ export class HomeScene extends Phaser.Scene {
       }
     }
 
-    // 플러스 버튼 (테스트 계정만)
+    // 플러스 버튼 표시 조건
+    // - 테스트 계정: 항상 표시
+    // - 일반 계정: 하트가 꽉 차지 않았을 때만 표시
     const userEmail = this.authManager.getUser()?.email ?? '';
     const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
-    this.plusButton.setVisible(isTestAccount);
-    if (isTestAccount) {
+    const shouldShowPlus = isTestAccount || hearts < maxHearts;
+
+    this.plusButton.setVisible(shouldShowPlus);
+    if (shouldShowPlus) {
       this.plusButton.clearTint();
       this.plusButton.setAlpha(1);
       this.plusButton.setInteractive({ useHandCursor: true });
+    } else {
+      this.plusButton.disableInteractive();
     }
 
     // 타이머 표시
@@ -648,6 +655,153 @@ export class HomeScene extends Phaser.Scene {
     closeBtn.on("pointerout", () => {
       closeBtn.setFillStyle(0xd4a574);
     });
+  }
+
+  private showHeartPurchasePopup(): void {
+    const popupObjects: Phaser.GameObjects.GameObject[] = [];
+
+    // 반투명 오버레이
+    const overlay = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      GAME_WIDTH,
+      GAME_HEIGHT,
+      0x000000,
+      0.6
+    );
+    overlay.setInteractive();
+    popupObjects.push(overlay);
+
+    // 팝업 배경
+    const popup = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      320,
+      180,
+      0xfff8e7
+    );
+    popup.setStrokeStyle(4, 0x8b6914);
+    popupObjects.push(popup);
+
+    // 타이틀
+    const title = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 - 60,
+      "하트 구매",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "28px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      }
+    );
+    title.setOrigin(0.5);
+    popupObjects.push(title);
+
+    // 구매 버튼: [heart] 1 구매하기 [star] 1
+    const currentStars = this.progressManager.getTotalStars();
+    const currentHearts = this.heartManager.getHearts();
+    const maxHearts = HEART_CONFIG.MAX_HEARTS;
+    const canBuy = currentStars >= 1 && currentHearts < maxHearts;
+    const buyBtnColor = canBuy ? 0x4CAF50 : 0x9E9E9E;
+
+    const btnY = GAME_HEIGHT / 2;
+    const buyBtn = this.add.rectangle(
+      GAME_WIDTH / 2,
+      btnY,
+      260,
+      50,
+      buyBtnColor
+    );
+    buyBtn.setStrokeStyle(3, canBuy ? 0x388E3C : 0x757575);
+    if (canBuy) {
+      buyBtn.setInteractive({ useHandCursor: true });
+    }
+    popupObjects.push(buyBtn);
+
+    // 버튼 내부 요소들: [heart 1 구매하기] ... [star 1]
+    const iconSize = 26;
+    const btnLeft = GAME_WIDTH / 2 - 100;
+    const btnRight = GAME_WIDTH / 2 + 110;
+
+    // 왼쪽: heart 아이콘 + "1 구매하기"
+    const heartIcon = this.add.image(btnLeft, btnY, "icon_heart")
+      .setDisplaySize(iconSize, iconSize);
+    popupObjects.push(heartIcon);
+
+    const buyText = this.add.text(btnLeft + 18, btnY, "1 구매하기", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    }).setOrigin(0, 0.5);
+    popupObjects.push(buyText);
+
+    // 오른쪽: star 아이콘 + "1"
+    const costText = this.add.text(btnRight, btnY, "1", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    }).setOrigin(1, 0.5);
+    popupObjects.push(costText);
+
+    const starIcon = this.add.image(btnRight - 25, btnY, "icon_star")
+      .setDisplaySize(iconSize, iconSize);
+    popupObjects.push(starIcon);
+
+    // 닫기 버튼
+    const closeBtn = this.add.rectangle(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 55,
+      120,
+      45,
+      0xd4a574
+    );
+    closeBtn.setStrokeStyle(3, 0x8b6914);
+    closeBtn.setInteractive({ useHandCursor: true });
+    popupObjects.push(closeBtn);
+
+    const closeBtnText = this.add.text(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2 + 55,
+      "닫기",
+      {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "20px",
+        color: "#5D4E37",
+        fontStyle: "bold",
+      }
+    );
+    closeBtnText.setOrigin(0.5);
+    popupObjects.push(closeBtnText);
+
+    // 팝업 닫기 함수
+    const closePopup = () => {
+      popupObjects.forEach((obj) => obj.destroy());
+    };
+
+    // 구매 버튼 클릭
+    if (canBuy) {
+      buyBtn.on("pointerdown", () => {
+        // 별 1개 차감, 하트 1개 추가
+        this.progressManager.useStars(1);
+        this.heartManager.addHeart();
+        this.updateHeartsUI();
+        closePopup();
+        // 다시 팝업 열기 (연속 구매 가능)
+        this.showHeartPurchasePopup();
+      });
+
+      buyBtn.on("pointerover", () => buyBtn.setFillStyle(0x388E3C));
+      buyBtn.on("pointerout", () => buyBtn.setFillStyle(0x4CAF50));
+    }
+
+    closeBtn.on("pointerdown", closePopup);
+    overlay.on("pointerdown", closePopup);
+
+    closeBtn.on("pointerover", () => closeBtn.setFillStyle(0xc49a6c));
+    closeBtn.on("pointerout", () => closeBtn.setFillStyle(0xd4a574));
   }
 
   private showTestPopup(): void {
