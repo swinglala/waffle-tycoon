@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
 
+const isGitHubPages = process.env.DEPLOY_TARGET === 'ghpages';
+
 export default defineConfig({
-  base: '/waffle-tycoon/',
+  base: isGitHubPages ? '/waffle-tycoon/' : './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

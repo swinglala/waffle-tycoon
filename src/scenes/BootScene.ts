@@ -125,6 +125,19 @@ export class BootScene extends Phaser.Scene {
     // 콤보 이미지
     this.load.image('combo', 'assets/images/combo.png');
 
+    // 상점 업그레이드 이미지
+    this.load.image('upgrade_bowl', 'assets/images/bowl.png');
+    this.load.image('upgrade_fire', 'assets/images/big_fire.png');
+    this.load.image('upgrade_time', 'assets/images/time.png');
+    this.load.image('upgrade_ready_tray', 'assets/images/ready_tray.png');
+    this.load.image('upgrade_finished_tray', 'assets/images/finished_tray.png');
+    this.load.image('upgrade_perfect', 'assets/images/waffle_perfect.png');
+    this.load.image('upgrade_burnt', 'assets/images/waffle_burnt.png');
+    this.load.image('upgrade_combo', 'assets/images/combo.png');
+    this.load.image('upgrade_smile', 'assets/images/smile.png');
+    this.load.image('upgrade_bonus', 'assets/images/bonus.png');
+    this.load.image('upgrade_luck', 'assets/images/luck.png');
+
     // 숫자 이미지 (0-9)
     for (let i = 0; i <= 9; i++) {
       this.load.image(`number_${i}`, `assets/images/number_${i}.png`);

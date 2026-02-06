@@ -321,116 +321,131 @@ export enum UpgradeCategory {
 // 업그레이드 설정 인터페이스 확장
 export interface UpgradeConfigExtended extends UpgradeConfig {
   category: UpgradeCategory;
+  imageKey?: string; // 상점 카드 이미지 키
 }
 
 // 업그레이드 설정
 export const UPGRADE_CONFIGS: Record<UpgradeType, UpgradeConfigExtended> = {
-  // 🧈 기본 업그레이드
+  // 기본 업그레이드
   [UpgradeType.BATTER]: {
-    name: "🧈 반죽 개선",
+    name: "반죽 개선",
     description: "와플 가격 +50원",
     costs: [7, 10, 13, 16, 19],
     maxLevel: 5,
     category: UpgradeCategory.BASIC,
+    imageKey: "upgrade_bowl",
   },
   [UpgradeType.FIRE_STRENGTH]: {
-    name: "🔥 화력 강화",
+    name: "화력 강화",
     description: "굽기속도 +10%",
     costs: [7, 10, 13],
     maxLevel: 3,
     category: UpgradeCategory.BASIC,
+    imageKey: "upgrade_fire",
   },
   [UpgradeType.TIME_EXTENSION]: {
-    name: "⏱️ 시간 연장",
+    name: "시간 연장",
     description: "하루 시간 +5초",
     costs: [4, 7, 10, 13, 16],
     maxLevel: 5,
     category: UpgradeCategory.BASIC,
+    imageKey: "upgrade_time",
   },
   [UpgradeType.WORK_TRAY_CAPACITY]: {
-    name: "📥 준비트레이",
+    name: "준비트레이",
     description: "용량 +1칸",
     costs: [4, 7, 10, 13, 16],
     maxLevel: 5,
     category: UpgradeCategory.BASIC,
+    imageKey: "upgrade_ready_tray",
   },
   [UpgradeType.FINISHED_TRAY_CAPACITY]: {
-    name: "📤 완성트레이",
+    name: "완성트레이",
     description: "용량 +1칸",
     costs: [4, 7, 10, 13, 16],
     maxLevel: 5,
     category: UpgradeCategory.BASIC,
+    imageKey: "upgrade_finished_tray",
   },
 
-  // 🐾 손님 업그레이드
+  // 손님 업그레이드
   [UpgradeType.KINDNESS]: {
-    name: "😊 친절 서비스",
+    name: "친절 서비스",
     description: "대기시간 +2초",
     costs: [5, 8, 11, 14, 17],
     maxLevel: 5,
     category: UpgradeCategory.CUSTOMER,
+    imageKey: "upgrade_smile",
   },
   [UpgradeType.TIP_BONUS]: {
-    name: "💝 단골 보너스",
+    name: "단골 보너스",
     description: "팁 확률 +5%",
     costs: [6, 9, 12, 15, 18],
     maxLevel: 5,
     category: UpgradeCategory.CUSTOMER,
+    imageKey: "upgrade_bonus",
   },
 
-  // 🔥 굽기 업그레이드
+  // 굽기 업그레이드
   [UpgradeType.KEEP_WARM]: {
-    name: "⏸️ 보온 기능",
+    name: "보온 기능",
     description: "퍼펙트 유지 +2초",
     costs: [5, 8, 11, 14, 17],
     maxLevel: 5,
     category: UpgradeCategory.COOKING,
+    imageKey: "upgrade_perfect",
   },
   [UpgradeType.BURN_PROTECTION]: {
-    name: "🛡️ 탄 방지",
+    name: "탄 방지",
     description: "타는 시간 +3초",
     costs: [5, 8, 11, 14, 17],
     maxLevel: 5,
     category: UpgradeCategory.COOKING,
+    imageKey: "upgrade_burnt",
   },
 
-  // 💰 판매 업그레이드
+  // 판매 업그레이드
   [UpgradeType.COMBO_MASTER]: {
-    name: "⚡ 콤보 마스터",
+    name: "콤보 마스터",
     description: "콤보 유지 +0.5초",
     costs: [6, 9, 12, 15, 18],
     maxLevel: 5,
     category: UpgradeCategory.SALES,
+    imageKey: "upgrade_combo",
   },
   [UpgradeType.COMBO_BONUS]: {
-    name: "💎 콤보 보너스",
+    name: "콤보 보너스",
     description: "콤보당 +100원",
     costs: [6, 9, 12, 15, 18],
     maxLevel: 5,
     category: UpgradeCategory.SALES,
+    imageKey: "upgrade_combo",
   },
   [UpgradeType.LUCKY_WAFFLE]: {
-    name: "🍀 럭키 와플",
+    name: "럭키 와플",
     description: "가격 2배 확률 +2%",
     costs: [8, 12, 16],
     maxLevel: 3,
     category: UpgradeCategory.SALES,
+    imageKey: "upgrade_luck",
   },
 
-  // 🔥 강불 업그레이드
+  // 강불 업그레이드
   [UpgradeType.STRONG_FIRE_DURATION]: {
-    name: "🔥 강불 지속",
+    name: "강불 지속",
     description: "강불 시간 +1초",
     costs: [5, 8, 11, 14, 17],
     maxLevel: 5,
     category: UpgradeCategory.STRONG_FIRE,
+    imageKey: "upgrade_fire",
   },
   [UpgradeType.STRONG_FIRE_POWER]: {
-    name: "🔥 강불 화력",
+    name: "강불 화력",
     description: "강불 배율 +0.2배",
     costs: [7, 11, 15],
     maxLevel: 3,
     category: UpgradeCategory.STRONG_FIRE,
+    imageKey: "upgrade_fire",
   },
 };
 

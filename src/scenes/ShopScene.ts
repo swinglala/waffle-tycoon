@@ -30,11 +30,11 @@ const UPGRADE_BY_CATEGORY: Record<UpgradeCategory, UpgradeType[]> = {
 
 // 카테고리 표시 이름
 const CATEGORY_NAMES: Record<UpgradeCategory, string> = {
-  [UpgradeCategory.BASIC]: "🧈 기본",
-  [UpgradeCategory.CUSTOMER]: "🐾 손님",
-  [UpgradeCategory.COOKING]: "🔥 굽기",
-  [UpgradeCategory.SALES]: "💰 판매",
-  [UpgradeCategory.STRONG_FIRE]: "🔥 강불",
+  [UpgradeCategory.BASIC]: "기본",
+  [UpgradeCategory.CUSTOMER]: "손님",
+  [UpgradeCategory.COOKING]: "굽기",
+  [UpgradeCategory.SALES]: "판매",
+  [UpgradeCategory.STRONG_FIRE]: "강불",
 };
 
 // 카테고리 순서
@@ -67,7 +67,7 @@ export class ShopScene extends Phaser.Scene {
   private readonly SCROLL_AREA_HEIGHT = GAME_HEIGHT - 210;
   private readonly COL_COUNT = 3;
   private readonly CARD_WIDTH = 210;
-  private readonly CARD_HEIGHT = 160;
+  private readonly CARD_HEIGHT = 360;
   private readonly CARD_GAP = 15;
   private readonly CATEGORY_HEADER_HEIGHT = 50;
 
@@ -105,6 +105,7 @@ export class ShopScene extends Phaser.Scene {
         fontSize: "36px",
         color: "#5D4E37",
         fontStyle: "bold",
+        resolution: 2,
       })
       .setOrigin(0.5)
       .setDepth(101);
@@ -122,6 +123,7 @@ export class ShopScene extends Phaser.Scene {
         fontSize: "26px",
         color: "#FFD700",
         fontStyle: "bold",
+        resolution: 2,
       })
       .setOrigin(0, 0.5)
       .setDepth(101);
@@ -192,6 +194,7 @@ export class ShopScene extends Phaser.Scene {
         fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
+        resolution: 2,
       })
       .setOrigin(0.5);
 
@@ -205,41 +208,90 @@ export class ShopScene extends Phaser.Scene {
     const canBuy = this.progressManager.canPurchaseUpgrade(type);
     const nextCost = this.progressManager.getUpgradeCost(type);
 
+    const cardElements: Phaser.GameObjects.GameObject[] = [];
+
     // 카드 배경
     const cardBg = this.add
       .rectangle(x, y, this.CARD_WIDTH, this.CARD_HEIGHT, 0xffffff)
       .setStrokeStyle(3, isMaxed ? 0x4caf50 : 0x8b6914);
+    cardElements.push(cardBg);
 
-    // 업그레이드 이름 + 레벨 (예: "🧈 반죽 개선 LV.1")
-    const levelDisplay = isMaxed ? "MAX" : `LV.${currentLevel + 1}`;
-    const nameWithLevel = `${config.name} ${levelDisplay}`;
+    // 이미지 (상단)
+    const imageY = y - 85;
+    const imageSize = 150;
+    if (config.imageKey) {
+      const upgradeImage = this.add
+        .image(x, imageY, config.imageKey)
+        .setDisplaySize(imageSize, imageSize);
+      cardElements.push(upgradeImage);
+    } else {
+      // 이미지가 없는 경우 플레이스홀더
+      const placeholder = this.add
+        .rectangle(x, imageY, imageSize, imageSize, 0xeeeeee)
+        .setStrokeStyle(2, 0xcccccc);
+      const questionMark = this.add
+        .text(x, imageY, "?", {
+          fontFamily: "UhBeePuding",
+          fontSize: "60px",
+          color: "#999999",
+          resolution: 2,
+        })
+        .setOrigin(0.5);
+      cardElements.push(placeholder, questionMark);
+    }
+
+    // 카드 이름
     const nameText = this.add
-      .text(x, y - 40, nameWithLevel, {
+      .text(x, y + 10, config.name, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "28px",
+        fontSize: "30px",
         color: isMaxed ? "#4CAF50" : "#5D4E37",
         fontStyle: "bold",
         align: "center",
+        resolution: 2,
       })
       .setOrigin(0.5);
+    cardElements.push(nameText);
+
+    // 현재레벨 > 다음레벨
+    let levelText: string;
+    if (isMaxed) {
+      levelText = "MAX";
+    } else if (currentLevel === 0) {
+      levelText = "LV.0 > LV.1";
+    } else {
+      levelText = `LV.${currentLevel} > LV.${currentLevel + 1}`;
+    }
+    const levelDisplay = this.add
+      .text(x, y + 50, levelText, {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "26px",
+        color: isMaxed ? "#4CAF50" : "#8B7355",
+        resolution: 2,
+      })
+      .setOrigin(0.5);
+    cardElements.push(levelDisplay);
 
     // 설명
     const descText = this.add
-      .text(x, y + 5, config.description, {
+      .text(x, y + 85, config.description, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "25px",
+        fontSize: "26px",
         color: "#7D6E57",
         align: "center",
         wordWrap: { width: this.CARD_WIDTH - 20 },
+        resolution: 2,
       })
       .setOrigin(0.5);
+    cardElements.push(descText);
 
     // 구매 버튼
-    const btnY = y + 50;
-    const btnWidth = this.CARD_WIDTH - 30;
-    const btnHeight = 40;
+    const btnY = y + 145;
+    const btnWidth = this.CARD_WIDTH - 20;
+    const btnHeight = 55;
 
     let btnColor = 0xd4a574;
     let btnTextColor = "#5D4E37";
@@ -255,38 +307,39 @@ export class ShopScene extends Phaser.Scene {
     const buyBtn = this.add
       .rectangle(x, btnY, btnWidth, btnHeight, btnColor)
       .setStrokeStyle(2, isMaxed ? 0x388e3c : canBuy ? 0x6b3e26 : 0x999999);
-
-    let btnContent: Phaser.GameObjects.GameObject[];
+    cardElements.push(buyBtn);
 
     if (isMaxed) {
       const maxText = this.add
         .text(x, btnY, "MAX", {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
-          fontSize: "25px",
+          fontSize: "30px",
           color: btnTextColor,
           fontStyle: "bold",
+          resolution: 2,
         })
         .setOrigin(0.5);
-      btnContent = [buyBtn, maxText];
+      cardElements.push(maxText);
     } else {
       const starIcon = this.add
-        .image(x - 25, btnY, "icon_star")
-        .setDisplaySize(28, 28);
+        .image(x - 30, btnY, "icon_star")
+        .setDisplaySize(34, 34);
       const costText = this.add
         .text(x + 5, btnY, `${nextCost}`, {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
-          fontSize: "25px",
+          fontSize: "32px",
           color: btnTextColor,
           fontStyle: "bold",
+          resolution: 2,
         })
         .setOrigin(0, 0.5);
-      btnContent = [buyBtn, starIcon, costText];
+      cardElements.push(starIcon, costText);
     }
 
     // 컨테이너에 추가
-    this.scrollContainer.add([cardBg, nameText, descText, ...btnContent]);
+    this.scrollContainer.add(cardElements);
 
     // 인터랙션 (MAX가 아닐 때만)
     if (!isMaxed) {
@@ -396,6 +449,7 @@ export class ShopScene extends Phaser.Scene {
         fontSize: "26px",
         color: "#5D4E37",
         fontStyle: "bold",
+        resolution: 2,
       })
       .setOrigin(0.5)
       .setDepth(102);
@@ -422,6 +476,7 @@ export class ShopScene extends Phaser.Scene {
         color: "#E85A4F",
         backgroundColor: "#FFFFFF",
         padding: { x: 20, y: 10 },
+        resolution: 2,
       })
       .setOrigin(0.5)
       .setDepth(200);
