@@ -1,4 +1,6 @@
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { supabase, isSupabaseConnected } from '../config/supabase';
 
 export type AuthStateChangeCallback = (user: User | null) => void;
@@ -40,6 +42,26 @@ export class AuthManager {
         console.log('[AuthManager] 인증 상태 변경:', _event, this.currentUser?.email);
       }
     );
+
+    // Capacitor: 딥링크로 돌아올 때 OAuth 토큰 처리
+    if (Capacitor.isNativePlatform()) {
+      App.addListener('appUrlOpen', async ({ url }) => {
+        if (url.startsWith('waffletycoon://')) {
+          const hashPart = url.split('#')[1];
+          if (hashPart) {
+            const params = new URLSearchParams(hashPart);
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            if (accessToken && refreshToken) {
+              await supabase!.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            }
+          }
+        }
+      });
+    }
   }
 
   /**
@@ -51,8 +73,11 @@ export class AuthManager {
     }
 
     try {
-      // GitHub Pages 등 서브 경로에 배포된 경우를 위해 전체 URL 사용
-      const redirectUrl = window.location.href.split('?')[0].split('#')[0];
+      // Capacitor 앱: 커스텀 URL Scheme으로 리다이렉트
+      // 웹: 현재 페이지 URL로 리다이렉트
+      const redirectUrl = Capacitor.isNativePlatform()
+        ? 'waffletycoon://auth-callback'
+        : window.location.href.split('?')[0].split('#')[0];
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

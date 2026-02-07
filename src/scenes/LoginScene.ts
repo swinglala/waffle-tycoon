@@ -4,6 +4,7 @@ import { AuthManager } from '../utils/AuthManager';
 
 export class LoginScene extends Phaser.Scene {
   private authManager: AuthManager;
+  private authUnsubscribe?: () => void;
 
   constructor() {
     super({ key: 'LoginScene' });
@@ -13,6 +14,16 @@ export class LoginScene extends Phaser.Scene {
   create(): void {
     // 배경색
     this.cameras.main.setBackgroundColor('#FFF8E7');
+
+    // OAuth 복귀 시 로그인 감지 → HomeScene 이동
+    this.authUnsubscribe = this.authManager.onAuthStateChange((user) => {
+      if (user) {
+        localStorage.setItem('waffle_hasLoggedIn', 'true');
+        localStorage.removeItem('waffle_isGuest');
+        this.authUnsubscribe?.();
+        this.scene.start('HomeScene');
+      }
+    });
 
     // 로고 (상단)
     const logo = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT * 0.35, 'logo');
