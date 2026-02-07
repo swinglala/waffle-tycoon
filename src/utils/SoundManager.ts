@@ -81,13 +81,28 @@ export class SoundManager {
 
   // Phaser 사운드 헬퍼
   playBgm(scene: Phaser.Scene, key: string, config?: Phaser.Types.Sound.SoundConfig): void {
-    if (this.settings.bgmEnabled) {
-      scene.sound.play(key, { loop: true, ...config });
+    if (!this.settings.bgmEnabled) return;
+
+    const playConfig = { loop: true, ...config };
+
+    // iOS WebView: AudioContext가 잠겨있으면 unlock 후 재생
+    if (scene.sound.locked) {
+      scene.sound.once('unlocked', () => {
+        scene.sound.play(key, playConfig);
+      });
+    } else {
+      scene.sound.play(key, playConfig);
     }
   }
 
   playSfx(scene: Phaser.Scene, key: string, config?: Phaser.Types.Sound.SoundConfig): void {
-    if (this.settings.sfxEnabled) {
+    if (!this.settings.sfxEnabled) return;
+
+    if (scene.sound.locked) {
+      scene.sound.once('unlocked', () => {
+        scene.sound.play(key, config);
+      });
+    } else {
       scene.sound.play(key, config);
     }
   }
