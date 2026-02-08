@@ -43,6 +43,18 @@
         width: 100%;
         height: 100%;
       }
+      /* 가로가 세로보다 넓은 화면 (웹/데스크탑)에서만 적용 */
+      @media (min-aspect-ratio: 9/16) {
+        #game-container {
+          left: 50%;
+          transform: translateX(-50%);
+          width: calc(100vh * 9 / 20);
+          max-width: 100%;
+        }
+        body {
+          background-color: #FFF8E7;
+        }
+      }
       /* 폰트 프리로드 */
       .font-preload {
         font-family: 'UhBeePuding';

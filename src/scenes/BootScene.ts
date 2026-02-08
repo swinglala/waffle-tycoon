@@ -18,7 +18,7 @@ export class BootScene extends Phaser.Scene {
     // 로고 로드 후 표시
     let logoImage: Phaser.GameObjects.Image | null = null;
     this.load.once('filecomplete-image-logo', () => {
-      const scale = sw / 1661;
+      const scale = Math.min(sw, 1024) / 1661;
       const logoDisplaySize = 1200 * scale;
       logoImage = this.add.image(sw / 2, sh * 0.35, 'logo');
       logoImage.setDisplaySize(logoDisplaySize, logoDisplaySize);

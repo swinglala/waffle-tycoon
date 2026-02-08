@@ -84,7 +84,7 @@ export class HomeScene extends Phaser.Scene {
     const { width: sw } = this.cameras.main;
 
     // Figma 기준 비율 계산 (Figma 너비 1661 기준)
-    const scale = sw / 1661;
+    const scale = Math.min(sw, 1024) / 1661;
     const topY = 170 * scale; // 프로필, 설정 Y축
     const heartStarY = 150 * scale; // 하트, 별 Y축
 
@@ -281,7 +281,7 @@ export class HomeScene extends Phaser.Scene {
     const { width: sw, height: sh } = this.cameras.main;
 
     // Figma 기준 비율 (Figma 너비 1661 기준)
-    const scale = sw / 1661;
+    const scale = Math.min(sw, 1024) / 1661;
 
     // 사이드 아이콘 - Figma 260x260
     const iconDisplaySize = 260 * scale;
@@ -446,7 +446,7 @@ export class HomeScene extends Phaser.Scene {
 
     const { width: sw } = this.cameras.main;
     // Figma 기준 비율 (Figma 너비 1661 기준)
-    const scale = sw / 1661;
+    const scale = Math.min(sw, 1024) / 1661;
 
     // 숫자 - Figma 350x350
     // day 텍스트 - Figma 578x432
