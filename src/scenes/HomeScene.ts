@@ -78,23 +78,27 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createBackground(): void {
+    const { width: screenWidth, height: screenHeight } = this.cameras.main;
+
     // 배경 이미지 (비율 유지, 가운데 맞춤, crop)
     const bg = this.add.image(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
+      screenWidth / 2,
+      screenHeight / 2,
       "home_background",
     );
 
     // cover 방식: 비율 유지하면서 화면을 꽉 채움 (넘치는 부분은 잘림)
-    const scaleX = GAME_WIDTH / bg.width;
-    const scaleY = GAME_HEIGHT / bg.height;
+    const scaleX = screenWidth / bg.width;
+    const scaleY = screenHeight / bg.height;
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
   }
 
   private createTitle(): void {
+    const centerX = this.cameras.main.width / 2;
+
     // 로고 이미지
-    const logo = this.add.image(GAME_WIDTH / 2, 230, "logo");
+    const logo = this.add.image(centerX, 230, "logo");
     logo.setOrigin(0.5);
     // 필요시 크기 조절 (원본 비율 유지)
     const maxWidth = 400;
@@ -104,7 +108,7 @@ export class HomeScene extends Phaser.Scene {
     }
 
     // 로고 아래 N일차 표시 (이미지로)
-    this.dayContainer = this.add.container(GAME_WIDTH / 2, 400);
+    this.dayContainer = this.add.container(centerX, 400);
     this.updateDayDisplay();
   }
 
@@ -242,7 +246,8 @@ export class HomeScene extends Phaser.Scene {
     const plusGap = 12;
     const totalHeartsWidth = HEART_CONFIG.MAX_HEARTS * heartSize + (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
     const totalWidth = totalHeartsWidth + plusGap + plusSize;
-    const heartsStartX = GAME_WIDTH / 2 - totalWidth / 2 + heartSize / 2;
+    const centerX = this.cameras.main.width / 2;
+    const heartsStartX = centerX - totalWidth / 2 + heartSize / 2;
 
     // 하트 + 플러스 + 타이머 배경 (베이지색, 라운드)
     const heartsBgPadding = 15;
@@ -251,7 +256,7 @@ export class HomeScene extends Phaser.Scene {
     const heartsBg = this.add.graphics();
     heartsBg.fillStyle(0xF5E6D3, 1);
     heartsBg.fillRoundedRect(
-      GAME_WIDTH / 2 - heartsBgWidth / 2,
+      centerX - heartsBgWidth / 2,
       heartsY - 24,
       heartsBgWidth,
       heartsBgHeight,
@@ -296,7 +301,7 @@ export class HomeScene extends Phaser.Scene {
 
     // 충전 타이머
     this.timerText = this.add
-      .text(GAME_WIDTH / 2, heartsY + 28, "", {
+      .text(centerX, heartsY + 28, "", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "18px",
         color: "#8B7355",
@@ -304,7 +309,8 @@ export class HomeScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // 오른쪽: 설정 버튼
-    const settingsBtnX = GAME_WIDTH - 45;
+    const { width: screenWidth } = this.cameras.main;
+    const settingsBtnX = screenWidth - 45;
     const settingsIcon = this.add
       .image(settingsBtnX, heartsY, "icon_setting")
       .setDisplaySize(60, 60)
@@ -370,10 +376,11 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createStartButton(): void {
-    const buttonY = GAME_HEIGHT * 0.78; // bottom 25% 영역
+    const { width: screenWidth, height: screenHeight } = this.cameras.main;
+    const buttonY = screenHeight * 0.78; // bottom 25% 영역
 
     // 버튼 이미지
-    const buttonImg = this.add.image(GAME_WIDTH / 2, buttonY, "btn_start");
+    const buttonImg = this.add.image(screenWidth / 2, buttonY, "btn_start");
     buttonImg.setInteractive({ useHandCursor: true });
 
     // 클릭 이벤트
@@ -399,12 +406,14 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showNoHeartsPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 반투명 오버레이
     const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
+      sw / 2,
+      sh / 2,
+      sw,
+      sh,
       0x000000,
       0.5,
     );
@@ -412,8 +421,8 @@ export class HomeScene extends Phaser.Scene {
 
     // 팝업 배경
     const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
+      sw / 2,
+      sh / 2,
       400,
       220,
       0xfff8e7,
@@ -422,8 +431,8 @@ export class HomeScene extends Phaser.Scene {
 
     // 팝업 타이틀
     const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 60,
+      sw / 2,
+      sh / 2 - 60,
       "💔 하트 부족",
       {
         fontFamily: "UhBeePuding", padding: { y: 5 },
@@ -437,8 +446,8 @@ export class HomeScene extends Phaser.Scene {
     // 메시지
     const timeStr = this.heartManager.formatTimeToNextHeart();
     const message = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
+      sw / 2,
+      sh / 2,
       `하트가 없어요!\n다음 하트까지: ${timeStr}`,
       {
         fontFamily: "UhBeePuding", padding: { y: 5 },
@@ -451,8 +460,8 @@ export class HomeScene extends Phaser.Scene {
 
     // 닫기 버튼
     const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 70,
+      sw / 2,
+      sh / 2 + 70,
       120,
       45,
       0xd4a574,
@@ -461,8 +470,8 @@ export class HomeScene extends Phaser.Scene {
     closeBtn.setInteractive({ useHandCursor: true });
 
     const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 70,
+      sw / 2,
+      sh / 2 + 70,
       "확인",
       {
         fontFamily: "UhBeePuding", padding: { y: 5 },
@@ -495,7 +504,8 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private createSideButtons(): void {
-    const sideButtonX = 665;
+    const { width: screenWidth } = this.cameras.main;
+    const sideButtonX = screenWidth - 55; // 오른쪽 가장자리에서 55px
     const targetSize = 90; // 원하는 최대 크기
     const buttonGap = 110;
 
@@ -561,78 +571,46 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showPlaceholderPopup(title: string): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5,
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
 
     // 팝업 배경
     const popupWidth = 400;
     const popupHeight = 200;
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      popupWidth,
-      popupHeight,
-      0xfff8e7,
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, popupWidth, popupHeight, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
 
     // 팝업 타이틀
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 50,
-      title,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "32px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      },
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 50, title, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "32px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
 
     // 준비 중 메시지
-    const message = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      "준비 중입니다!",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "24px",
-        color: "#5D4E37",
-      },
-    );
+    const message = this.add.text(sw / 2, sh / 2, "준비 중입니다!", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "24px",
+      color: "#5D4E37",
+    });
     message.setOrigin(0.5);
 
     // 닫기 버튼
-    const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      120,
-      45,
-      0xd4a574,
-    );
+    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 60, 120, 45, 0xd4a574);
     closeBtn.setStrokeStyle(3, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
 
-    const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      "닫기",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      },
-    );
+    const closeBtnText = this.add.text(sw / 2, sh / 2 + 60, "닫기", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     closeBtnText.setOrigin(0.5);
 
     // 닫기 클릭 이벤트
@@ -658,43 +636,26 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showHeartPurchasePopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
     const popupObjects: Phaser.GameObjects.GameObject[] = [];
 
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.6
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.6);
     overlay.setInteractive();
     popupObjects.push(overlay);
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      320,
-      180,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 320, 180, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
     popupObjects.push(popup);
 
     // 타이틀
-    const title = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 60,
-      "하트 구매",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "28px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const title = this.add.text(sw / 2, sh / 2 - 60, "하트 구매", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "28px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     title.setOrigin(0.5);
     popupObjects.push(title);
 
@@ -705,14 +666,8 @@ export class HomeScene extends Phaser.Scene {
     const canBuy = currentStars >= 1 && currentHearts < maxHearts;
     const buyBtnColor = canBuy ? 0x4CAF50 : 0x9E9E9E;
 
-    const btnY = GAME_HEIGHT / 2;
-    const buyBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      btnY,
-      260,
-      50,
-      buyBtnColor
-    );
+    const btnY = sh / 2;
+    const buyBtn = this.add.rectangle(sw / 2, btnY, 260, 50, buyBtnColor);
     buyBtn.setStrokeStyle(3, canBuy ? 0x388E3C : 0x757575);
     if (canBuy) {
       buyBtn.setInteractive({ useHandCursor: true });
@@ -721,8 +676,8 @@ export class HomeScene extends Phaser.Scene {
 
     // 버튼 내부 요소들: [heart 1 구매하기] ... [star 1]
     const iconSize = 26;
-    const btnLeft = GAME_WIDTH / 2 - 100;
-    const btnRight = GAME_WIDTH / 2 + 110;
+    const btnLeft = sw / 2 - 100;
+    const btnRight = sw / 2 + 110;
 
     // 왼쪽: heart 아이콘 + "1 구매하기"
     const heartIcon = this.add.image(btnLeft, btnY, "icon_heart")
@@ -751,28 +706,17 @@ export class HomeScene extends Phaser.Scene {
     popupObjects.push(starIcon);
 
     // 닫기 버튼
-    const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 55,
-      120,
-      45,
-      0xd4a574
-    );
+    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 55, 120, 45, 0xd4a574);
     closeBtn.setStrokeStyle(3, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(closeBtn);
 
-    const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 55,
-      "닫기",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const closeBtnText = this.add.text(sw / 2, sh / 2 + 55, "닫기", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     closeBtnText.setOrigin(0.5);
     popupObjects.push(closeBtnText);
 
@@ -805,43 +749,26 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showTestPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
     const popupObjects: Phaser.GameObjects.GameObject[] = [];
 
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5,
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
     popupObjects.push(overlay);
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      400,
-      420,
-      0xfff8e7,
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 420, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
     popupObjects.push(popup);
 
     // 팝업 타이틀
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 130,
-      "🛠️ 테스트 메뉴",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "28px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      },
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 130, "🛠️ 테스트 메뉴", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "28px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
     popupObjects.push(popupTitle);
 
@@ -879,10 +806,10 @@ export class HomeScene extends Phaser.Scene {
       btn.on("pointerout", () => btn.setAlpha(1));
     };
 
-    const btnY1 = GAME_HEIGHT / 2 - 60;
-    const btnY2 = GAME_HEIGHT / 2 + 10;
-    const leftX = GAME_WIDTH / 2 - 90;
-    const rightX = GAME_WIDTH / 2 + 90;
+    const btnY1 = sh / 2 - 60;
+    const btnY2 = sh / 2 + 10;
+    const leftX = sw / 2 - 90;
+    const rightX = sw / 2 + 90;
 
     // 1. 하트 +1 버튼
     createTestBtn(leftX, btnY1, "❤️ 하트 +1", 0xE85A4F, () => {
@@ -913,35 +840,24 @@ export class HomeScene extends Phaser.Scene {
     });
 
     // 5. UI 테스트 버튼
-    const btnY3 = GAME_HEIGHT / 2 + 80;
-    createTestBtn(GAME_WIDTH / 2, btnY3, "🎨 UI 테스트", 0x9C27B0, () => {
+    const btnY3 = sh / 2 + 80;
+    createTestBtn(sw / 2, btnY3, "🎨 UI 테스트", 0x9C27B0, () => {
       closePopup();
       this.scene.start("TestScene");
     });
 
     // 닫기 버튼
-    const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 150,
-      120,
-      45,
-      0xd4a574,
-    );
+    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 150, 120, 45, 0xd4a574);
     closeBtn.setStrokeStyle(3, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(closeBtn);
 
-    const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 150,
-      "닫기",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      },
-    );
+    const closeBtnText = this.add.text(sw / 2, sh / 2 + 150, "닫기", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     closeBtnText.setOrigin(0.5);
     popupObjects.push(closeBtnText);
 
@@ -991,100 +907,57 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showLogoutConfirmPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      400,
-      200,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 200, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
 
     // 팝업 타이틀
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 50,
-      "로그아웃",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "28px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 50, "로그아웃", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "28px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
 
     // 메시지
-    const message = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      "정말 로그아웃 하시겠습니까?",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-      }
-    );
+    const message = this.add.text(sw / 2, sh / 2, "정말 로그아웃 하시겠습니까?", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+    });
     message.setOrigin(0.5);
 
     // 확인 버튼
-    const confirmBtn = this.add.rectangle(
-      GAME_WIDTH / 2 - 70,
-      GAME_HEIGHT / 2 + 60,
-      100,
-      40,
-      0xe74c3c
-    );
+    const confirmBtn = this.add.rectangle(sw / 2 - 70, sh / 2 + 60, 100, 40, 0xe74c3c);
     confirmBtn.setStrokeStyle(2, 0xc0392b);
     confirmBtn.setInteractive({ useHandCursor: true });
 
-    const confirmBtnText = this.add.text(
-      GAME_WIDTH / 2 - 70,
-      GAME_HEIGHT / 2 + 60,
-      "로그아웃",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      }
-    );
+    const confirmBtnText = this.add.text(sw / 2 - 70, sh / 2 + 60, "로그아웃", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "16px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    });
     confirmBtnText.setOrigin(0.5);
 
     // 취소 버튼
-    const cancelBtn = this.add.rectangle(
-      GAME_WIDTH / 2 + 70,
-      GAME_HEIGHT / 2 + 60,
-      100,
-      40,
-      0xd4a574
-    );
+    const cancelBtn = this.add.rectangle(sw / 2 + 70, sh / 2 + 60, 100, 40, 0xd4a574);
     cancelBtn.setStrokeStyle(2, 0x8b6914);
     cancelBtn.setInteractive({ useHandCursor: true });
 
-    const cancelBtnText = this.add.text(
-      GAME_WIDTH / 2 + 70,
-      GAME_HEIGHT / 2 + 60,
-      "취소",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const cancelBtnText = this.add.text(sw / 2 + 70, sh / 2 + 60, "취소", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "16px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     cancelBtnText.setOrigin(0.5);
 
     // 닫기 함수
@@ -1125,78 +998,46 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showErrorPopup(title: string, message: string): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      400,
-      200,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 200, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
 
     // 팝업 타이틀
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 50,
-      `❌ ${title}`,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "24px",
-        color: "#E85A4F",
-        fontStyle: "bold",
-      }
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 50, `❌ ${title}`, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "24px",
+      color: "#E85A4F",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
 
     // 메시지
-    const messageText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      message,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#5D4E37",
-        align: "center",
-        wordWrap: { width: 350 },
-      }
-    );
+    const messageText = this.add.text(sw / 2, sh / 2, message, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "16px",
+      color: "#5D4E37",
+      align: "center",
+      wordWrap: { width: 350 },
+    });
     messageText.setOrigin(0.5);
 
     // 닫기 버튼
-    const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      100,
-      40,
-      0xd4a574
-    );
+    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 60, 100, 40, 0xd4a574);
     closeBtn.setStrokeStyle(2, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
 
-    const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      "확인",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const closeBtnText = this.add.text(sw / 2, sh / 2 + 60, "확인", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "16px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     closeBtnText.setOrigin(0.5);
 
     const closePopup = () => {
@@ -1293,109 +1134,65 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private showTutorialPromptPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
     const popupObjects: Phaser.GameObjects.GameObject[] = [];
 
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.6
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.6);
     overlay.setInteractive();
     popupObjects.push(overlay);
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      450,
-      320,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 450, 320, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
     popupObjects.push(popup);
 
     // 타이틀
-    const title = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 110,
-      "환영합니다!",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "32px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const title = this.add.text(sw / 2, sh / 2 - 110, "환영합니다!", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "32px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     title.setOrigin(0.5);
     popupObjects.push(title);
 
     // 메시지
-    const message = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 30,
-      "처음이시네요!\n튜토리얼을 통해\n와플 굽는 법을 배워볼까요?",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "22px",
-        color: "#5D4E37",
-        align: "center",
-      }
-    );
+    const message = this.add.text(sw / 2, sh / 2 - 30, "처음이시네요!\n튜토리얼을 통해\n와플 굽는 법을 배워볼까요?", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "22px",
+      color: "#5D4E37",
+      align: "center",
+    });
     message.setOrigin(0.5);
     popupObjects.push(message);
 
     // 튜토리얼 시작 버튼
-    const tutorialBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      280,
-      55,
-      0x4caf50
-    );
+    const tutorialBtn = this.add.rectangle(sw / 2, sh / 2 + 60, 280, 55, 0x4caf50);
     tutorialBtn.setStrokeStyle(3, 0x388e3c);
     tutorialBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(tutorialBtn);
 
-    const tutorialBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 60,
-      "튜토리얼 시작",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "22px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      }
-    );
+    const tutorialBtnText = this.add.text(sw / 2, sh / 2 + 60, "튜토리얼 시작", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "22px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    });
     tutorialBtnText.setOrigin(0.5);
     popupObjects.push(tutorialBtnText);
 
     // 건너뛰기 버튼
-    const skipBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 125,
-      280,
-      45,
-      0xcccccc
-    );
+    const skipBtn = this.add.rectangle(sw / 2, sh / 2 + 125, 280, 45, 0xcccccc);
     skipBtn.setStrokeStyle(2, 0x999999);
     skipBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(skipBtn);
 
-    const skipBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 125,
-      "건너뛰고 바로 시작",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "18px",
-        color: "#5D4E37",
-      }
-    );
+    const skipBtnText = this.add.text(sw / 2, sh / 2 + 125, "건너뛰고 바로 시작", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "18px",
+      color: "#5D4E37",
+    });
     skipBtnText.setOrigin(0.5);
     popupObjects.push(skipBtnText);
 
