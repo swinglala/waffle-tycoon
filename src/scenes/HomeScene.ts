@@ -19,7 +19,6 @@ export class HomeScene extends Phaser.Scene {
   private starsText!: Phaser.GameObjects.Text;
   private userText!: Phaser.GameObjects.Text;
   private profileIcon!: Phaser.GameObjects.Image;
-  private profileBg!: Phaser.GameObjects.Graphics;
   private dayContainer!: Phaser.GameObjects.Container;
   private loginBtn!: Phaser.GameObjects.Rectangle;
   private loginBtnText!: Phaser.GameObjects.Text;
@@ -48,7 +47,6 @@ export class HomeScene extends Phaser.Scene {
     this.loadProgress();
     this.createBackground();
     this.createTopUI();
-    this.createLogo();
     this.createSideButtons();
     this.createDayAndStartButton();
 
@@ -75,39 +73,48 @@ export class HomeScene extends Phaser.Scene {
   private createBackground(): void {
     const { width: sw, height: sh } = this.cameras.main;
 
-    const bg = this.add.image(sw / 2, sh / 2, "home_background");
+    const bg = this.add.image(sw / 2, sh / 2 - 100, "home_background");
     const scaleX = sw / bg.width;
     const scaleY = sh / bg.height;
-    const scale = Math.max(scaleX, scaleY);
+    const scale = Math.max(scaleX, scaleY) * 1.9;
     bg.setScale(scale);
   }
 
   private createTopUI(): void {
     const { width: sw } = this.cameras.main;
-    const topY = 50;
+
+    // Figma 기준 비율 계산 (Figma 너비 1661 기준)
+    const scale = sw / 1661;
+    const topY = 170 * scale; // 프로필, 설정 Y축
+    const heartStarY = 150 * scale; // 하트, 별 Y축
 
     // ========== 왼쪽: 프로필 영역 ==========
-    const leftX = 45;
+    // 프로필 - Figma 315x315
+    const profileDisplaySize = 315 * scale;
+    const leftX = profileDisplaySize / 2; // 더 왼쪽으로
 
-    // 프로필 원형 배경 (초록색)
-    this.profileBg = this.add.graphics();
-    this.profileBg.fillStyle(0x7fbf7f, 1);
-    this.profileBg.fillCircle(leftX, topY, 28);
-    this.profileBg.lineStyle(3, 0x5a9f5a);
-    this.profileBg.strokeCircle(leftX, topY, 28);
+    // 프로필 배경 (네모)
+    const profileBgSize = profileDisplaySize - 30;
+    const profileBg = this.add.graphics();
+    profileBg.fillStyle(0xf5e6d3, 0.95);
+    profileBg.fillRoundedRect(
+      leftX - profileBgSize / 2,
+      topY - profileBgSize / 2,
+      profileBgSize,
+      profileBgSize,
+      20
+    );
 
     // 프로필 아이콘
     this.profileIcon = this.add.image(leftX, topY, "icon_profile");
-    const profileScale = 32 / Math.max(this.profileIcon.width, this.profileIcon.height);
-    this.profileIcon.setScale(profileScale);
-    this.profileIcon.setTint(0xffffff);
+    this.profileIcon.setDisplaySize(profileDisplaySize, profileDisplaySize);
 
-    // 유저 이름 (프로필 아래)
+    // 유저 이름 (프로필 아래) - 폰트 키움
     this.userText = this.add
-      .text(leftX, topY + 40, "", {
+      .text(leftX, topY + profileDisplaySize / 2 + 5, "", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "16px",
+        fontSize: `${Math.round(22 * scale * 2)}px`,
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -115,15 +122,21 @@ export class HomeScene extends Phaser.Scene {
 
     // 로그인/로그아웃 버튼 (유저 이름 아래)
     this.loginBtn = this.add
-      .rectangle(leftX, topY + 70, 70, 24, 0x4285f4)
+      .rectangle(
+        leftX,
+        topY + profileDisplaySize / 2 + 35,
+        80 * scale * 2,
+        28 * scale * 2,
+        0x4285f4,
+      )
       .setStrokeStyle(2, 0x3367d6)
       .setInteractive({ useHandCursor: true });
 
     this.loginBtnText = this.add
-      .text(leftX, topY + 70, "로그인", {
+      .text(leftX, topY + profileDisplaySize / 2 + 35, "로그인", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "12px",
+        fontSize: `${Math.round(14 * scale * 2)}px`,
         color: "#FFFFFF",
         fontStyle: "bold",
       })
@@ -136,48 +149,41 @@ export class HomeScene extends Phaser.Scene {
       this.loginBtn.setFillStyle(isLoggedIn ? 0xe74c3c : 0x4285f4);
     });
 
-    // 별 표시 (로그인 버튼 아래)
-    this.add.image(leftX - 15, topY + 100, "icon_star").setDisplaySize(20, 20);
-    this.starsText = this.add
-      .text(leftX + 5, topY + 100, "", {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "16px",
-        color: "#D4A017",
-        fontStyle: "bold",
-      })
-      .setOrigin(0, 0.5);
-
-    // ========== 중앙: 하트 UI ==========
-    const centerX = sw / 2;
-    const heartSize = 38;
-    const heartGap = 8;
-    const plusSize = 32;
-    const plusGap = 10;
+    // ========== 하트 + 별 UI (왼쪽으로 이동) ==========
+    const centerX = sw / 2 - 40;
+    const heartSize = 50; // 38 -> 50 증가
+    const heartGap = 6;
+    const plusSize = 44; // 32 -> 44 증가
+    const plusGap = 8;
     const totalHeartsWidth =
-      HEART_CONFIG.MAX_HEARTS * heartSize + (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
+      HEART_CONFIG.MAX_HEARTS * heartSize +
+      (HEART_CONFIG.MAX_HEARTS - 1) * heartGap;
     const totalWidth = totalHeartsWidth + plusGap + plusSize;
     const heartsStartX = centerX - totalWidth / 2 + heartSize / 2;
 
     // 하트 배경 (베이지 라운드)
-    const heartsBgPadding = 12;
+    const heartsBgPadding = 14;
     const heartsBgWidth = totalWidth + heartsBgPadding * 2;
-    const heartsBgHeight = 58;
+    const heartsBgHeight = 70;
     const heartsBg = this.add.graphics();
     heartsBg.fillStyle(0xf5e6d3, 0.95);
     heartsBg.fillRoundedRect(
       centerX - heartsBgWidth / 2,
-      topY - 22,
+      heartStarY - 28,
       heartsBgWidth,
       heartsBgHeight,
-      18
+      20,
     );
 
     // 하트 아이콘들
     this.heartImages = [];
     for (let i = 0; i < HEART_CONFIG.MAX_HEARTS; i++) {
       const heartImg = this.add
-        .image(heartsStartX + i * (heartSize + heartGap), topY, "icon_heart")
+        .image(
+          heartsStartX + i * (heartSize + heartGap),
+          heartStarY,
+          "icon_heart",
+        )
         .setDisplaySize(heartSize, heartSize);
       this.heartImages.push(heartImg);
     }
@@ -185,10 +191,9 @@ export class HomeScene extends Phaser.Scene {
     // 플러스 버튼
     const plusX = heartsStartX + totalHeartsWidth + plusGap;
     this.plusButton = this.add
-      .image(plusX, topY, "icon_plus")
+      .image(plusX, heartStarY, "icon_plus")
+      .setDisplaySize(plusSize, plusSize)
       .setInteractive({ useHandCursor: true });
-    const plusScale = plusSize / Math.max(this.plusButton.width, this.plusButton.height);
-    this.plusButton.setScale(plusScale);
 
     this.plusButton.on("pointerdown", () => {
       const userEmail = this.authManager.getUser()?.email ?? "";
@@ -204,7 +209,7 @@ export class HomeScene extends Phaser.Scene {
 
     // 충전 타이머
     this.timerText = this.add
-      .text(centerX, topY + 24, "", {
+      .text(centerX, heartStarY + 24, "", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "14px",
@@ -212,11 +217,56 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // ========== 별 표시 (하트 옆) ==========
+    const starSize = 40;
+    const starGapFromHearts = 10;
+    const starBgPaddingLeft = 8;
+    const starBgPaddingRight = 14;
+    const starBgWidth = starSize + 40 + starBgPaddingLeft + starBgPaddingRight;
+    const starBgHeight = 70;
+    const starBgX = centerX + heartsBgWidth / 2 + starGapFromHearts;
+
+    // 별 배경 (베이지 라운드)
+    const starBg = this.add.graphics();
+    starBg.fillStyle(0xf5e6d3, 0.95);
+    starBg.fillRoundedRect(
+      starBgX,
+      heartStarY - 28,
+      starBgWidth,
+      starBgHeight,
+      20,
+    );
+
+    // 별 아이콘
+    const starIconX = starBgX + starBgPaddingLeft + starSize / 2;
+    this.add
+      .image(starIconX, heartStarY, "icon_star")
+      .setDisplaySize(starSize, starSize);
+
+    // 별 개수 텍스트
+    this.starsText = this.add
+      .text(starIconX + starSize / 2 + 8, heartStarY, "", {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "28px",
+        color: "#000000",
+        fontStyle: "bold",
+      })
+      .setOrigin(0, 0.5);
+
     // ========== 오른쪽: 설정 버튼 ==========
-    const settingsBtnX = sw - 45;
+    const settingsDisplaySize = 160 * scale;
+    const settingsBtnX = sw - settingsDisplaySize / 2 - 20;
+
+    // 설정 버튼 배경 (원형)
+    const settingsBgRadius = settingsDisplaySize / 2;
+    const settingsBg = this.add.graphics();
+    settingsBg.fillStyle(0xf5e6d3, 0.95);
+    settingsBg.fillCircle(settingsBtnX, topY, settingsBgRadius);
+
     const settingsIcon = this.add
       .image(settingsBtnX, topY, "icon_setting")
-      .setDisplaySize(50, 50)
+      .setDisplaySize(settingsDisplaySize, settingsDisplaySize)
       .setInteractive({ useHandCursor: true });
 
     settingsIcon.on("pointerdown", () => this.scene.start("SettingsScene"));
@@ -227,37 +277,38 @@ export class HomeScene extends Phaser.Scene {
     this.updateUserUI();
   }
 
-  private createLogo(): void {
-    const { width: sw, height: sh } = this.cameras.main;
-    const logoY = sh * 0.18;
-
-    const logo = this.add.image(sw / 2, logoY, "logo");
-    logo.setOrigin(0.5);
-    const maxWidth = 350;
-    if (logo.width > maxWidth) {
-      const scale = maxWidth / logo.width;
-      logo.setScale(scale);
-    }
-  }
-
   private createSideButtons(): void {
     const { width: sw, height: sh } = this.cameras.main;
-    const sideButtonX = sw - 50;
-    const targetSize = 70;
-    const buttonGap = 90;
-    const startY = sh * 0.22;
 
-    const scaleToFit = (img: Phaser.GameObjects.Image, maxSize: number) => {
-      const scale = maxSize / Math.max(img.width, img.height);
-      img.setScale(scale);
-    };
+    // Figma 기준 비율 (Figma 너비 1661 기준)
+    const scale = sw / 1661;
+
+    // 사이드 아이콘 - Figma 260x260
+    const iconDisplaySize = 260 * scale;
+    const buttonGap = iconDisplaySize + 20;
+    const sideButtonX = sw - iconDisplaySize / 2 - 30;
+    const startY = sh * 0.12;
+
+    // 사이드 버튼 배경 (베이지 라운드) - 하트 영역처럼
+
+    const sideBgWidth = iconDisplaySize - 20;
+    const sideBgHeight = buttonGap * 3 - 20;
+    const sideBg = this.add.graphics();
+    sideBg.fillStyle(0xf5e6d3, 0.95);
+    sideBg.fillRoundedRect(
+      sideButtonX - iconDisplaySize / 2 + 10,
+      startY - iconDisplaySize / 2,
+      sideBgWidth,
+      sideBgHeight,
+      20,
+    );
 
     // 1. 랭킹 버튼
     const rankingY = startY;
     const rankingIcon = this.add
       .image(sideButtonX, rankingY, "icon_rank")
+      .setDisplaySize(iconDisplaySize, iconDisplaySize)
       .setInteractive({ useHandCursor: true });
-    scaleToFit(rankingIcon, targetSize);
 
     rankingIcon.on("pointerdown", () => this.showPlaceholderPopup("랭킹"));
     rankingIcon.on("pointerover", () => rankingIcon.setTint(0xdddddd));
@@ -267,8 +318,8 @@ export class HomeScene extends Phaser.Scene {
     const shopY = rankingY + buttonGap;
     const shopIcon = this.add
       .image(sideButtonX, shopY, "icon_shop")
+      .setDisplaySize(iconDisplaySize, iconDisplaySize)
       .setInteractive({ useHandCursor: true });
-    scaleToFit(shopIcon, targetSize);
 
     shopIcon.on("pointerdown", () => this.scene.start("ShopScene"));
     shopIcon.on("pointerover", () => shopIcon.setTint(0xdddddd));
@@ -278,8 +329,8 @@ export class HomeScene extends Phaser.Scene {
     const dayTreeY = shopY + buttonGap;
     const dayTreeIcon = this.add
       .image(sideButtonX, dayTreeY, "icon_calendar")
+      .setDisplaySize(iconDisplaySize, iconDisplaySize)
       .setInteractive({ useHandCursor: true });
-    scaleToFit(dayTreeIcon, targetSize);
 
     dayTreeIcon.on("pointerdown", () => this.scene.start("DayTreeScene"));
     dayTreeIcon.on("pointerover", () => dayTreeIcon.setTint(0xdddddd));
@@ -289,14 +340,77 @@ export class HomeScene extends Phaser.Scene {
   private createDayAndStartButton(): void {
     const { width: sw, height: sh } = this.cameras.main;
 
-    // 일차 표시 (화면 하단 65% 위치)
-    const dayY = sh * 0.65;
+    // 일차 표시 - Y축 내림
+    const dayY = sh * 0.69;
     this.dayContainer = this.add.container(sw / 2, dayY);
     this.updateDayDisplay();
 
     // START 버튼 (화면 하단 78% 위치)
     const buttonY = sh * 0.78;
+
+    // 스타트 버튼 배경
     const buttonImg = this.add.image(sw / 2, buttonY, "btn_start");
+    buttonImg.setScale(0.5);
+    const startBgWidth = buttonImg.displayWidth + 40;
+    const startBgHeight = buttonImg.displayHeight + 10;
+    const startBgY = buttonY + 5; // Y축 아래로 이동
+
+    // 깊은 그림자 (맨 아래)
+    const startDeepShadow = this.add.graphics();
+    startDeepShadow.fillStyle(0x5a4010, 0.8);
+    startDeepShadow.fillRoundedRect(
+      sw / 2 - startBgWidth / 2 + 2,
+      startBgY - startBgHeight / 2 + 10,
+      startBgWidth,
+      startBgHeight,
+      25
+    );
+
+    // 중간 그림자
+    const startShadow = this.add.graphics();
+    startShadow.fillStyle(0x7a5530, 1);
+    startShadow.fillRoundedRect(
+      sw / 2 - startBgWidth / 2,
+      startBgY - startBgHeight / 2 + 6,
+      startBgWidth,
+      startBgHeight,
+      25
+    );
+
+    // 메인 배경
+    const startBg = this.add.graphics();
+    startBg.fillStyle(0xe8d4b8, 1);
+    startBg.fillRoundedRect(
+      sw / 2 - startBgWidth / 2,
+      startBgY - startBgHeight / 2,
+      startBgWidth,
+      startBgHeight,
+      25
+    );
+
+    // 상단 하이라이트
+    const startHighlight = this.add.graphics();
+    startHighlight.fillStyle(0xffffff, 0.3);
+    startHighlight.fillRoundedRect(
+      sw / 2 - startBgWidth / 2 + 4,
+      startBgY - startBgHeight / 2 + 3,
+      startBgWidth - 8,
+      startBgHeight / 3,
+      20
+    );
+
+    // 테두리
+    startBg.lineStyle(2, 0x9a7040, 1);
+    startBg.strokeRoundedRect(
+      sw / 2 - startBgWidth / 2,
+      startBgY - startBgHeight / 2,
+      startBgWidth,
+      startBgHeight,
+      25
+    );
+
+    // 버튼 이미지를 배경 위로
+    buttonImg.setDepth(1);
     buttonImg.setInteractive({ useHandCursor: true });
 
     buttonImg.on("pointerdown", () => {
@@ -310,14 +424,17 @@ export class HomeScene extends Phaser.Scene {
     buttonImg.on("pointerout", () => buttonImg.clearTint());
   }
 
-  private createNumberImages(num: number, height: number): Phaser.GameObjects.Image[] {
+  private createNumberImages(
+    num: number,
+    displayHeight: number,
+  ): Phaser.GameObjects.Image[] {
     const digits = num.toString().split("");
     const images: Phaser.GameObjects.Image[] = [];
 
+    // 숫자 - 원본 350x350 (정사각형)
     for (const digit of digits) {
       const img = this.add.image(0, 0, `number_${digit}`);
-      const scale = height / img.height;
-      img.setScale(scale);
+      img.setDisplaySize(displayHeight, displayHeight);
       images.push(img);
     }
 
@@ -327,15 +444,25 @@ export class HomeScene extends Phaser.Scene {
   private updateDayDisplay(): void {
     this.dayContainer.removeAll(true);
 
-    const digitHeight = 100;
-    const dayTextHeight = 120;
-    const gap = -30;
-    const digitGap = -45;
+    const { width: sw } = this.cameras.main;
+    // Figma 기준 비율 (Figma 너비 1661 기준)
+    const scale = sw / 1661;
 
-    const numberImages = this.createNumberImages(this.currentDay, digitHeight);
+    // 숫자 - Figma 350x350
+    // day 텍스트 - Figma 578x432
+    const digitDisplaySize = 350 * scale;
+    const dayTextWidth = 578 * scale;
+    const dayTextHeight = 432 * scale;
+    const gap = -150 * scale; // 숫자와 day 사이 갭 줄임
+    const digitGap = -150 * scale;
+
+    const numberImages = this.createNumberImages(
+      this.currentDay,
+      digitDisplaySize,
+    );
+
     const dayTextImg = this.add.image(0, 0, "day_text");
-    const dayTextScale = dayTextHeight / dayTextImg.height;
-    dayTextImg.setScale(dayTextScale);
+    dayTextImg.setDisplaySize(dayTextWidth, dayTextHeight);
 
     let totalWidth = 0;
     for (let i = 0; i < numberImages.length; i++) {
@@ -412,11 +539,17 @@ export class HomeScene extends Phaser.Scene {
     if (isLoggedIn) {
       this.loginBtnText.setText("로그아웃");
       this.loginBtn.setFillStyle(0xe74c3c);
-      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(2, 0xc0392b);
+      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(
+        2,
+        0xc0392b,
+      );
     } else {
       this.loginBtnText.setText("로그인");
       this.loginBtn.setFillStyle(0x4285f4);
-      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(2, 0x3367d6);
+      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(
+        2,
+        0x3367d6,
+      );
     }
   }
 
@@ -457,7 +590,7 @@ export class HomeScene extends Phaser.Scene {
         fontSize: "22px",
         color: "#5D4E37",
         align: "center",
-      }
+      },
     );
     message.setOrigin(0.5);
 
@@ -498,7 +631,13 @@ export class HomeScene extends Phaser.Scene {
 
     const popupWidth = 400;
     const popupHeight = 200;
-    const popup = this.add.rectangle(sw / 2, sh / 2, popupWidth, popupHeight, 0xfff8e7);
+    const popup = this.add.rectangle(
+      sw / 2,
+      sh / 2,
+      popupWidth,
+      popupHeight,
+      0xfff8e7,
+    );
     popup.setStrokeStyle(4, 0x8b6914);
 
     const popupTitle = this.add.text(sw / 2, sh / 2 - 50, title, {
@@ -587,7 +726,9 @@ export class HomeScene extends Phaser.Scene {
     const btnLeft = sw / 2 - 100;
     const btnRight = sw / 2 + 110;
 
-    const heartIcon = this.add.image(btnLeft, btnY, "icon_heart").setDisplaySize(iconSize, iconSize);
+    const heartIcon = this.add
+      .image(btnLeft, btnY, "icon_heart")
+      .setDisplaySize(iconSize, iconSize);
     popupObjects.push(heartIcon);
 
     const buyText = this.add
@@ -612,7 +753,9 @@ export class HomeScene extends Phaser.Scene {
       .setOrigin(1, 0.5);
     popupObjects.push(costText);
 
-    const starIcon = this.add.image(btnRight - 25, btnY, "icon_star").setDisplaySize(iconSize, iconSize);
+    const starIcon = this.add
+      .image(btnRight - 25, btnY, "icon_star")
+      .setDisplaySize(iconSize, iconSize);
     popupObjects.push(starIcon);
 
     const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 55, 120, 45, 0xd4a574);
@@ -687,7 +830,7 @@ export class HomeScene extends Phaser.Scene {
       y: number,
       label: string,
       color: number,
-      onClick: () => void
+      onClick: () => void,
     ) => {
       const btn = this.add.rectangle(x, y, 160, 50, color);
       btn.setStrokeStyle(2, 0x5d4e37);
@@ -744,7 +887,13 @@ export class HomeScene extends Phaser.Scene {
       this.scene.start("TestScene");
     });
 
-    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 150, 120, 45, 0xd4a574);
+    const closeBtn = this.add.rectangle(
+      sw / 2,
+      sh / 2 + 150,
+      120,
+      45,
+      0xd4a574,
+    );
     closeBtn.setStrokeStyle(3, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(closeBtn);
@@ -801,15 +950,26 @@ export class HomeScene extends Phaser.Scene {
     });
     popupTitle.setOrigin(0.5);
 
-    const message = this.add.text(sw / 2, sh / 2, "정말 로그아웃 하시겠습니까?", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "20px",
-      color: "#5D4E37",
-    });
+    const message = this.add.text(
+      sw / 2,
+      sh / 2,
+      "정말 로그아웃 하시겠습니까?",
+      {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "20px",
+        color: "#5D4E37",
+      },
+    );
     message.setOrigin(0.5);
 
-    const confirmBtn = this.add.rectangle(sw / 2 - 70, sh / 2 + 60, 100, 40, 0xe74c3c);
+    const confirmBtn = this.add.rectangle(
+      sw / 2 - 70,
+      sh / 2 + 60,
+      100,
+      40,
+      0xe74c3c,
+    );
     confirmBtn.setStrokeStyle(2, 0xc0392b);
     confirmBtn.setInteractive({ useHandCursor: true });
 
@@ -822,7 +982,13 @@ export class HomeScene extends Phaser.Scene {
     });
     confirmBtnText.setOrigin(0.5);
 
-    const cancelBtn = this.add.rectangle(sw / 2 + 70, sh / 2 + 60, 100, 40, 0xd4a574);
+    const cancelBtn = this.add.rectangle(
+      sw / 2 + 70,
+      sh / 2 + 60,
+      100,
+      40,
+      0xd4a574,
+    );
     cancelBtn.setStrokeStyle(2, 0x8b6914);
     cancelBtn.setInteractive({ useHandCursor: true });
 
@@ -1025,23 +1191,34 @@ export class HomeScene extends Phaser.Scene {
         fontSize: "22px",
         color: "#5D4E37",
         align: "center",
-      }
+      },
     );
     message.setOrigin(0.5);
     popupObjects.push(message);
 
-    const tutorialBtn = this.add.rectangle(sw / 2, sh / 2 + 60, 280, 55, 0x4caf50);
+    const tutorialBtn = this.add.rectangle(
+      sw / 2,
+      sh / 2 + 60,
+      280,
+      55,
+      0x4caf50,
+    );
     tutorialBtn.setStrokeStyle(3, 0x388e3c);
     tutorialBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(tutorialBtn);
 
-    const tutorialBtnText = this.add.text(sw / 2, sh / 2 + 60, "튜토리얼 시작", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "22px",
-      color: "#FFFFFF",
-      fontStyle: "bold",
-    });
+    const tutorialBtnText = this.add.text(
+      sw / 2,
+      sh / 2 + 60,
+      "튜토리얼 시작",
+      {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "22px",
+        color: "#FFFFFF",
+        fontStyle: "bold",
+      },
+    );
     tutorialBtnText.setOrigin(0.5);
     popupObjects.push(tutorialBtnText);
 
@@ -1050,12 +1227,17 @@ export class HomeScene extends Phaser.Scene {
     skipBtn.setInteractive({ useHandCursor: true });
     popupObjects.push(skipBtn);
 
-    const skipBtnText = this.add.text(sw / 2, sh / 2 + 125, "건너뛰고 바로 시작", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "18px",
-      color: "#5D4E37",
-    });
+    const skipBtnText = this.add.text(
+      sw / 2,
+      sh / 2 + 125,
+      "건너뛰고 바로 시작",
+      {
+        fontFamily: "UhBeePuding",
+        padding: { y: 5 },
+        fontSize: "18px",
+        color: "#5D4E37",
+      },
+    );
     skipBtnText.setOrigin(0.5);
     popupObjects.push(skipBtnText);
 

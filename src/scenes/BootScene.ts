@@ -7,15 +7,32 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
+    // 배경색 설정
+    this.cameras.main.setBackgroundColor('#FFF8E7');
+
+    // 로고를 먼저 로드
+    this.load.image('logo', 'assets/images/logo.png');
+
+    // 로고 로드 후 표시
+    let logoImage: Phaser.GameObjects.Image | null = null;
+    this.load.once('filecomplete-image-logo', () => {
+      const scale = sw / 1661;
+      const logoDisplaySize = 1200 * scale;
+      logoImage = this.add.image(sw / 2, sh * 0.35, 'logo');
+      logoImage.setDisplaySize(logoDisplaySize, logoDisplaySize);
+    });
+
     // 로딩 바 생성
     const progressBar = this.add.graphics();
     const progressBox = this.add.graphics();
 
     progressBox.fillStyle(0xE8DCC4, 0.8);
-    progressBox.fillRect(this.cameras.main.width / 2 - 160, this.cameras.main.height / 2 - 25, 320, 50);
+    progressBox.fillRect(sw / 2 - 160, sh * 0.6 - 25, 320, 50);
 
     // 로딩 텍스트
-    const loadingText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 60, '로딩 중...', {
+    const loadingText = this.add.text(sw / 2, sh * 0.6 - 60, '로딩 중...', {
       fontFamily: 'UhBeePuding', padding: { y: 5 },
       fontSize: '24px',
       color: '#5D4E37',
@@ -26,13 +43,14 @@ export class BootScene extends Phaser.Scene {
     this.load.on('progress', (value: number) => {
       progressBar.clear();
       progressBar.fillStyle(0xD4A574, 1);
-      progressBar.fillRect(this.cameras.main.width / 2 - 150, this.cameras.main.height / 2 - 15, 300 * value, 30);
+      progressBar.fillRect(sw / 2 - 150, sh * 0.6 - 15, 300 * value, 30);
     });
 
     this.load.on('complete', () => {
       progressBar.destroy();
       progressBox.destroy();
       loadingText.destroy();
+      if (logoImage) logoImage.destroy();
     });
 
     // 와플 이미지 (익힘 단계별)
@@ -107,9 +125,6 @@ export class BootScene extends Phaser.Scene {
     this.load.image('icon_star', 'assets/images/star.png');
     this.load.image('icon_plus', 'assets/images/plus.png');
     this.load.image('icon_x', 'assets/images/x.png');
-
-    // 로고
-    this.load.image('logo', 'assets/images/logo.png');
 
     // 프로필 아이콘
     this.load.image('icon_profile', 'assets/images/profile.png');
