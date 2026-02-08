@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import {
   CookingStage,
   GrillSlot,
@@ -13,7 +12,7 @@ import {
 } from "../types/game";
 
 const GRID_SIZE = 3;
-const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
+const CELL_SIZE = 180; // 고정 그리드 셀 크기
 const CELL_GAP = 6;
 
 // 화구별 불 세기 배율
@@ -177,13 +176,13 @@ export class TutorialScene extends Phaser.Scene {
   private createHeader(): void {
     // 상단 바 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, this.HEADER_Y, GAME_WIDTH - 20, 50, 0xd4a574)
+      .rectangle(this.cameras.main.width / 2, this.HEADER_Y, this.cameras.main.width - 20, 50, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914)
       .setDepth(10);
 
     // 튜토리얼 표시
     this.add
-      .text(GAME_WIDTH / 2, this.HEADER_Y, "튜토리얼", {
+      .text(this.cameras.main.width / 2, this.HEADER_Y, "튜토리얼", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",
@@ -197,8 +196,8 @@ export class TutorialScene extends Phaser.Scene {
   private createCustomerZone(): void {
     const bgHeight = this.FINISHED_TRAY_Y - 20;
     this.add
-      .image(GAME_WIDTH / 2, bgHeight / 2, "customer_background")
-      .setDisplaySize(GAME_WIDTH, bgHeight)
+      .image(this.cameras.main.width / 2, bgHeight / 2, "customer_background")
+      .setDisplaySize(this.cameras.main.width, bgHeight)
       .setDepth(0);
   }
 
@@ -206,7 +205,7 @@ export class TutorialScene extends Phaser.Scene {
     this.finishedTraySlotImages = [];
     this.finishedTrayWaffleImages = [];
 
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.finishedTrayCapacity;
     const slotSize = 100;
     const startX = 20 + slotWidth / 2;
@@ -223,7 +222,7 @@ export class TutorialScene extends Phaser.Scene {
 
     this.finishedTrayCountText = this.add
       .text(
-        GAME_WIDTH - 30,
+        this.cameras.main.width - 30,
         this.FINISHED_TRAY_Y - 25,
         "0/" + this.finishedTrayCapacity,
         {
@@ -254,7 +253,7 @@ export class TutorialScene extends Phaser.Scene {
     this.jamButton.on("pointerdown", () => this.onJamButtonClick());
 
     // 쓰레기통 버튼
-    const trashX = GAME_WIDTH - 85;
+    const trashX = this.cameras.main.width - 85;
     this.trashButton = this.add
       .image(trashX, this.TOPPING_BTN_Y, "btn_trash")
       .setDisplaySize(trashBtnSize, trashBtnSize)
@@ -268,7 +267,7 @@ export class TutorialScene extends Phaser.Scene {
     this.workTraySlotImages = [];
     this.workTrayWaffleImages = [];
 
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.workTrayCapacity;
     const slotSize = 85;
     const startX = 20 + slotWidth / 2;
@@ -284,7 +283,7 @@ export class TutorialScene extends Phaser.Scene {
 
     this.workTrayCountText = this.add
       .text(
-        GAME_WIDTH - 30,
+        this.cameras.main.width - 30,
         this.WORK_TRAY_Y - 20,
         "0/" + this.workTrayCapacity,
         {
@@ -299,7 +298,7 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private createGrillUI(): void {
-    const grillCenterX = GAME_WIDTH / 2;
+    const grillCenterX = this.cameras.main.width / 2;
     const grillTotalWidth = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const grillTotalHeight = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const grillCenterY = this.GRILL_START_Y + (CELL_SIZE + CELL_GAP);
@@ -340,7 +339,7 @@ export class TutorialScene extends Phaser.Scene {
     const fireSize = 300;
 
     this.fireImage = this.add
-      .image(GAME_WIDTH / 2, fireY, "small_fire")
+      .image(this.cameras.main.width / 2, fireY, "small_fire")
       .setDisplaySize(fireSize, fireSize)
       .setDepth(5) // 기본 depth는 낮게
       .setInteractive({ useHandCursor: true });
@@ -354,7 +353,7 @@ export class TutorialScene extends Phaser.Scene {
     this.highlightRects = [];
 
     // 안내 팝업 컨테이너
-    this.instructionContainer = this.add.container(GAME_WIDTH / 2, 300);
+    this.instructionContainer = this.add.container(this.cameras.main.width / 2, 300);
     this.instructionContainer.setDepth(TUTORIAL_CONFIG.INSTRUCTION_DEPTH);
 
     // 팝업 배경
@@ -404,7 +403,7 @@ export class TutorialScene extends Phaser.Scene {
 
   private createSkipButton(): void {
     this.skipButton = this.add
-      .text(GAME_WIDTH - 20, 90, "건너뛰기 >", {
+      .text(this.cameras.main.width - 20, 90, "건너뛰기 >", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
@@ -426,10 +425,10 @@ export class TutorialScene extends Phaser.Scene {
 
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.5,
       )
@@ -438,13 +437,13 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(overlay);
 
     const popup = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 400, 200, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 400, 200, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(501);
     popupObjects.push(popup);
 
     const titleText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 50, "튜토리얼 건너뛰기", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 50, "튜토리얼 건너뛰기", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",
@@ -456,7 +455,7 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(titleText);
 
     const messageText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "튜토리얼을 건너뛰시겠습니까?", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2, "튜토리얼을 건너뛰시겠습니까?", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "20px",
@@ -467,14 +466,14 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(messageText);
 
     const cancelBtn = this.add
-      .rectangle(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, 120, 45, 0xcccccc)
+      .rectangle(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, 120, 45, 0xcccccc)
       .setStrokeStyle(2, 0x999999)
       .setInteractive({ useHandCursor: true })
       .setDepth(502);
     popupObjects.push(cancelBtn);
 
     const cancelText = this.add
-      .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
+      .text(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, "취소", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
@@ -486,14 +485,14 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(cancelText);
 
     const confirmBtn = this.add
-      .rectangle(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, 120, 45, 0xe85a4f)
+      .rectangle(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, 120, 45, 0xe85a4f)
       .setStrokeStyle(2, 0xb8453c)
       .setInteractive({ useHandCursor: true })
       .setDepth(502);
     popupObjects.push(confirmBtn);
 
     const confirmText = this.add
-      .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "건너뛰기", {
+      .text(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, "건너뛰기", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "18px",
@@ -663,9 +662,9 @@ export class TutorialScene extends Phaser.Scene {
 
     // 팝업 위치 조정 (단계에 따라)
     if (this.currentStep <= TutorialStep.STRONG_FIRE) {
-      this.instructionContainer.setPosition(GAME_WIDTH / 2, 300);
+      this.instructionContainer.setPosition(this.cameras.main.width / 2, 300);
     } else {
-      this.instructionContainer.setPosition(GAME_WIDTH / 2, 250);
+      this.instructionContainer.setPosition(this.cameras.main.width / 2, 250);
     }
   }
 
@@ -675,7 +674,7 @@ export class TutorialScene extends Phaser.Scene {
 
     // 큰 팝업 배경
     this.instructionBg.setSize(600, 320);
-    this.instructionContainer.setPosition(GAME_WIDTH / 2, 280);
+    this.instructionContainer.setPosition(this.cameras.main.width / 2, 280);
 
     // 상단 텍스트
     this.instructionText.setText("와플은 이렇게 변해요!");
@@ -765,7 +764,7 @@ export class TutorialScene extends Phaser.Scene {
     this.instructionBg.setSize(550, 180);
 
     // 손님 아래쪽에 배치 (손님이 가려지지 않도록)
-    this.instructionContainer.setPosition(GAME_WIDTH / 2, 480);
+    this.instructionContainer.setPosition(this.cameras.main.width / 2, 480);
 
     // 안내 텍스트
     this.instructionText.setText(
@@ -787,7 +786,7 @@ export class TutorialScene extends Phaser.Scene {
 
     // 큰 팝업 배경
     this.instructionBg.setSize(660, 420);
-    this.instructionContainer.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+    this.instructionContainer.setPosition(this.cameras.main.width / 2, this.cameras.main.height / 2);
 
     // 제목 (별 이미지 + 텍스트 + 별 이미지)
     const titleStarSize = 44;
@@ -960,19 +959,19 @@ export class TutorialScene extends Phaser.Scene {
     // 상단 영역 (화면 상단 ~ 하이라이트 상단)
     if (top > 0) {
       const topRect = this.add
-        .rectangle(GAME_WIDTH / 2, top / 2, GAME_WIDTH, top, color, alpha)
+        .rectangle(this.cameras.main.width / 2, top / 2, this.cameras.main.width, top, color, alpha)
         .setDepth(depth);
       this.highlightRects.push(topRect);
     }
 
     // 하단 영역 (하이라이트 하단 ~ 화면 하단)
-    if (bottom < GAME_HEIGHT) {
-      const bottomHeight = GAME_HEIGHT - bottom;
+    if (bottom < this.cameras.main.height) {
+      const bottomHeight = this.cameras.main.height - bottom;
       const bottomRect = this.add
         .rectangle(
-          GAME_WIDTH / 2,
+          this.cameras.main.width / 2,
           bottom + bottomHeight / 2,
-          GAME_WIDTH,
+          this.cameras.main.width,
           bottomHeight,
           color,
           alpha,
@@ -990,8 +989,8 @@ export class TutorialScene extends Phaser.Scene {
     }
 
     // 우측 영역 (하이라이트 높이만큼)
-    if (right < GAME_WIDTH) {
-      const rightWidth = GAME_WIDTH - right;
+    if (right < this.cameras.main.width) {
+      const rightWidth = this.cameras.main.width - right;
       const rightRect = this.add
         .rectangle(
           right + rightWidth / 2,
@@ -1008,7 +1007,7 @@ export class TutorialScene extends Phaser.Scene {
 
   private highlightGrillCenter(): void {
     // 중앙 그릴 셀 좌표
-    const grillCenterX = GAME_WIDTH / 2;
+    const grillCenterX = this.cameras.main.width / 2;
     const grillTotalWidth = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const startX = grillCenterX - grillTotalWidth / 2 + CELL_SIZE / 2;
     const startY = this.GRILL_START_Y;
@@ -1028,7 +1027,7 @@ export class TutorialScene extends Phaser.Scene {
 
   private highlightGrillAll(): void {
     // 전체 그릴 영역
-    const grillCenterX = GAME_WIDTH / 2;
+    const grillCenterX = this.cameras.main.width / 2;
     const grillTotalWidth = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const grillTotalHeight = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const grillCenterY = this.GRILL_START_Y + (CELL_SIZE + CELL_GAP);
@@ -1056,7 +1055,7 @@ export class TutorialScene extends Phaser.Scene {
     const grillTotalHeight = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const fireY = this.GRILL_START_Y + grillTotalHeight - 30;
 
-    this.createHighlightFrame(GAME_WIDTH / 2, fireY, 200, 200);
+    this.createHighlightFrame(this.cameras.main.width / 2, fireY, 200, 200);
 
     // 강불 버튼의 depth를 높임
     this.fireImage.setDepth(TUTORIAL_CONFIG.HIGHLIGHT_DEPTH + 10);
@@ -1072,7 +1071,7 @@ export class TutorialScene extends Phaser.Scene {
 
   private highlightTrashButton(): void {
     // 쓰레기통 버튼 크기 130x130에 맞춰 하이라이트 (여백 포함)
-    this.createHighlightFrame(GAME_WIDTH - 85, this.TOPPING_BTN_Y, 150, 150);
+    this.createHighlightFrame(this.cameras.main.width - 85, this.TOPPING_BTN_Y, 150, 150);
 
     // 쓰레기통 버튼의 depth를 높임
     this.trashButton.setDepth(TUTORIAL_CONFIG.HIGHLIGHT_DEPTH + 10);
@@ -1364,7 +1363,7 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private updateWorkTrayDisplay(): void {
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.workTrayCapacity;
     const waffleSize = 100;
     const startX = 20 + slotWidth / 2;
@@ -1400,7 +1399,7 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private updateFinishedTrayDisplay(): void {
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.finishedTrayCapacity;
     const waffleSize = 100;
     const startX = 20 + slotWidth / 2;
@@ -1538,10 +1537,10 @@ export class TutorialScene extends Phaser.Scene {
 
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.7,
       )
@@ -1549,13 +1548,13 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(overlay);
 
     const popup = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 450, 300, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 450, 300, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(601);
     popupObjects.push(popup);
 
     const titleText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "튜토리얼 완료!", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 90, "튜토리얼 완료!", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "36px",
@@ -1568,8 +1567,8 @@ export class TutorialScene extends Phaser.Scene {
 
     const messageText = this.add
       .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 - 20,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 - 20,
         "이제 와플을 만들 준비가 되었어요!\n1일차부터 시작해볼까요?",
         {
           fontFamily: "Pretendard",
@@ -1584,14 +1583,14 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(messageText);
 
     const startBtn = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 80, 200, 60, 0x4caf50)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 + 80, 200, 60, 0x4caf50)
       .setStrokeStyle(3, 0x388e3c)
       .setInteractive({ useHandCursor: true })
       .setDepth(602);
     popupObjects.push(startBtn);
 
     const startBtnText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 80, "시작하기", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 80, "시작하기", {
         fontFamily: "Pretendard",
         padding: { y: 5 },
         fontSize: "24px",

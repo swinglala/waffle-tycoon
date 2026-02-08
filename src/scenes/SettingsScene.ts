@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/constants';
 import { SoundManager } from '../utils/SoundManager';
 
 export class SettingsScene extends Phaser.Scene {
@@ -23,14 +22,16 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private createHeader(): void {
+    const { width: sw } = this.cameras.main;
+
     // 헤더 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, 60, GAME_WIDTH - 40, 80, 0xD4A574)
+      .rectangle(sw / 2, 60, sw - 40, 80, 0xD4A574)
       .setStrokeStyle(3, 0x8B6914);
 
     // 타이틀
     this.add
-      .text(GAME_WIDTH / 2, 60, '⚙️ 설정', {
+      .text(sw / 2, 60, '⚙️ 설정', {
         fontFamily: 'UhBeePuding',
         padding: { y: 5 },
         fontSize: '36px',
@@ -41,12 +42,13 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private createSettingsUI(): void {
+    const { width: sw, height: sh } = this.cameras.main;
     const startY = 200;
     const rowHeight = 120;
 
     // 사운드 설정 섹션
     this.add
-      .text(GAME_WIDTH / 2, startY, '🔊 사운드 설정', {
+      .text(sw / 2, startY, '🔊 사운드 설정', {
         fontFamily: 'UhBeePuding',
         padding: { y: 5 },
         fontSize: '28px',
@@ -82,11 +84,11 @@ export class SettingsScene extends Phaser.Scene {
 
     // 구분선
     this.add
-      .rectangle(GAME_WIDTH / 2, startY + rowHeight * 3, GAME_WIDTH - 80, 2, 0xD4A574);
+      .rectangle(sw / 2, startY + rowHeight * 3, sw - 80, 2, 0xD4A574);
 
     // 버전 정보
     this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT - 100, 'Waffle Tycoon v1.0.0', {
+      .text(sw / 2, sh - 100, 'Waffle Tycoon v1.0.0', {
         fontFamily: 'UhBeePuding',
         padding: { y: 5 },
         fontSize: '18px',
@@ -101,8 +103,9 @@ export class SettingsScene extends Phaser.Scene {
     initialValue: boolean,
     onChange: (enabled: boolean) => void
   ): void {
-    const rowWidth = GAME_WIDTH - 80;
-    const rowX = GAME_WIDTH / 2;
+    const { width: sw } = this.cameras.main;
+    const rowWidth = sw - 80;
+    const rowX = sw / 2;
 
     // 행 배경
     this.add
@@ -120,7 +123,7 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     // 토글 스위치 생성
-    const toggleX = GAME_WIDTH - 100;
+    const toggleX = sw - 100;
     const toggleWidth = 70;
     const toggleHeight = 36;
     const knobRadius = 14;
@@ -185,21 +188,22 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   private createBackButton(): void {
-    const btnY = GAME_HEIGHT - 80;
+    const { width: sw, height: sh } = this.cameras.main;
+    const btnY = sh - 80;
 
     const backBtn = this.add
-      .image(GAME_WIDTH / 2, btnY, "button")
+      .image(sw / 2, btnY, "button")
       .setDisplaySize(300, 100)
       .setInteractive({ useHandCursor: true });
 
     // 홈 아이콘
     const homeIcon = this.add
-      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .image(sw / 2 - 50, btnY, "home_100")
       .setDisplaySize(60, 60);
 
     // 텍스트
     this.add
-      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
+      .text(sw / 2 + 10, btnY, "홈으로", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "26px",

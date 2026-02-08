@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import { UpgradeType, UpgradeCategory, UPGRADE_CONFIGS } from "../types/game";
 import { ProgressManager } from "../utils/ProgressManager";
 
@@ -64,7 +63,7 @@ export class ShopScene extends Phaser.Scene {
   private readonly HEADER_HEIGHT = 100;
   private readonly FOOTER_HEIGHT = 100;
   private readonly SCROLL_AREA_TOP = 110;
-  private readonly SCROLL_AREA_HEIGHT = GAME_HEIGHT - 210;
+  private SCROLL_AREA_HEIGHT = 0; // create()에서 계산
   private readonly COL_COUNT = 3;
   private readonly CARD_WIDTH = 210;
   private readonly CARD_HEIGHT = 360;
@@ -79,6 +78,7 @@ export class ShopScene extends Phaser.Scene {
     this.progressManager = ProgressManager.getInstance();
     this.scrollY = 0;
     this.dragDistance = 0;
+    this.SCROLL_AREA_HEIGHT = this.cameras.main.height - 210;
 
     this.createBackground();
     this.createHeader();
@@ -94,12 +94,12 @@ export class ShopScene extends Phaser.Scene {
   private createHeader(): void {
     // 헤더 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, 50, GAME_WIDTH, this.HEADER_HEIGHT, 0xd4a574)
+      .rectangle(this.cameras.main.width / 2, 50, this.cameras.main.width, this.HEADER_HEIGHT, 0xd4a574)
       .setDepth(100);
 
     // 타이틀
     this.add
-      .text(GAME_WIDTH / 2, 35, "상점", {
+      .text(this.cameras.main.width / 2, 35, "상점", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "36px",
@@ -111,7 +111,7 @@ export class ShopScene extends Phaser.Scene {
       .setDepth(101);
 
     // 별 잔액 표시
-    const starIconX = GAME_WIDTH / 2 - 35;
+    const starIconX = this.cameras.main.width / 2 - 35;
     this.add
       .image(starIconX, 70, "icon_star")
       .setDisplaySize(28, 28)
@@ -133,9 +133,9 @@ export class ShopScene extends Phaser.Scene {
     // 스크롤 영역 마스크
     const maskShape = this.add
       .rectangle(
-        GAME_WIDTH / 2,
+        this.cameras.main.width / 2,
         this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT / 2,
-        GAME_WIDTH,
+        this.cameras.main.width,
         this.SCROLL_AREA_HEIGHT,
         0xffffff,
       )
@@ -184,11 +184,11 @@ export class ShopScene extends Phaser.Scene {
 
   private createCategoryHeader(category: UpgradeCategory, y: number): void {
     const headerBg = this.add
-      .rectangle(GAME_WIDTH / 2, y + 20, GAME_WIDTH - 40, 44, 0xffd982)
+      .rectangle(this.cameras.main.width / 2, y + 20, this.cameras.main.width - 40, 44, 0xffd982)
       .setStrokeStyle(2, 0x6b3e26);
 
     const headerText = this.add
-      .text(GAME_WIDTH / 2, y + 20, CATEGORY_NAMES[category], {
+      .text(this.cameras.main.width / 2, y + 20, CATEGORY_NAMES[category], {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "26px",
@@ -416,34 +416,34 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private createBackButton(): void {
-    const btnY = GAME_HEIGHT - 50;
+    const btnY = this.cameras.main.height - 50;
 
     // 푸터 배경
     this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT - this.FOOTER_HEIGHT / 2,
-        GAME_WIDTH,
+        this.cameras.main.width / 2,
+        this.cameras.main.height - this.FOOTER_HEIGHT / 2,
+        this.cameras.main.width,
         this.FOOTER_HEIGHT,
         0xfff8e7,
       )
       .setDepth(100);
 
     const backBtn = this.add
-      .image(GAME_WIDTH / 2, btnY, "button")
+      .image(this.cameras.main.width / 2, btnY, "button")
       .setDisplaySize(300, 100)
       .setInteractive({ useHandCursor: true })
       .setDepth(101);
 
     // 홈 아이콘
     const homeIcon = this.add
-      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .image(this.cameras.main.width / 2 - 50, btnY, "home_100")
       .setDisplaySize(60, 60)
       .setDepth(102);
 
     // 텍스트
     this.add
-      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
+      .text(this.cameras.main.width / 2 + 10, btnY, "홈으로", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "26px",
@@ -470,7 +470,7 @@ export class ShopScene extends Phaser.Scene {
 
   private showMessage(text: string): void {
     const msg = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, text, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2, text, {
         fontFamily: "UhBeePuding",
         fontSize: "28px",
         color: "#E85A4F",

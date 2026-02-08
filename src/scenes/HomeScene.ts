@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT, TEST_ACCOUNTS } from "../config/constants";
+import { TEST_ACCOUNTS } from "../config/constants";
 import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { AuthManager } from "../utils/AuthManager";

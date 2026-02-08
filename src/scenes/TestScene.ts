@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 
 /**
  * 테스트용 씬 - 게임 결과 팝업 등을 바로 확인할 수 있음
@@ -14,7 +13,7 @@ export class TestScene extends Phaser.Scene {
 
     // 타이틀
     this.add
-      .text(GAME_WIDTH / 2, 50, "테스트 페이지", {
+      .text(this.cameras.main.width / 2, 50, "테스트 페이지", {
         fontFamily: "UhBeePuding",
         fontSize: "32px",
         color: "#5D4E37",
@@ -28,7 +27,7 @@ export class TestScene extends Phaser.Scene {
 
     // 성공 팝업 (3별)
     this.createTestButton(
-      GAME_WIDTH / 2,
+      this.cameras.main.width / 2,
       btnY,
       "성공 팝업 (3별)",
       0x4caf50,
@@ -41,7 +40,7 @@ export class TestScene extends Phaser.Scene {
 
     // 성공 팝업 (1별)
     this.createTestButton(
-      GAME_WIDTH / 2,
+      this.cameras.main.width / 2,
       btnY,
       "성공 팝업 (1별)",
       0x8bc34a,
@@ -54,7 +53,7 @@ export class TestScene extends Phaser.Scene {
 
     // 실패 팝업 (0별)
     this.createTestButton(
-      GAME_WIDTH / 2,
+      this.cameras.main.width / 2,
       btnY,
       "실패 팝업 (0별)",
       0xe85a4f,
@@ -67,8 +66,8 @@ export class TestScene extends Phaser.Scene {
 
     // 홈으로 버튼
     this.createTestButton(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT - 80,
+      this.cameras.main.width / 2,
+      this.cameras.main.height - 80,
       "홈으로",
       0xd4a574,
       () => {
@@ -114,10 +113,10 @@ export class TestScene extends Phaser.Scene {
     // 오버레이
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.7,
       )
@@ -127,7 +126,7 @@ export class TestScene extends Phaser.Scene {
 
     // 결과 패널
     const panel = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 400, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 500, 400, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(201);
     popupObjects.push(panel);
@@ -135,7 +134,7 @@ export class TestScene extends Phaser.Scene {
     // 결과 이미지
     const resultImage = success ? "mission_complete" : "mission_fail";
     const resultImg = this.add
-      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 155, resultImage)
+      .image(this.cameras.main.width / 2, this.cameras.main.height / 2 - 155, resultImage)
       .setScale(0.8)
       .setOrigin(0.5)
       .setDepth(202);
@@ -145,8 +144,8 @@ export class TestScene extends Phaser.Scene {
     const starSize = 85;
     const starGap = 15;
     const totalStarWidth = 3 * starSize + 2 * starGap;
-    const starStartX = GAME_WIDTH / 2 - totalStarWidth / 2 + starSize / 2;
-    const starY = GAME_HEIGHT / 2 - 50;
+    const starStartX = this.cameras.main.width / 2 - totalStarWidth / 2 + starSize / 2;
+    const starY = this.cameras.main.height / 2 - 50;
 
     for (let i = 0; i < 3; i++) {
       const starImg = this.add
@@ -167,8 +166,8 @@ export class TestScene extends Phaser.Scene {
     // 벌은 돈 (강조)
     const earnedText = this.add
       .text(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2 + 25,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 + 25,
         `${money.toLocaleString()}원`,
         {
           fontFamily: "UhBeePuding",
@@ -185,8 +184,8 @@ export class TestScene extends Phaser.Scene {
     // 목표 금액 (아래줄)
     const targetText = this.add
       .text(
-        GAME_WIDTH / 2 + 50,
-        GAME_HEIGHT / 2 + 70,
+        this.cameras.main.width / 2 + 50,
+        this.cameras.main.height / 2 + 70,
         `/ ${targetMoney.toLocaleString()}원`,
         {
           fontFamily: "UhBeePuding",
@@ -201,14 +200,14 @@ export class TestScene extends Phaser.Scene {
 
     // 닫기 버튼
     const closeBtn = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 130, 200, 60, 0xd4a574)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 + 130, 200, 60, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914)
       .setInteractive({ useHandCursor: true })
       .setDepth(202);
     popupObjects.push(closeBtn);
 
     const closeBtnText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 130, "닫기", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 130, "닫기", {
         fontFamily: "UhBeePuding",
         fontSize: "24px",
         color: "#5D4E37",

@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import { ProgressManager } from "../utils/ProgressManager";
 import { HeartManager } from "../utils/HeartManager";
 import { getDayTarget, TUTORIAL_CONFIG } from "../types/game";
@@ -14,7 +13,6 @@ const START_Y = 100; // 컨테이너 내부 시작 Y (상대 좌표)
 
 // 스크롤 영역 상수
 const SCROLL_AREA_TOP = 170; // 헤더 + 안내문구 아래
-const SCROLL_AREA_BOTTOM = GAME_HEIGHT - 140; // 뒤로가기 버튼 위
 
 // 드래그 vs 클릭 구분 임계값 (픽셀)
 const DRAG_THRESHOLD = 10;
@@ -25,6 +23,7 @@ export class DayTreeScene extends Phaser.Scene {
   private scrollContainer!: Phaser.GameObjects.Container;
   private maxScrollY = 0;
   private dragDistance = 0; // 드래그 거리 추적
+  private scrollAreaBottom = 0; // 런타임에 계산
 
   constructor() {
     super({ key: "DayTreeScene" });
@@ -33,6 +32,9 @@ export class DayTreeScene extends Phaser.Scene {
   create(): void {
     this.progressManager = ProgressManager.getInstance();
     this.heartManager = HeartManager.getInstance();
+
+    // 런타임에 스크롤 영역 하단 계산
+    this.scrollAreaBottom = this.cameras.main.height - 140;
 
     this.createBackground();
     this.createHeader();
@@ -46,14 +48,16 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private createHeader(): void {
+    const { width: sw } = this.cameras.main;
+
     // 헤더 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, 50, GAME_WIDTH - 20, 70, 0xd4a574)
+      .rectangle(sw / 2, 50, sw - 20, 70, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914);
 
     // 타이틀
     this.add
-      .text(GAME_WIDTH / 2, 35, "데이트리", {
+      .text(sw / 2, 35, "데이트리", {
         fontFamily: "UhBeePuding", padding: { y: 5 },
         fontSize: "32px",
         color: "#5D4E37",
@@ -63,7 +67,7 @@ export class DayTreeScene extends Phaser.Scene {
 
     // 총 별 표시 (아이콘 + 텍스트)
     const totalStars = this.progressManager.getTotalStars();
-    const starIconX = GAME_WIDTH / 2 - 30;
+    const starIconX = sw / 2 - 30;
     this.add
       .image(starIconX, 65, "icon_star")
       .setDisplaySize(24, 24);
@@ -79,7 +83,7 @@ export class DayTreeScene extends Phaser.Scene {
     // 안내 문구
     this.add
       .text(
-        GAME_WIDTH / 2,
+        sw / 2,
         130,
         "재도전으로 더 많은 별을 모아보세요!\n재도전 시, 하트 1개 소모",
         {
@@ -93,25 +97,26 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private createDayGrid(): void {
+    const { width: sw } = this.cameras.main;
     const currentDay = this.progressManager.getCurrentDay();
 
     // 스크롤 가능한 컨테이너 생성 (스크롤 영역 상단에 위치)
     this.scrollContainer = this.add.container(0, SCROLL_AREA_TOP);
 
     // 마스크 생성 (스크롤 영역만 보이게)
-    const scrollAreaHeight = SCROLL_AREA_BOTTOM - SCROLL_AREA_TOP;
+    const scrollAreaHeight = this.scrollAreaBottom - SCROLL_AREA_TOP;
     const maskGraphics = this.make.graphics({ x: 0, y: 0 });
     maskGraphics.fillStyle(0xffffff);
-    maskGraphics.fillRect(0, SCROLL_AREA_TOP, GAME_WIDTH, scrollAreaHeight);
+    maskGraphics.fillRect(0, SCROLL_AREA_TOP, sw, scrollAreaHeight);
     const mask = maskGraphics.createGeometryMask();
     this.scrollContainer.setMask(mask);
 
     // 그리드 시작 X 좌표 (중앙 정렬)
     const totalWidth = GRID_COLS * CELL_WIDTH + (GRID_COLS - 1) * CELL_GAP_X;
-    const startX = (GAME_WIDTH - totalWidth) / 2 + CELL_WIDTH / 2;
+    const startX = (sw - totalWidth) / 2 + CELL_WIDTH / 2;
 
     // Day 0 (튜토리얼) - 첫 번째 행에 단독 표시
-    const tutorialX = GAME_WIDTH / 2;
+    const tutorialX = sw / 2;
     const tutorialY = START_Y;
     this.createTutorialCell(tutorialX, tutorialY);
 
@@ -364,88 +369,61 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private showConfirmPopup(day: number): void {
+    const { width: sw, height: sh } = this.cameras.main;
     const currentDay = this.progressManager.getCurrentDay();
     const isRetry = day < currentDay;
     const stars = this.progressManager.getDayStars(day);
     const target = getDayTarget(day);
 
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
     overlay.setDepth(100);
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      420,
-      280,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 420, 280, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
     popup.setDepth(101);
 
     // 팝업 타이틀
     const title = isRetry ? `${day}일차 재도전` : `${day}일차 시작`;
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 90,
-      title,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "28px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 90, title, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "28px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
     popupTitle.setDepth(102);
 
     // 정보 표시
-    const info = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 40,
-      `목표: ₩${target.toLocaleString()}`,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        align: "center",
-      }
-    );
+    const info = this.add.text(sw / 2, sh / 2 - 40, `목표: ₩${target.toLocaleString()}`, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      align: "center",
+    });
     info.setOrigin(0.5);
     info.setDepth(102);
 
     // 재도전인 경우 현재 기록 별 표시
     const popupStarImages: Phaser.GameObjects.Image[] = [];
     if (isRetry) {
-      const recordLabel = this.add.text(
-        GAME_WIDTH / 2 - 60,
-        GAME_HEIGHT / 2 - 5,
-        "현재 기록:",
-        {
-          fontFamily: "UhBeePuding", padding: { y: 5 },
-          fontSize: "18px",
-          color: "#5D4E37",
-        }
-      );
+      const recordLabel = this.add.text(sw / 2 - 60, sh / 2 - 5, "현재 기록:", {
+        fontFamily: "UhBeePuding", padding: { y: 5 },
+        fontSize: "18px",
+        color: "#5D4E37",
+      });
       recordLabel.setOrigin(0, 0.5);
       recordLabel.setDepth(102);
       popupStarImages.push(recordLabel as unknown as Phaser.GameObjects.Image);
 
       const starSize = 22;
       const starGap = 3;
-      const starStartX = GAME_WIDTH / 2 + 15;
+      const starStartX = sw / 2 + 15;
       for (let i = 0; i < 3; i++) {
         const starImg = this.add
-          .image(starStartX + i * (starSize + starGap), GAME_HEIGHT / 2 - 5, "icon_star")
+          .image(starStartX + i * (starSize + starGap), sh / 2 - 5, "icon_star")
           .setDisplaySize(starSize, starSize)
           .setDepth(102);
         if (i >= stars) {
@@ -457,68 +435,41 @@ export class DayTreeScene extends Phaser.Scene {
     }
 
     // 하트 비용 안내
-    const heartInfo = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 20,
-      "❤️ 하트 1개 소모",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "16px",
-        color: "#E85A4F",
-      }
-    );
+    const heartInfo = this.add.text(sw / 2, sh / 2 + 20, "❤️ 하트 1개 소모", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "16px",
+      color: "#E85A4F",
+    });
     heartInfo.setOrigin(0.5);
     heartInfo.setDepth(102);
 
     // 시작 버튼
-    const startBtn = this.add.rectangle(
-      GAME_WIDTH / 2 - 80,
-      GAME_HEIGHT / 2 + 80,
-      130,
-      50,
-      0x4caf50
-    );
+    const startBtn = this.add.rectangle(sw / 2 - 80, sh / 2 + 80, 130, 50, 0x4caf50);
     startBtn.setStrokeStyle(3, 0x388e3c);
     startBtn.setInteractive({ useHandCursor: true });
     startBtn.setDepth(102);
 
-    const startBtnText = this.add.text(
-      GAME_WIDTH / 2 - 80,
-      GAME_HEIGHT / 2 + 80,
-      isRetry ? "재도전" : "시작",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      }
-    );
+    const startBtnText = this.add.text(sw / 2 - 80, sh / 2 + 80, isRetry ? "재도전" : "시작", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#FFFFFF",
+      fontStyle: "bold",
+    });
     startBtnText.setOrigin(0.5);
     startBtnText.setDepth(102);
 
     // 취소 버튼
-    const cancelBtn = this.add.rectangle(
-      GAME_WIDTH / 2 + 80,
-      GAME_HEIGHT / 2 + 80,
-      130,
-      50,
-      0xd4a574
-    );
+    const cancelBtn = this.add.rectangle(sw / 2 + 80, sh / 2 + 80, 130, 50, 0xd4a574);
     cancelBtn.setStrokeStyle(3, 0x8b6914);
     cancelBtn.setInteractive({ useHandCursor: true });
     cancelBtn.setDepth(102);
 
-    const cancelBtnText = this.add.text(
-      GAME_WIDTH / 2 + 80,
-      GAME_HEIGHT / 2 + 80,
-      "취소",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const cancelBtnText = this.add.text(sw / 2 + 80, sh / 2 + 80, "취소", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     cancelBtnText.setOrigin(0.5);
     cancelBtnText.setDepth(102);
 
@@ -556,83 +507,51 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private showNoHeartsPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 반투명 오버레이
-    const overlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.5
-    );
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
     overlay.setInteractive();
     overlay.setDepth(100);
 
     // 팝업 배경
-    const popup = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      400,
-      220,
-      0xfff8e7
-    );
+    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 220, 0xfff8e7);
     popup.setStrokeStyle(4, 0x8b6914);
     popup.setDepth(101);
 
     // 팝업 타이틀
-    const popupTitle = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 - 60,
-      "💔 하트 부족",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "32px",
-        color: "#E85A4F",
-        fontStyle: "bold",
-      }
-    );
+    const popupTitle = this.add.text(sw / 2, sh / 2 - 60, "💔 하트 부족", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "32px",
+      color: "#E85A4F",
+      fontStyle: "bold",
+    });
     popupTitle.setOrigin(0.5);
     popupTitle.setDepth(102);
 
     // 메시지
     const timeStr = this.heartManager.formatTimeToNextHeart();
-    const message = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      `하트가 없어요!\n다음 하트까지: ${timeStr}`,
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "22px",
-        color: "#5D4E37",
-        align: "center",
-      }
-    );
+    const message = this.add.text(sw / 2, sh / 2, `하트가 없어요!\n다음 하트까지: ${timeStr}`, {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "22px",
+      color: "#5D4E37",
+      align: "center",
+    });
     message.setOrigin(0.5);
     message.setDepth(102);
 
     // 닫기 버튼
-    const closeBtn = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 70,
-      120,
-      45,
-      0xd4a574
-    );
+    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 70, 120, 45, 0xd4a574);
     closeBtn.setStrokeStyle(3, 0x8b6914);
     closeBtn.setInteractive({ useHandCursor: true });
     closeBtn.setDepth(102);
 
-    const closeBtnText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2 + 70,
-      "확인",
-      {
-        fontFamily: "UhBeePuding", padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-        fontStyle: "bold",
-      }
-    );
+    const closeBtnText = this.add.text(sw / 2, sh / 2 + 70, "확인", {
+      fontFamily: "UhBeePuding", padding: { y: 5 },
+      fontSize: "20px",
+      color: "#5D4E37",
+      fontStyle: "bold",
+    });
     closeBtnText.setOrigin(0.5);
     closeBtnText.setDepth(102);
 
@@ -658,21 +577,22 @@ export class DayTreeScene extends Phaser.Scene {
   }
 
   private createBackButton(): void {
-    const btnY = GAME_HEIGHT - 80;
+    const { width: sw, height: sh } = this.cameras.main;
+    const btnY = sh - 80;
 
     const backBtn = this.add
-      .image(GAME_WIDTH / 2, btnY, "button")
+      .image(sw / 2, btnY, "button")
       .setDisplaySize(300, 100)
       .setInteractive({ useHandCursor: true });
 
     // 홈 아이콘
     const homeIcon = this.add
-      .image(GAME_WIDTH / 2 - 50, btnY, "home_100")
+      .image(sw / 2 - 50, btnY, "home_100")
       .setDisplaySize(60, 60);
 
     // 텍스트
     this.add
-      .text(GAME_WIDTH / 2 + 10, btnY, "홈으로", {
+      .text(sw / 2 + 10, btnY, "홈으로", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "26px",
@@ -709,7 +629,7 @@ export class DayTreeScene extends Phaser.Scene {
       dragStartY = pointer.y;
 
       // 스크롤 영역 내에서만 드래그 시작
-      if (pointer.y > SCROLL_AREA_TOP && pointer.y < SCROLL_AREA_BOTTOM) {
+      if (pointer.y > SCROLL_AREA_TOP && pointer.y < this.scrollAreaBottom) {
         isDragging = true;
         containerStartY = this.scrollContainer.y;
       }
@@ -745,7 +665,7 @@ export class DayTreeScene extends Phaser.Scene {
         deltaY: number
       ) => {
         // 스크롤 영역 내에서만 휠 스크롤
-        if (pointer.y > SCROLL_AREA_TOP && pointer.y < SCROLL_AREA_BOTTOM) {
+        if (pointer.y > SCROLL_AREA_TOP && pointer.y < this.scrollAreaBottom) {
           let newY = this.scrollContainer.y - deltaY * 0.5;
           newY = Math.max(SCROLL_AREA_TOP - this.maxScrollY, Math.min(SCROLL_AREA_TOP, newY));
           this.scrollContainer.y = newY;

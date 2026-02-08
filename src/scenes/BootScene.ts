@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/constants';
 import { supabase, isSupabaseConnected } from '../config/supabase';
 
 export class BootScene extends Phaser.Scene {
@@ -13,10 +12,10 @@ export class BootScene extends Phaser.Scene {
     const progressBox = this.add.graphics();
 
     progressBox.fillStyle(0xE8DCC4, 0.8);
-    progressBox.fillRect(GAME_WIDTH / 2 - 160, GAME_HEIGHT / 2 - 25, 320, 50);
+    progressBox.fillRect(this.cameras.main.width / 2 - 160, this.cameras.main.height / 2 - 25, 320, 50);
 
     // 로딩 텍스트
-    const loadingText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, '로딩 중...', {
+    const loadingText = this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 60, '로딩 중...', {
       fontFamily: 'UhBeePuding', padding: { y: 5 },
       fontSize: '24px',
       color: '#5D4E37',
@@ -27,7 +26,7 @@ export class BootScene extends Phaser.Scene {
     this.load.on('progress', (value: number) => {
       progressBar.clear();
       progressBar.fillStyle(0xD4A574, 1);
-      progressBar.fillRect(GAME_WIDTH / 2 - 150, GAME_HEIGHT / 2 - 15, 300 * value, 30);
+      progressBar.fillRect(this.cameras.main.width / 2 - 150, this.cameras.main.height / 2 - 15, 300 * value, 30);
     });
 
     this.load.on('complete', () => {

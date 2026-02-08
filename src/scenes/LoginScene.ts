@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/constants';
 import { AuthManager } from '../utils/AuthManager';
 
 export class LoginScene extends Phaser.Scene {
@@ -12,6 +11,8 @@ export class LoginScene extends Phaser.Scene {
   }
 
   create(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+
     // 배경색
     this.cameras.main.setBackgroundColor('#FFF8E7');
 
@@ -26,16 +27,16 @@ export class LoginScene extends Phaser.Scene {
     });
 
     // 로고 (상단)
-    const logo = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT * 0.35, 'logo');
+    const logo = this.add.image(sw / 2, sh * 0.35, 'logo');
     logo.setScale(0.8);
 
     // 버튼 영역 (하단)
-    const buttonY = GAME_HEIGHT * 0.65;
+    const buttonY = sh * 0.65;
     const buttonSpacing = 80;
 
     // Google Login 버튼
     this.createButton(
-      GAME_WIDTH / 2,
+      sw / 2,
       buttonY,
       '🔑  Google 로그인',
       0x4285F4,
@@ -44,7 +45,7 @@ export class LoginScene extends Phaser.Scene {
 
     // Guest Login 버튼
     this.createButton(
-      GAME_WIDTH / 2,
+      sw / 2,
       buttonY + buttonSpacing,
       '👤  게스트로 시작',
       0x9E9E9E,
@@ -52,7 +53,7 @@ export class LoginScene extends Phaser.Scene {
     );
 
     // 하단 안내 텍스트
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT * 0.88, '게스트는 기기에만 데이터가 저장됩니다', {
+    this.add.text(sw / 2, sh * 0.88, '게스트는 기기에만 데이터가 저장됩니다', {
       fontFamily: 'UhBeePuding',
       fontSize: '18px',
       color: '#999999',
@@ -135,25 +136,16 @@ export class LoginScene extends Phaser.Scene {
   private loadingText?: Phaser.GameObjects.Text;
 
   private showLoadingOverlay(): void {
-    this.loadingOverlay = this.add.rectangle(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      GAME_WIDTH,
-      GAME_HEIGHT,
-      0x000000,
-      0.7
-    ).setDepth(100).setInteractive();
+    const { width: sw, height: sh } = this.cameras.main;
 
-    this.loadingText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT / 2,
-      '로그인 중...',
-      {
-        fontFamily: 'UhBeePuding',
-        fontSize: '28px',
-        color: '#FFFFFF',
-      }
-    ).setOrigin(0.5).setDepth(101);
+    this.loadingOverlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.7)
+      .setDepth(100).setInteractive();
+
+    this.loadingText = this.add.text(sw / 2, sh / 2, '로그인 중...', {
+      fontFamily: 'UhBeePuding',
+      fontSize: '28px',
+      color: '#FFFFFF',
+    }).setOrigin(0.5).setDepth(101);
   }
 
   private hideLoadingOverlay(): void {
@@ -162,16 +154,13 @@ export class LoginScene extends Phaser.Scene {
   }
 
   private showErrorMessage(message: string): void {
-    const errorText = this.add.text(
-      GAME_WIDTH / 2,
-      GAME_HEIGHT * 0.5,
-      message,
-      {
-        fontFamily: 'UhBeePuding',
-        fontSize: '20px',
-        color: '#E85A4F',
-      }
-    ).setOrigin(0.5);
+    const { width: sw, height: sh } = this.cameras.main;
+
+    const errorText = this.add.text(sw / 2, sh * 0.5, message, {
+      fontFamily: 'UhBeePuding',
+      fontSize: '20px',
+      color: '#E85A4F',
+    }).setOrigin(0.5);
 
     this.time.delayedCall(2000, () => {
       errorText.destroy();

@@ -1,5 +1,4 @@
 import Phaser from "phaser";
-import { GAME_WIDTH, GAME_HEIGHT } from "../config/constants";
 import {
   CookingStage,
   GrillSlot,
@@ -24,7 +23,7 @@ import { CustomerIntroManager } from "../utils/CustomerIntroManager";
 import { SoundManager } from "../utils/SoundManager";
 
 const GRID_SIZE = 3;
-const CELL_SIZE = Math.floor(GAME_WIDTH / 4); // 180px
+const CELL_SIZE = 180; // 고정 그리드 셀 크기
 const CELL_GAP = 6;
 
 // 화구별 불 세기 배율 (중앙이 가장 뜨겁고, 가장자리로 갈수록 약함)
@@ -154,20 +153,57 @@ export class GameScene extends Phaser.Scene {
   private bearAppearedThisDay = false; // 이번 Day에 곰 등장 여부
   private guaranteedBearTime = 0; // 곰 보장 등장 시간 (남은 시간 기준)
 
-  // 손님 슬롯 X 좌표
-  private readonly CUSTOMER_SLOT_X = [150, 330, 510];
+  // 손님 슬롯 X 좌표 (create에서 동적 계산)
+  private CUSTOMER_SLOT_X: number[] = [];
 
-  // 레이아웃 Y 좌표
-  private readonly HEADER_Y = 45;
-  private readonly TIME_BAR_Y = 90; // 시간 바 위치
-  private readonly CUSTOMER_Y = 190; // 손님 영역 중심 (위로 이동)
-  private readonly FINISHED_TRAY_Y = 355;
-  private readonly TOPPING_BTN_Y = 455; // 버튼 영역 (2배 높이 90px)
-  private readonly WORK_TRAY_Y = 535;
-  private readonly GRILL_START_Y = 680; // 작업트레이와 10px 갭
+  // 레이아웃 Y 좌표 (create에서 동적 계산)
+  private HEADER_Y = 0;
+  private TIME_BAR_Y = 0;
+  private CUSTOMER_Y = 0;
+  private FINISHED_TRAY_Y = 0;
+  private TOPPING_BTN_Y = 0;
+  private WORK_TRAY_Y = 0;
+  private GRILL_START_Y = 0;
 
   constructor() {
     super({ key: "GameScene" });
+  }
+
+  private calculateLayout(): void {
+    const sw = this.cameras.main.width;
+    const sh = this.cameras.main.height;
+
+    // 기준 해상도 1280에서의 레이아웃
+    const baseHeight = 1280;
+    const baseLayout = {
+      headerY: 45,
+      timeBarY: 90,
+      customerY: 190,
+      finishedTrayY: 355,
+      toppingBtnY: 455,
+      workTrayY: 535,
+      grillStartY: 680,
+    };
+
+    // 화면 비율에 맞춰 스케일 계산
+    const scale = sh / baseHeight;
+
+    // 모든 Y 좌표를 비례 스케일링
+    this.HEADER_Y = baseLayout.headerY * scale;
+    this.TIME_BAR_Y = baseLayout.timeBarY * scale;
+    this.CUSTOMER_Y = baseLayout.customerY * scale;
+    this.FINISHED_TRAY_Y = baseLayout.finishedTrayY * scale;
+    this.TOPPING_BTN_Y = baseLayout.toppingBtnY * scale;
+    this.WORK_TRAY_Y = baseLayout.workTrayY * scale;
+    this.GRILL_START_Y = baseLayout.grillStartY * scale;
+
+    // 손님 슬롯 X 좌표 (화면 너비 기반)
+    const customerSpacing = sw / 4;
+    this.CUSTOMER_SLOT_X = [
+      customerSpacing,
+      customerSpacing * 2,
+      customerSpacing * 3,
+    ];
   }
 
   init(data?: { day?: number; skipHeart?: boolean }): void {
@@ -229,6 +265,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // 반응형 레이아웃 계산
+    this.calculateLayout();
+
     this.heartManager = HeartManager.getInstance();
     this.progressManager = ProgressManager.getInstance();
     this.customerIntroManager = CustomerIntroManager.getInstance();
@@ -341,7 +380,7 @@ export class GameScene extends Phaser.Scene {
   private createUI(): void {
     // 상단 바 배경
     this.add
-      .rectangle(GAME_WIDTH / 2, this.HEADER_Y, GAME_WIDTH - 20, 50, 0xd4a574)
+      .rectangle(this.cameras.main.width / 2, this.HEADER_Y, this.cameras.main.width - 20, 50, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914)
       .setDepth(10);
 
@@ -360,7 +399,7 @@ export class GameScene extends Phaser.Scene {
     // 돈 표시
     this.moneyText = this.add
       .text(
-        GAME_WIDTH / 2,
+        this.cameras.main.width / 2,
         this.HEADER_Y,
         `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
         {
@@ -373,12 +412,12 @@ export class GameScene extends Phaser.Scene {
       .setDepth(11);
 
     // 시간 바 (헤더 바로 아래)
-    const barWidth = GAME_WIDTH - 80;
+    const barWidth = this.cameras.main.width - 80;
     const barHeight = 24;
 
     // 바 배경 (회색)
     this.add
-      .rectangle(GAME_WIDTH / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xcccccc)
+      .rectangle(this.cameras.main.width / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xcccccc)
       .setStrokeStyle(2, 0x999999)
       .setDepth(10);
 
@@ -391,7 +430,7 @@ export class GameScene extends Phaser.Scene {
     // 시간 텍스트 (바 위에 표시)
     this.timeText = this.add
       .text(
-        GAME_WIDTH / 2,
+        this.cameras.main.width / 2,
         this.TIME_BAR_Y,
         this.formatTime(this.gameState.timeRemaining),
         {
@@ -407,7 +446,7 @@ export class GameScene extends Phaser.Scene {
 
     // X 버튼 (헤더 오른쪽 끝)
     const closeBtn = this.add
-      .image(GAME_WIDTH - 45, this.HEADER_Y, "icon_x")
+      .image(this.cameras.main.width - 45, this.HEADER_Y, "icon_x")
       .setDisplaySize(50, 50)
       .setInteractive({ useHandCursor: true })
       .setDepth(11);
@@ -421,8 +460,8 @@ export class GameScene extends Phaser.Scene {
     // 손님 영역 배경 이미지 (헤더부터 손님 영역까지)
     const bgHeight = this.FINISHED_TRAY_Y - 20; // 헤더부터 완성품 트레이 전까지
     this.add
-      .image(GAME_WIDTH / 2, bgHeight / 2, "customer_background")
-      .setDisplaySize(GAME_WIDTH, bgHeight)
+      .image(this.cameras.main.width / 2, bgHeight / 2, "customer_background")
+      .setDisplaySize(this.cameras.main.width, bgHeight)
       .setDepth(0); // 배경은 가장 뒤
 
     // 손님 UI 배열 초기화
@@ -824,7 +863,7 @@ export class GameScene extends Phaser.Scene {
     this.finishedTraySlotImages = [];
     this.finishedTrayWaffleImages = [];
 
-    const usableWidth = GAME_WIDTH - 40; // 좌우 여백 20px씩
+    const usableWidth = this.cameras.main.width - 40; // 좌우 여백 20px씩
     const slotWidth = usableWidth / this.finishedTrayCapacity; // 현재 용량으로 등분
     const slotSize = 100; // 슬롯 이미지 고정 크기 (정사각형)
     const startX = 20 + slotWidth / 2; // 첫 슬롯 중심 X
@@ -847,7 +886,7 @@ export class GameScene extends Phaser.Scene {
     // 개수 표시
     this.finishedTrayCountText = this.add
       .text(
-        GAME_WIDTH - 30,
+        this.cameras.main.width - 30,
         this.FINISHED_TRAY_Y - 25,
         "0/" + this.finishedTrayCapacity,
         {
@@ -879,7 +918,7 @@ export class GameScene extends Phaser.Scene {
     jamBtn.on("pointerdown", () => this.applyJam(JamType.APPLE));
 
     // 쓰레기통 버튼 (오른쪽)
-    const trashX = GAME_WIDTH - 85;
+    const trashX = this.cameras.main.width - 85;
     const trashButtonImg = this.add
       .image(trashX, this.TOPPING_BTN_Y, "btn_trash")
       .setDisplaySize(trashBtnSize, trashBtnSize)
@@ -893,7 +932,7 @@ export class GameScene extends Phaser.Scene {
     this.workTraySlotImages = [];
     this.workTrayWaffleImages = [];
 
-    const usableWidth = GAME_WIDTH - 40; // 좌우 여백 20px씩
+    const usableWidth = this.cameras.main.width - 40; // 좌우 여백 20px씩
     const slotWidth = usableWidth / this.workTrayCapacity; // 현재 용량으로 등분
     const slotSize = 85; // 슬롯 이미지 고정 크기 (정사각형)
     const startX = 20 + slotWidth / 2; // 첫 슬롯 중심 X
@@ -915,7 +954,7 @@ export class GameScene extends Phaser.Scene {
     // 개수 표시
     this.workTrayCountText = this.add
       .text(
-        GAME_WIDTH - 30,
+        this.cameras.main.width - 30,
         this.WORK_TRAY_Y - 20,
         "0/" + this.workTrayCapacity,
         {
@@ -930,7 +969,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createGrillUI(): void {
-    const grillCenterX = GAME_WIDTH / 2;
+    const grillCenterX = this.cameras.main.width / 2;
     const grillTotalWidth = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
     const grillTotalHeight = GRID_SIZE * (CELL_SIZE + CELL_GAP) - CELL_GAP;
 
@@ -981,7 +1020,7 @@ export class GameScene extends Phaser.Scene {
     const fireSize = 300;
 
     this.fireImage = this.add
-      .image(GAME_WIDTH / 2, fireY, "small_fire")
+      .image(this.cameras.main.width / 2, fireY, "small_fire")
       .setDisplaySize(fireSize, fireSize)
       .setDepth(1) // 굽는판 뒤에 표시
       .setInteractive({ useHandCursor: true });
@@ -1088,7 +1127,7 @@ export class GameScene extends Phaser.Scene {
 
   private showMessage(text: string): void {
     const msg = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, text, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2, text, {
         fontFamily: "UhBeePuding",
         fontSize: "24px",
         color: "#5D4E37",
@@ -1124,13 +1163,13 @@ export class GameScene extends Phaser.Scene {
     // 콤보 이미지 표시
     const comboY = this.CUSTOMER_Y - 60;
     const comboImage = this.add
-      .image(GAME_WIDTH / 2, comboY, "combo")
+      .image(this.cameras.main.width / 2, comboY, "combo")
       .setDisplaySize(180, 60)
       .setDepth(150);
 
     // 콤보 수 텍스트 (이미지 오른쪽에)
     const comboText = this.add
-      .text(GAME_WIDTH / 2 + 110, comboY, `x${comboCount}`, {
+      .text(this.cameras.main.width / 2 + 110, comboY, `x${comboCount}`, {
         fontFamily: "UhBeePuding",
         fontSize: "36px",
         color: color,
@@ -1143,7 +1182,7 @@ export class GameScene extends Phaser.Scene {
 
     // 보너스 금액 텍스트 (아래에)
     const bonusText = this.add
-      .text(GAME_WIDTH / 2, comboY + 45, `+${bonus.toLocaleString()}원`, {
+      .text(this.cameras.main.width / 2, comboY + 45, `+${bonus.toLocaleString()}원`, {
         fontFamily: "UhBeePuding",
         fontSize: "28px",
         color: color,
@@ -1194,7 +1233,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateWorkTrayDisplay(): void {
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.workTrayCapacity; // 현재 용량으로 등분
     const waffleSize = 100; // 변경 전과 동일한 와플 크기
     const startX = 20 + slotWidth / 2;
@@ -1233,7 +1272,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private updateFinishedTrayDisplay(): void {
-    const usableWidth = GAME_WIDTH - 40;
+    const usableWidth = this.cameras.main.width - 40;
     const slotWidth = usableWidth / this.finishedTrayCapacity; // 현재 용량으로 등분
     const waffleSize = 100; // 변경 전과 동일한 와플 크기
     const startX = 20 + slotWidth / 2;
@@ -1391,10 +1430,10 @@ export class GameScene extends Phaser.Scene {
     // 결과 오버레이 배경
     this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.7,
       )
@@ -1402,14 +1441,14 @@ export class GameScene extends Phaser.Scene {
 
     // 결과 패널
     this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 500, 400, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 500, 400, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(201);
 
     // 결과 이미지
     const resultImage = success ? "mission_complete" : "mission_fail";
     this.add
-      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 155, resultImage)
+      .image(this.cameras.main.width / 2, this.cameras.main.height / 2 - 155, resultImage)
       .setScale(0.8)
       .setOrigin(0.5)
       .setDepth(202);
@@ -1418,8 +1457,8 @@ export class GameScene extends Phaser.Scene {
     const starSize = 85;
     const starGap = 15;
     const totalStarWidth = 3 * starSize + 2 * starGap;
-    const starStartX = GAME_WIDTH / 2 - totalStarWidth / 2 + starSize / 2;
-    const starY = GAME_HEIGHT / 2 - 50;
+    const starStartX = this.cameras.main.width / 2 - totalStarWidth / 2 + starSize / 2;
+    const starY = this.cameras.main.height / 2 - 50;
 
     for (let i = 0; i < 3; i++) {
       const starImg = this.add
@@ -1439,7 +1478,7 @@ export class GameScene extends Phaser.Scene {
 
     // 벌은 돈 (강조)
     this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 25, `${this.gameState.money.toLocaleString()}원`, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 25, `${this.gameState.money.toLocaleString()}원`, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "60px",
@@ -1451,7 +1490,7 @@ export class GameScene extends Phaser.Scene {
 
     // 목표 금액 (아래줄)
     this.add
-      .text(GAME_WIDTH / 2 + 50, GAME_HEIGHT / 2 + 70, `/ ${this.gameState.targetMoney.toLocaleString()}원`, {
+      .text(this.cameras.main.width / 2 + 50, this.cameras.main.height / 2 + 70, `/ ${this.gameState.targetMoney.toLocaleString()}원`, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "24px",
@@ -1461,7 +1500,7 @@ export class GameScene extends Phaser.Scene {
       .setDepth(202);
 
     // 버튼
-    const btnY = GAME_HEIGHT / 2 + 130;
+    const btnY = this.cameras.main.height / 2 + 130;
 
     if (success) {
       // 별 3개면 재도전 버튼 숨김 (2개 버튼), 아니면 3개 버튼
@@ -1469,8 +1508,8 @@ export class GameScene extends Phaser.Scene {
 
       if (maxStars) {
         // 별 3개: 다음 날 / 홈으로 (2개)
-        const leftBtnX = GAME_WIDTH / 2 - 115;
-        const rightBtnX = GAME_WIDTH / 2 + 115;
+        const leftBtnX = this.cameras.main.width / 2 - 115;
+        const rightBtnX = this.cameras.main.width / 2 + 115;
 
         // 다음 날 버튼 (왼쪽)
         const nextBtn = this.add
@@ -1515,9 +1554,9 @@ export class GameScene extends Phaser.Scene {
         // 별 0~2개: 다음 날 / 재도전 / 홈으로 (3개)
         const btnWidth = 145;
         const btnGap = 155;
-        const leftBtnX = GAME_WIDTH / 2 - btnGap;
-        const centerBtnX = GAME_WIDTH / 2;
-        const rightBtnX = GAME_WIDTH / 2 + btnGap;
+        const leftBtnX = this.cameras.main.width / 2 - btnGap;
+        const centerBtnX = this.cameras.main.width / 2;
+        const rightBtnX = this.cameras.main.width / 2 + btnGap;
 
         // 다음 날 버튼 (왼쪽)
         const nextBtn = this.add
@@ -1581,8 +1620,8 @@ export class GameScene extends Phaser.Scene {
       }
     } else {
       // 실패 시: 재도전 / 홈으로 (2개)
-      const leftBtnX = GAME_WIDTH / 2 - 115;
-      const rightBtnX = GAME_WIDTH / 2 + 115;
+      const leftBtnX = this.cameras.main.width / 2 - 115;
+      const rightBtnX = this.cameras.main.width / 2 + 115;
 
       // 재도전 버튼 (왼쪽)
       const retryBtn = this.add
@@ -1662,7 +1701,7 @@ export class GameScene extends Phaser.Scene {
     );
 
     // 시간 바 업데이트
-    const barWidth = GAME_WIDTH - 80;
+    const barWidth = this.cameras.main.width - 80;
     const timeRatio = this.gameState.timeRemaining / this.gameState.maxTime;
     this.timeBar.width = barWidth * timeRatio;
 
@@ -1683,10 +1722,10 @@ export class GameScene extends Phaser.Scene {
     // 반투명 오버레이
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.5,
       )
@@ -1695,13 +1734,13 @@ export class GameScene extends Phaser.Scene {
 
     // 팝업 배경
     const popup = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 400, 280, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 400, 280, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(301);
 
     // 타이틀
     const title = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 90, "일시정지", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 90, "일시정지", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "32px",
@@ -1713,13 +1752,13 @@ export class GameScene extends Phaser.Scene {
 
     // 재시도 버튼
     const retryBtn = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, 280, 55, 0xffc107)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 - 10, 280, 55, 0xffc107)
       .setStrokeStyle(3, 0xffa000)
       .setInteractive({ useHandCursor: true })
       .setDepth(302);
 
     const retryText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10, "🔄 재시도", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 10, "🔄 재시도", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "24px",
@@ -1731,13 +1770,13 @@ export class GameScene extends Phaser.Scene {
 
     // 종료 버튼
     const exitBtn = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, 280, 55, 0xe85a4f)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 + 60, 280, 55, 0xe85a4f)
       .setStrokeStyle(3, 0xb8453c)
       .setInteractive({ useHandCursor: true })
       .setDepth(302);
 
     const exitText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 60, "🚪 종료", {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 60, "🚪 종료", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "24px",
@@ -1797,10 +1836,10 @@ export class GameScene extends Phaser.Scene {
     // 반투명 오버레이
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.5,
       )
@@ -1809,13 +1848,13 @@ export class GameScene extends Phaser.Scene {
 
     // 팝업 배경
     const popup = this.add
-      .rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, 420, 250, 0xfff8e7)
+      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 420, 250, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(401);
 
     // 타이틀
     const titleText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 70, title, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 70, title, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "28px",
@@ -1827,7 +1866,7 @@ export class GameScene extends Phaser.Scene {
 
     // 메시지
     const messageText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 15, message, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 15, message, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "22px",
@@ -1838,13 +1877,13 @@ export class GameScene extends Phaser.Scene {
 
     // 취소 버튼
     const cancelBtn = this.add
-      .rectangle(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, 130, 50, 0xcccccc)
+      .rectangle(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, 130, 50, 0xcccccc)
       .setStrokeStyle(3, 0x999999)
       .setInteractive({ useHandCursor: true })
       .setDepth(402);
 
     const cancelText = this.add
-      .text(GAME_WIDTH / 2 - 80, GAME_HEIGHT / 2 + 60, "취소", {
+      .text(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, "취소", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "20px",
@@ -1856,13 +1895,13 @@ export class GameScene extends Phaser.Scene {
 
     // 확인 버튼
     const confirmBtn = this.add
-      .rectangle(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, 130, 50, 0x4caf50)
+      .rectangle(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, 130, 50, 0x4caf50)
       .setStrokeStyle(3, 0x388e3c)
       .setInteractive({ useHandCursor: true })
       .setDepth(402);
 
     const confirmText = this.add
-      .text(GAME_WIDTH / 2 + 80, GAME_HEIGHT / 2 + 60, "확인", {
+      .text(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, "확인", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "20px",
@@ -1918,10 +1957,10 @@ export class GameScene extends Phaser.Scene {
     // 반투명 오버레이
     const overlay = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
-        GAME_WIDTH,
-        GAME_HEIGHT,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
+        this.cameras.main.width,
+        this.cameras.main.height,
         0x000000,
         0.7,
       )
@@ -1933,8 +1972,8 @@ export class GameScene extends Phaser.Scene {
     const popupHeight = 520;
     const popup = this.add
       .rectangle(
-        GAME_WIDTH / 2,
-        GAME_HEIGHT / 2,
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2,
         popupWidth,
         popupHeight,
         0xfff8e7,
@@ -1944,7 +1983,7 @@ export class GameScene extends Phaser.Scene {
 
     // 타이틀 (36px)
     const title = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 210, config.title, {
+      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 210, config.title, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "36px",
@@ -1956,18 +1995,18 @@ export class GameScene extends Phaser.Scene {
 
     // 손님 이미지 (200x200)
     const customerImage = this.add
-      .image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60, `customer_${customerType}`)
+      .image(this.cameras.main.width / 2, this.cameras.main.height / 2 - 60, `customer_${customerType}`)
       .setDisplaySize(200, 200)
       .setDepth(502);
 
     // 설명 텍스트 (28px)
     const descriptionObjects: Phaser.GameObjects.Text[] = [];
-    const descStartY = GAME_HEIGHT / 2 + 75;
+    const descStartY = this.cameras.main.height / 2 + 75;
     const descLineHeight = 42;
 
     config.description.forEach((line, index) => {
       const descText = this.add
-        .text(GAME_WIDTH / 2, descStartY + index * descLineHeight, line, {
+        .text(this.cameras.main.width / 2, descStartY + index * descLineHeight, line, {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
           fontSize: "28px",
@@ -1979,15 +2018,15 @@ export class GameScene extends Phaser.Scene {
     });
 
     // 확인 버튼
-    const btnY = GAME_HEIGHT / 2 + 220;
+    const btnY = this.cameras.main.height / 2 + 220;
     const confirmBtn = this.add
-      .rectangle(GAME_WIDTH / 2, btnY, 200, 55, 0x4caf50)
+      .rectangle(this.cameras.main.width / 2, btnY, 200, 55, 0x4caf50)
       .setStrokeStyle(3, 0x388e3c)
       .setInteractive({ useHandCursor: true })
       .setDepth(502);
 
     const confirmText = this.add
-      .text(GAME_WIDTH / 2, btnY, "확인", {
+      .text(this.cameras.main.width / 2, btnY, "확인", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
         fontSize: "24px",
