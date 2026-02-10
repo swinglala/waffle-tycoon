@@ -132,6 +132,10 @@ export class BootScene extends Phaser.Scene {
     // 시작 버튼
     this.load.image('btn_start', 'assets/images/start.png');
 
+    // 로그인 버튼
+    this.load.image('btn_kakao_login', 'assets/images/kakao_login_medium_narrow.png');
+    this.load.image('btn_google_login', 'assets/images/web_light_sq_ctn@1x.png');
+
     // 불 이미지
     this.load.image('small_fire', 'assets/images/small_fire.png');
     this.load.image('big_fire', 'assets/images/big_fire.png');

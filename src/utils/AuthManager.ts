@@ -100,6 +100,39 @@ export class AuthManager {
   }
 
   /**
+   * Kakao OAuth 로그인
+   */
+  async signInWithKakao(): Promise<{ error: Error | null }> {
+    if (!isSupabaseConnected() || !supabase) {
+      return { error: new Error('Supabase가 설정되지 않았습니다.') };
+    }
+
+    try {
+      const redirectUrl = Capacitor.isNativePlatform()
+        ? 'waffletycoon://auth-callback'
+        : window.location.href.split('?')[0].split('#')[0];
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'kakao',
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+
+      if (error) {
+        console.error('[AuthManager] Kakao 로그인 실패:', error.message);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('알 수 없는 오류');
+      console.error('[AuthManager] Kakao 로그인 예외:', error.message);
+      return { error };
+    }
+  }
+
+  /**
    * 로그아웃
    */
   async signOut(): Promise<{ error: Error | null }> {

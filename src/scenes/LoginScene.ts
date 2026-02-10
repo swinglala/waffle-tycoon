@@ -31,22 +31,29 @@ export class LoginScene extends Phaser.Scene {
     logo.setScale(0.8);
 
     // 버튼 영역 (하단)
-    const buttonY = sh * 0.65;
-    const buttonSpacing = 80;
+    const buttonY = sh * 0.58;
+    const buttonSpacing = 60;
 
-    // Google Login 버튼
-    this.createButton(
+    // Kakao Login 버튼 (이미지 사용)
+    this.createImageButton(
       sw / 2,
       buttonY,
-      '🔑  Google 로그인',
-      0x4285F4,
+      'btn_kakao_login',
+      () => this.handleKakaoLogin()
+    );
+
+    // Google Login 버튼 (이미지 사용)
+    this.createImageButton(
+      sw / 2,
+      buttonY + buttonSpacing,
+      'btn_google_login',
       () => this.handleGoogleLogin()
     );
 
     // Guest Login 버튼
     this.createButton(
       sw / 2,
-      buttonY + buttonSpacing,
+      buttonY + buttonSpacing * 2,
       '👤  게스트로 시작',
       0x9E9E9E,
       () => this.handleGuestLogin()
@@ -60,29 +67,59 @@ export class LoginScene extends Phaser.Scene {
     }).setOrigin(0.5);
   }
 
+  private createImageButton(
+    x: number,
+    y: number,
+    imageKey: string,
+    onClick: () => void
+  ): Phaser.GameObjects.Image {
+    const button = this.add.image(x, y, imageKey);
+    button.setInteractive({ useHandCursor: true });
+
+    button.on('pointerdown', () => {
+      button.setScale(0.95);
+    });
+
+    button.on('pointerup', () => {
+      button.setScale(1);
+      onClick();
+    });
+
+    button.on('pointerout', () => {
+      button.setScale(1);
+    });
+
+    button.on('pointerover', () => {
+      button.setScale(1.02);
+    });
+
+    return button;
+  }
+
   private createButton(
     x: number,
     y: number,
     text: string,
     color: number,
-    onClick: () => void
+    onClick: () => void,
+    textColor: string = '#FFFFFF'
   ): Phaser.GameObjects.Container {
     const container = this.add.container(x, y);
 
     // 버튼 배경
     const bg = this.add.graphics();
-    const width = 300;
-    const height = 60;
-    const radius = 30;
+    const width = 183;
+    const height = 45;
+    const radius = 4;
 
     bg.fillStyle(color, 1);
     bg.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
 
     // 버튼 텍스트
     const label = this.add.text(0, 0, text, {
-      fontFamily: 'UhBeePuding',
-      fontSize: '24px',
-      color: '#FFFFFF',
+      fontFamily: 'Pretendard, sans-serif',
+      fontSize: '14px',
+      color: textColor,
     }).setOrigin(0.5);
 
     container.add([bg, label]);
@@ -92,7 +129,6 @@ export class LoginScene extends Phaser.Scene {
     hitArea.setInteractive({ useHandCursor: true });
     container.add(hitArea);
 
-    // 클릭 이벤트
     hitArea.on('pointerdown', () => {
       container.setScale(0.95);
     });
@@ -106,7 +142,6 @@ export class LoginScene extends Phaser.Scene {
       container.setScale(1);
     });
 
-    // 호버 효과
     hitArea.on('pointerover', () => {
       container.setScale(1.02);
     });
@@ -115,7 +150,6 @@ export class LoginScene extends Phaser.Scene {
   }
 
   private async handleGoogleLogin(): Promise<void> {
-    // 로딩 오버레이 표시
     this.showLoadingOverlay();
 
     const { error } = await this.authManager.signInWithGoogle();
@@ -126,10 +160,19 @@ export class LoginScene extends Phaser.Scene {
       this.showErrorMessage('로그인에 실패했습니다.');
       return;
     }
+  }
 
-    // OAuth는 리다이렉트 방식이므로 여기서 HomeScene으로 가면 안됨
-    // 리다이렉트 후 BootScene에서 세션 확인하고 HomeScene으로 이동함
-    // 로딩 오버레이는 유지 (리다이렉트될 때까지)
+  private async handleKakaoLogin(): Promise<void> {
+    this.showLoadingOverlay();
+
+    const { error } = await this.authManager.signInWithKakao();
+
+    if (error) {
+      console.error('Kakao 로그인 실패:', error.message);
+      this.hideLoadingOverlay();
+      this.showErrorMessage('로그인에 실패했습니다.');
+      return;
+    }
   }
 
   private loadingOverlay?: Phaser.GameObjects.Rectangle;
@@ -168,7 +211,6 @@ export class LoginScene extends Phaser.Scene {
   }
 
   private handleGuestLogin(): void {
-    // 게스트 로그인 표시
     localStorage.setItem('waffle_hasLoggedIn', 'true');
     localStorage.setItem('waffle_isGuest', 'true');
     this.scene.start('HomeScene');
