@@ -38,10 +38,10 @@
       }
       #game-container {
         position: fixed;
-        top: 0;
+        top: env(safe-area-inset-top, 0px);
         left: 0;
         width: 100%;
-        height: 100%;
+        height: calc(100% - env(safe-area-inset-top, 0px));
       }
       /* 가로가 세로보다 넓은 화면 (웹/데스크탑)에서만 적용 */
       @media (min-aspect-ratio: 9/16) {
@@ -63,7 +63,7 @@
         visibility: hidden;
       }
     </style>
-    <script type="module" crossorigin src="/waffle-tycoon/assets/index-Cm8zOHkp.js"></script>
+    <script type="module" crossorigin src="/waffle-tycoon/assets/index-C6csxhR6.js"></script>
   </head>
   <body>
     <span class="font-preload">폰트 로딩용</span>
