@@ -287,7 +287,7 @@ export class HomeScene extends Phaser.Scene {
     const iconDisplaySize = 260 * scale;
     const buttonGap = iconDisplaySize + 20;
     const sideButtonX = sw - iconDisplaySize / 2 - 30;
-    const startY = sh * 0.12;
+    const startY = sh * 0.16;
 
     // 사이드 버튼 배경 (베이지 라운드) - 하트 영역처럼
 
@@ -341,12 +341,12 @@ export class HomeScene extends Phaser.Scene {
     const { width: sw, height: sh } = this.cameras.main;
 
     // 일차 표시 - Y축 내림
-    const dayY = sh * 0.69;
+    const dayY = sh * 0.67;
     this.dayContainer = this.add.container(sw / 2, dayY);
     this.updateDayDisplay();
 
-    // START 버튼 (화면 하단 78% 위치)
-    const buttonY = sh * 0.78;
+    // START 버튼 (화면 하단)
+    const buttonY = sh * 0.80;
 
     // 스타트 버튼 배경
     const buttonImg = this.add.image(sw / 2, buttonY, "btn_start");
