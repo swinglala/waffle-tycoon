@@ -64,11 +64,9 @@ export class LoginScene extends Phaser.Scene {
     }
 
     // Guest Login 버튼
-    this.createButton(
+    this.createGuestButton(
       sw / 2,
       buttonY + buttonSpacing * nextButtonOffset,
-      '👤  게스트로 시작',
-      0x9E9E9E,
       () => this.handleGuestLogin()
     );
 
@@ -109,55 +107,49 @@ export class LoginScene extends Phaser.Scene {
     return button;
   }
 
-  private createButton(
+  private createGuestButton(
     x: number,
     y: number,
-    text: string,
-    color: number,
-    onClick: () => void,
-    textColor: string = '#FFFFFF'
+    onClick: () => void
   ): Phaser.GameObjects.Container {
     const container = this.add.container(x, y);
 
-    // 버튼 배경
-    const bg = this.add.graphics();
     const width = 183;
     const height = 45;
     const radius = 4;
 
-    bg.fillStyle(color, 1);
+    // 버튼 배경
+    const bg = this.add.graphics();
+    bg.fillStyle(0xE0E0E0, 1);
     bg.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+    bg.lineStyle(1, 0x000000, 1);
+    bg.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
 
-    // 버튼 텍스트
-    const label = this.add.text(0, 0, text, {
-      fontFamily: 'Pretendard, sans-serif',
-      fontSize: '14px',
-      color: textColor,
+    // 프로필 아이콘 (왼쪽 정렬)
+    const iconX = -width / 2 + 20;
+    const icon = this.add.image(iconX, 0, 'icon_profile');
+    icon.setDisplaySize(50, 50);
+
+    // 텍스트 (아이콘 오른쪽 영역 가운데 정렬)
+    const iconRight = iconX + 20;
+    const textCenterX = (iconRight + width / 2) / 2 - 8;
+    const label = this.add.text(textCenterX, 0, '게스트로 시작', {
+      fontFamily: '"Pretendard"',
+      fontSize: '18px',
+      color: '#000000',
     }).setOrigin(0.5);
 
-    container.add([bg, label]);
+    container.add([bg, icon, label]);
 
     // 인터랙티브 영역
     const hitArea = this.add.rectangle(0, 0, width, height, 0x000000, 0);
     hitArea.setInteractive({ useHandCursor: true });
     container.add(hitArea);
 
-    hitArea.on('pointerdown', () => {
-      container.setScale(0.95);
-    });
-
-    hitArea.on('pointerup', () => {
-      container.setScale(1);
-      onClick();
-    });
-
-    hitArea.on('pointerout', () => {
-      container.setScale(1);
-    });
-
-    hitArea.on('pointerover', () => {
-      container.setScale(1.02);
-    });
+    hitArea.on('pointerdown', () => container.setScale(0.95));
+    hitArea.on('pointerup', () => { container.setScale(1); onClick(); });
+    hitArea.on('pointerout', () => container.setScale(1));
+    hitArea.on('pointerover', () => container.setScale(1.02));
 
     return container;
   }

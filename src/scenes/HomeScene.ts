@@ -925,10 +925,7 @@ export class HomeScene extends Phaser.Scene {
     if (isLoggedIn) {
       this.showLogoutConfirmPopup();
     } else {
-      const { error } = await this.authManager.signInWithGoogle();
-      if (error) {
-        this.showErrorPopup("로그인 실패", error.message);
-      }
+      this.scene.start("LoginScene");
     }
   }
 
@@ -1029,63 +1026,6 @@ export class HomeScene extends Phaser.Scene {
     confirmBtn.on("pointerout", () => confirmBtn.setFillStyle(0xe74c3c));
     cancelBtn.on("pointerover", () => cancelBtn.setFillStyle(0xc49a6c));
     cancelBtn.on("pointerout", () => cancelBtn.setFillStyle(0xd4a574));
-  }
-
-  private showErrorPopup(title: string, message: string): void {
-    const { width: sw, height: sh } = this.cameras.main;
-
-    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
-    overlay.setInteractive();
-
-    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 200, 0xfff8e7);
-    popup.setStrokeStyle(4, 0x8b6914);
-
-    const popupTitle = this.add.text(sw / 2, sh / 2 - 50, `${title}`, {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "24px",
-      color: "#E85A4F",
-      fontStyle: "bold",
-    });
-    popupTitle.setOrigin(0.5);
-
-    const messageText = this.add.text(sw / 2, sh / 2, message, {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "16px",
-      color: "#5D4E37",
-      align: "center",
-      wordWrap: { width: 350 },
-    });
-    messageText.setOrigin(0.5);
-
-    const closeBtn = this.add.rectangle(sw / 2, sh / 2 + 60, 100, 40, 0xd4a574);
-    closeBtn.setStrokeStyle(2, 0x8b6914);
-    closeBtn.setInteractive({ useHandCursor: true });
-
-    const closeBtnText = this.add.text(sw / 2, sh / 2 + 60, "확인", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "16px",
-      color: "#5D4E37",
-      fontStyle: "bold",
-    });
-    closeBtnText.setOrigin(0.5);
-
-    const closePopup = () => {
-      overlay.destroy();
-      popup.destroy();
-      popupTitle.destroy();
-      messageText.destroy();
-      closeBtn.destroy();
-      closeBtnText.destroy();
-    };
-
-    closeBtn.on("pointerdown", closePopup);
-    overlay.on("pointerdown", closePopup);
-
-    closeBtn.on("pointerover", () => closeBtn.setFillStyle(0xc49a6c));
-    closeBtn.on("pointerout", () => closeBtn.setFillStyle(0xd4a574));
   }
 
   private async syncWithCloud(): Promise<void> {
