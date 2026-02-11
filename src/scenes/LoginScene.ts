@@ -54,12 +54,14 @@ export class LoginScene extends Phaser.Scene {
     // Apple Login 버튼 (iOS 네이티브에서만 표시)
     let nextButtonOffset = 2;
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
-      this.createImageButton(
+      const appleBtn = this.createImageButton(
         sw / 2,
         buttonY + buttonSpacing * 2,
         'btn_apple_login',
         () => this.handleAppleLogin()
       );
+      // 2x 이미지이므로 절반 크기로 표시 (200x32)
+      appleBtn.setDisplaySize(200, 32);
       nextButtonOffset = 3;
     }
 
