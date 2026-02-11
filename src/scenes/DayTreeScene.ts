@@ -101,13 +101,14 @@ export class DayTreeScene extends Phaser.Scene {
     const currentDay = this.progressManager.getCurrentDay();
 
     // 스크롤 가능한 컨테이너 생성 (스크롤 영역 상단에 위치)
-    this.scrollContainer = this.add.container(0, SCROLL_AREA_TOP);
+    const scrollTop = SCROLL_AREA_TOP;
+    this.scrollContainer = this.add.container(0, scrollTop);
 
     // 마스크 생성 (스크롤 영역만 보이게)
-    const scrollAreaHeight = this.scrollAreaBottom - SCROLL_AREA_TOP;
+    const scrollAreaHeight = this.scrollAreaBottom - scrollTop;
     const maskGraphics = this.make.graphics({ x: 0, y: 0 });
     maskGraphics.fillStyle(0xffffff);
-    maskGraphics.fillRect(0, SCROLL_AREA_TOP, sw, scrollAreaHeight);
+    maskGraphics.fillRect(0, scrollTop, sw, scrollAreaHeight);
     const mask = maskGraphics.createGeometryMask();
     this.scrollContainer.setMask(mask);
 
@@ -622,6 +623,7 @@ export class DayTreeScene extends Phaser.Scene {
     let dragStartX = 0;
     let containerStartY = 0;
 
+    const scrollTop = SCROLL_AREA_TOP;
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       // 드래그 거리 초기화
       this.dragDistance = 0;
@@ -629,7 +631,7 @@ export class DayTreeScene extends Phaser.Scene {
       dragStartY = pointer.y;
 
       // 스크롤 영역 내에서만 드래그 시작
-      if (pointer.y > SCROLL_AREA_TOP && pointer.y < this.scrollAreaBottom) {
+      if (pointer.y > scrollTop && pointer.y < this.scrollAreaBottom) {
         isDragging = true;
         containerStartY = this.scrollContainer.y;
       }
@@ -645,8 +647,8 @@ export class DayTreeScene extends Phaser.Scene {
         const deltaY = pointer.y - dragStartY;
         let newY = containerStartY + deltaY;
 
-        // 스크롤 범위 제한 (SCROLL_AREA_TOP 기준)
-        newY = Math.max(SCROLL_AREA_TOP - this.maxScrollY, Math.min(SCROLL_AREA_TOP, newY));
+        // 스크롤 범위 제한
+        newY = Math.max(scrollTop - this.maxScrollY, Math.min(scrollTop, newY));
         this.scrollContainer.y = newY;
       }
     });
@@ -665,9 +667,9 @@ export class DayTreeScene extends Phaser.Scene {
         deltaY: number
       ) => {
         // 스크롤 영역 내에서만 휠 스크롤
-        if (pointer.y > SCROLL_AREA_TOP && pointer.y < this.scrollAreaBottom) {
+        if (pointer.y > scrollTop && pointer.y < this.scrollAreaBottom) {
           let newY = this.scrollContainer.y - deltaY * 0.5;
-          newY = Math.max(SCROLL_AREA_TOP - this.maxScrollY, Math.min(SCROLL_AREA_TOP, newY));
+          newY = Math.max(scrollTop - this.maxScrollY, Math.min(scrollTop, newY));
           this.scrollContainer.y = newY;
         }
       }

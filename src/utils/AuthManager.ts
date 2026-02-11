@@ -2,6 +2,7 @@ import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { supabase, isSupabaseConnected } from '../config/supabase';
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 export type AuthStateChangeCallback = (user: User | null) => void;
 
@@ -130,6 +131,86 @@ export class AuthManager {
       console.error('[AuthManager] Kakao 로그인 예외:', error.message);
       return { error };
     }
+  }
+
+  /**
+   * Apple Sign In (iOS 네이티브)
+   */
+  async signInWithApple(): Promise<{ error: Error | null }> {
+    if (!isSupabaseConnected() || !supabase) {
+      return { error: new Error('Supabase가 설정되지 않았습니다.') };
+    }
+
+    try {
+      // nonce 생성
+      const rawNonce = this.generateNonce();
+      const hashedNonce = await this.sha256(rawNonce);
+
+      // iOS 네이티브 Apple Sign In 다이얼로그
+      const result = await SignInWithApple.authorize({
+        clientId: 'com.waffletycoon.app',
+        redirectURI: 'https://udegsopkidgluonvywad.supabase.co/auth/v1/callback',
+        scopes: 'email name',
+        nonce: hashedNonce,
+      });
+
+      const idToken = result.response.identityToken;
+      if (!idToken) {
+        return { error: new Error('Apple에서 ID Token을 받지 못했습니다.') };
+      }
+
+      // Supabase에 ID Token으로 로그인
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: idToken,
+        nonce: rawNonce,
+      });
+
+      if (error) {
+        console.error('[AuthManager] Apple 로그인 실패:', error.message);
+        return { error };
+      }
+
+      // Apple은 첫 로그인에만 이름 제공 → user_metadata에 저장
+      const givenName = result.response.givenName;
+      const familyName = result.response.familyName;
+      if (data.user && (givenName || familyName)) {
+        const fullName = [familyName, givenName].filter(Boolean).join('');
+        await supabase.auth.updateUser({
+          data: { full_name: fullName },
+        });
+      }
+
+      return { error: null };
+    } catch (err: unknown) {
+      // 사용자가 취소한 경우 무시
+      if (err && typeof err === 'object' && 'message' in err) {
+        const msg = (err as { message: string }).message;
+        if (msg.includes('cancel') || msg.includes('1001')) {
+          return { error: null };
+        }
+      }
+      const error = err instanceof Error ? err : new Error('알 수 없는 오류');
+      console.error('[AuthManager] Apple 로그인 예외:', error.message);
+      return { error };
+    }
+  }
+
+  private generateNonce(length = 32): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const values = crypto.getRandomValues(new Uint8Array(length));
+    for (let i = 0; i < length; i++) {
+      result += chars[values[i] % chars.length];
+    }
+    return result;
+  }
+
+  private async sha256(message: string): Promise<string> {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   /**

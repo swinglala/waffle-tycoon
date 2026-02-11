@@ -130,11 +130,12 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private createScrollableContent(): void {
+    const scrollTop = this.SCROLL_AREA_TOP;
     // 스크롤 영역 마스크
     const maskShape = this.add
       .rectangle(
         this.cameras.main.width / 2,
-        this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT / 2,
+        scrollTop + this.SCROLL_AREA_HEIGHT / 2,
         this.cameras.main.width,
         this.SCROLL_AREA_HEIGHT,
         0xffffff,
@@ -144,7 +145,7 @@ export class ShopScene extends Phaser.Scene {
     const mask = maskShape.createGeometryMask();
 
     // 스크롤 컨테이너
-    this.scrollContainer = this.add.container(0, this.SCROLL_AREA_TOP);
+    this.scrollContainer = this.add.container(0, scrollTop);
     this.scrollContainer.setMask(mask);
 
     // 콘텐츠 생성
@@ -369,6 +370,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private setupScrolling(): void {
+    const scrollTop = this.SCROLL_AREA_TOP;
     // 전역 포인터 이벤트로 스크롤 처리
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       this.dragStartY = pointer.y;
@@ -384,15 +386,15 @@ export class ShopScene extends Phaser.Scene {
 
       // 스크롤 영역 내에서만 스크롤
       if (
-        pointer.y >= this.SCROLL_AREA_TOP &&
-        pointer.y <= this.SCROLL_AREA_TOP + this.SCROLL_AREA_HEIGHT
+        pointer.y >= scrollTop &&
+        pointer.y <= scrollTop + this.SCROLL_AREA_HEIGHT
       ) {
         this.scrollY = Phaser.Math.Clamp(
           this.dragStartScrollY - dy,
           this.minScrollY,
           this.maxScrollY,
         );
-        this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
+        this.scrollContainer.y = scrollTop - this.scrollY;
       }
     });
 
@@ -410,7 +412,7 @@ export class ShopScene extends Phaser.Scene {
           this.minScrollY,
           this.maxScrollY,
         );
-        this.scrollContainer.y = this.SCROLL_AREA_TOP - this.scrollY;
+        this.scrollContainer.y = scrollTop - this.scrollY;
       },
     );
   }

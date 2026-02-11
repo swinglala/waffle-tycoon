@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { Capacitor } from '@capacitor/core';
 import { AuthManager } from '../utils/AuthManager';
 
 export class LoginScene extends Phaser.Scene {
@@ -50,10 +51,22 @@ export class LoginScene extends Phaser.Scene {
       () => this.handleGoogleLogin()
     );
 
+    // Apple Login 버튼 (iOS 네이티브에서만 표시)
+    let nextButtonOffset = 2;
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
+      this.createImageButton(
+        sw / 2,
+        buttonY + buttonSpacing * 2,
+        'btn_apple_login',
+        () => this.handleAppleLogin()
+      );
+      nextButtonOffset = 3;
+    }
+
     // Guest Login 버튼
     this.createButton(
       sw / 2,
-      buttonY + buttonSpacing * 2,
+      buttonY + buttonSpacing * nextButtonOffset,
       '👤  게스트로 시작',
       0x9E9E9E,
       () => this.handleGuestLogin()
@@ -169,6 +182,19 @@ export class LoginScene extends Phaser.Scene {
 
     if (error) {
       console.error('Kakao 로그인 실패:', error.message);
+      this.hideLoadingOverlay();
+      this.showErrorMessage('로그인에 실패했습니다.');
+      return;
+    }
+  }
+
+  private async handleAppleLogin(): Promise<void> {
+    this.showLoadingOverlay();
+
+    const { error } = await this.authManager.signInWithApple();
+
+    if (error) {
+      console.error('Apple 로그인 실패:', error.message);
       this.hideLoadingOverlay();
       this.showErrorMessage('로그인에 실패했습니다.');
       return;

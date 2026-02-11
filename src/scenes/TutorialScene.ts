@@ -113,7 +113,7 @@ export class TutorialScene extends Phaser.Scene {
   private isStrongFire = false;
   private strongFireRemaining = 0;
 
-  // 레이아웃 Y 좌표 (GameScene과 동일)
+  // 레이아웃 Y 좌표
   private readonly HEADER_Y = 45;
   private readonly CUSTOMER_Y = 190;
   private readonly FINISHED_TRAY_Y = 355;
