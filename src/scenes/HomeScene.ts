@@ -341,12 +341,12 @@ export class HomeScene extends Phaser.Scene {
     const { width: sw, height: sh } = this.cameras.main;
 
     // 일차 표시 - Y축 내림
-    const dayY = sh * 0.67;
+    const dayY = sh * 0.68;
     this.dayContainer = this.add.container(sw / 2, dayY);
     this.updateDayDisplay();
 
     // START 버튼 (화면 하단)
-    const buttonY = sh * 0.80;
+    const buttonY = sh * 0.78;
 
     // 스타트 버튼 배경
     const buttonImg = this.add.image(sw / 2, buttonY, "btn_start");
