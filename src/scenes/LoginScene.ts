@@ -60,8 +60,9 @@ export class LoginScene extends Phaser.Scene {
         'btn_apple_login',
         () => this.handleAppleLogin()
       );
-      // 2x 이미지이므로 절반 크기로 표시 (200x32)
-      appleBtn.setDisplaySize(200, 32);
+      // 2x 이미지이므로 scale 0.5
+      appleBtn.setData('baseScale', 0.5);
+      appleBtn.setScale(0.5);
       nextButtonOffset = 3;
     }
 
@@ -89,21 +90,24 @@ export class LoginScene extends Phaser.Scene {
     const button = this.add.image(x, y, imageKey);
     button.setInteractive({ useHandCursor: true });
 
+    // baseScale은 setScale() 호출 후의 값을 기준으로 사용
+    const getBase = () => button.getData('baseScale') ?? 1;
+
     button.on('pointerdown', () => {
-      button.setScale(0.95);
+      button.setScale(getBase() * 0.95);
     });
 
     button.on('pointerup', () => {
-      button.setScale(1);
+      button.setScale(getBase());
       onClick();
     });
 
     button.on('pointerout', () => {
-      button.setScale(1);
+      button.setScale(getBase());
     });
 
     button.on('pointerover', () => {
-      button.setScale(1.02);
+      button.setScale(getBase() * 1.02);
     });
 
     return button;
