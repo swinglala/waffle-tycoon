@@ -33,7 +33,7 @@ export class LoginScene extends Phaser.Scene {
 
     // 버튼 영역 (하단)
     const buttonY = sh * 0.58;
-    const buttonSpacing = 60;
+    const buttonSpacing = 85;
 
     // Kakao Login 버튼 (이미지 사용)
     this.createImageButton(
@@ -54,18 +54,14 @@ export class LoginScene extends Phaser.Scene {
     // Apple Login 버튼 (iOS 네이티브에서만 표시)
     let nextButtonOffset = 2;
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
-      const appleBtn = this.createImageButton(
+      this.createImageButton(
         sw / 2,
         buttonY + buttonSpacing * 2,
         'btn_apple_login',
         () => this.handleAppleLogin()
       );
-      // 2x 이미지이므로 scale 0.5
-      appleBtn.setData('baseScale', 0.5);
-      appleBtn.setScale(0.5);
       nextButtonOffset = 3;
     }
-
     // Guest Login 버튼
     this.createGuestButton(
       sw / 2,
@@ -85,29 +81,25 @@ export class LoginScene extends Phaser.Scene {
     x: number,
     y: number,
     imageKey: string,
-    onClick: () => void
+    onClick: () => void,
+    displayWidth = 275,
+    displayHeight = 68
   ): Phaser.GameObjects.Image {
     const button = this.add.image(x, y, imageKey);
+    button.setDisplaySize(displayWidth, displayHeight);
     button.setInteractive({ useHandCursor: true });
 
-    // baseScale은 setScale() 호출 후의 값을 기준으로 사용
-    const getBase = () => button.getData('baseScale') ?? 1;
-
     button.on('pointerdown', () => {
-      button.setScale(getBase() * 0.95);
+      button.setTint(0xdddddd);
     });
 
     button.on('pointerup', () => {
-      button.setScale(getBase());
+      button.clearTint();
       onClick();
     });
 
     button.on('pointerout', () => {
-      button.setScale(getBase());
-    });
-
-    button.on('pointerover', () => {
-      button.setScale(getBase() * 1.02);
+      button.clearTint();
     });
 
     return button;
@@ -120,8 +112,8 @@ export class LoginScene extends Phaser.Scene {
   ): Phaser.GameObjects.Container {
     const container = this.add.container(x, y);
 
-    const width = 183;
-    const height = 45;
+    const width = 275;
+    const height = 68;
     const radius = 4;
 
     // 버튼 배경
@@ -132,7 +124,7 @@ export class LoginScene extends Phaser.Scene {
     bg.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
 
     // 프로필 아이콘 (왼쪽 정렬)
-    const iconX = -width / 2 + 20;
+    const iconX = -width / 2 + 30;
     const icon = this.add.image(iconX, 0, 'icon_profile');
     icon.setDisplaySize(50, 50);
 
@@ -141,7 +133,7 @@ export class LoginScene extends Phaser.Scene {
     const textCenterX = (iconRight + width / 2) / 2 - 8;
     const label = this.add.text(textCenterX, 0, '게스트로 시작', {
       fontFamily: '"Pretendard"',
-      fontSize: '18px',
+      fontSize: '24px',
       color: '#000000',
     }).setOrigin(0.5);
 
