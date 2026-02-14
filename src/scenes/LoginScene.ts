@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { AuthManager } from '../utils/AuthManager';
 
 export class LoginScene extends Phaser.Scene {
@@ -163,6 +164,11 @@ export class LoginScene extends Phaser.Scene {
       this.showErrorMessage('로그인에 실패했습니다.');
       return;
     }
+
+    // 네이티브: 인앱 브라우저 닫힘 감지 → 로그인 안 됐으면 오버레이 해제
+    if (Capacitor.isNativePlatform()) {
+      this.listenBrowserFinished();
+    }
   }
 
   private async handleKakaoLogin(): Promise<void> {
@@ -176,6 +182,11 @@ export class LoginScene extends Phaser.Scene {
       this.showErrorMessage('로그인에 실패했습니다.');
       return;
     }
+
+    // 네이티브: 인앱 브라우저 닫힘 감지 → 로그인 안 됐으면 오버레이 해제
+    if (Capacitor.isNativePlatform()) {
+      this.listenBrowserFinished();
+    }
   }
 
   private async handleAppleLogin(): Promise<void> {
@@ -183,12 +194,30 @@ export class LoginScene extends Phaser.Scene {
 
     const { error } = await this.authManager.signInWithApple();
 
+    // Apple은 동기적으로 완료/취소 결과가 돌아옴 → 항상 오버레이 해제
     if (error) {
       console.error('Apple 로그인 실패:', error.message);
       this.hideLoadingOverlay();
       this.showErrorMessage('로그인에 실패했습니다.');
       return;
     }
+
+    // 에러 없이 반환 = 취소됨 (로그인 성공 시 onAuthStateChange에서 HomeScene 이동)
+    if (!this.authManager.isLoggedIn()) {
+      this.hideLoadingOverlay();
+    }
+  }
+
+  private async listenBrowserFinished(): Promise<void> {
+    const handler = await Browser.addListener('browserFinished', () => {
+      // 브라우저 닫혔는데 로그인 안 됐으면 오버레이 해제
+      setTimeout(() => {
+        if (!this.authManager.isLoggedIn()) {
+          this.hideLoadingOverlay();
+        }
+        handler.remove();
+      }, 500);
+    });
   }
 
   private loadingOverlay?: Phaser.GameObjects.Rectangle;
