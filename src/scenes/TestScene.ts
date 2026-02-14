@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { ScreenManager } from "../ui/ScreenManager";
 
 /**
  * 테스트용 씬 - 게임 결과 팝업 등을 바로 확인할 수 있음
@@ -71,7 +72,7 @@ export class TestScene extends Phaser.Scene {
       "홈으로",
       0xd4a574,
       () => {
-        this.scene.start("HomeScene");
+        ScreenManager.getInstance().showScreen('home');
       },
     );
   }

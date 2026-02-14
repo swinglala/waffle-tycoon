@@ -21,6 +21,7 @@ import { HeartManager } from "../utils/HeartManager";
 import { ProgressManager } from "../utils/ProgressManager";
 import { CustomerIntroManager } from "../utils/CustomerIntroManager";
 import { SoundManager } from "../utils/SoundManager";
+import { ScreenManager } from "../ui/ScreenManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = 180; // 고정 그리드 셀 크기
@@ -1661,7 +1662,7 @@ export class GameScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setDepth(203);
 
-      homeBtn.on("pointerdown", () => this.scene.start("HomeScene"));
+      homeBtn.on("pointerdown", () => ScreenManager.getInstance().showScreen('home'));
     }
   }
 
@@ -1688,7 +1689,7 @@ export class GameScene extends Phaser.Scene {
     if (this.gameState.day === this.progressManager.getCurrentDay()) {
       this.progressManager.advanceToNextDay();
     }
-    this.scene.start("HomeScene");
+    ScreenManager.getInstance().showScreen('home');
   }
 
   private updateUI(): void {
@@ -1813,7 +1814,7 @@ export class GameScene extends Phaser.Scene {
     exitBtn.on("pointerdown", () => {
       this.closePausePopup();
       this.showConfirmPopup("종료", "홈 화면으로 돌아갈까요?", () =>
-        this.scene.start("HomeScene"),
+        ScreenManager.getInstance().showScreen('home'),
       );
     });
   }

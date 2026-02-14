@@ -10,6 +10,7 @@ import {
   TUTORIAL_MESSAGES,
   TUTORIAL_CONFIG,
 } from "../types/game";
+import { ScreenManager } from "../ui/ScreenManager";
 
 const GRID_SIZE = 3;
 const CELL_SIZE = 180; // 고정 그리드 셀 크기
@@ -1602,7 +1603,7 @@ export class TutorialScene extends Phaser.Scene {
     popupObjects.push(startBtnText);
 
     startBtn.on("pointerdown", () => {
-      this.scene.start("HomeScene");
+      ScreenManager.getInstance().showScreen('home');
     });
 
     startBtn.on("pointerover", () => startBtn.setFillStyle(0x388e3c));

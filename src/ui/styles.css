@@ -1,0 +1,491 @@
+@import "tailwindcss";
+
+@theme {
+  --font-puding: 'UhBeePuding', sans-serif;
+  --font-pretendard: 'Pretendard', sans-serif;
+  --color-game-cream: #FFF8E7;
+  --color-game-beige: #F5E6D3;
+  --color-game-brown: #5D4E37;
+  --color-game-brown-light: #8B7355;
+  --color-game-gold: #8B6914;
+  --color-game-panel: rgba(245, 230, 211, 0.95);
+}
+
+/* ========================================
+   와플 타이쿤 - HTML UI 공통 스타일
+   ======================================== */
+
+@layer base {
+  :root {
+    --bg-cream: #FFF8E7;
+    --bg-beige: #F5E6D3;
+    --text-brown: #5D4E37;
+    --text-light: #8B7355;
+    --text-muted: #7D6E57;
+    --accent-brown: #D4A574;
+    --accent-brown-hover: #C49A6C;
+    --border-gold: #8B6914;
+    --border-dark: #6B3E26;
+    --error-red: #E85A4F;
+    --error-red-dark: #C0392B;
+    --success-green: #4CAF50;
+    --success-green-dark: #388E3C;
+    --blue: #4285F4;
+    --blue-dark: #3367D6;
+    --gold: #FFD700;
+    --gray: #999999;
+    --gray-light: #CCCCCC;
+    --gray-dark: #777777;
+    --white: #FFFFFF;
+    --popup-bg: #FFF8E7;
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --overlay-bg-dark: rgba(0, 0, 0, 0.6);
+    --overlay-bg-heavy: rgba(0, 0, 0, 0.7);
+    --font-primary: 'UhBeePuding', sans-serif;
+    --font-secondary: 'Pretendard', sans-serif;
+  }
+
+  /* ========== UI Root (9:16 고정 비율) ========== */
+  #ui-root {
+    position: fixed;
+    top: env(safe-area-inset-top, 0px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(100%, calc((100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * 9 / 16));
+    height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    z-index: 10;
+    display: none;
+    overflow: hidden;
+    container-type: inline-size;
+  }
+
+  #ui-root.visible {
+    display: block;
+  }
+}
+
+@layer components {
+  /* ========== Screen Base ========== */
+  .screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-cream);
+    font-family: var(--font-primary);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ========== Common Components ========== */
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    background-color: var(--accent-brown);
+    border: 3px solid var(--border-gold);
+    margin: 10px 20px 0;
+    border-radius: 8px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .header-title {
+    font-size: 36px;
+    color: var(--text-brown);
+    font-weight: bold;
+  }
+
+  .header-subtitle {
+    font-size: 22px;
+    color: var(--gold);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .header-subtitle img {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Scrollable content area */
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 20px;
+  }
+
+  /* Footer / Back button area */
+  .footer {
+    padding: 10px 20px 20px;
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: var(--bg-cream);
+  }
+
+  /* ========== Buttons ========== */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-primary);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .btn-primary {
+    background-color: var(--accent-brown);
+    border: 3px solid var(--border-gold);
+    color: var(--text-brown);
+    padding: 12px 24px;
+    font-size: 22px;
+  }
+
+  .btn-primary:active {
+    background-color: var(--accent-brown-hover);
+  }
+
+  .btn-back {
+    background-image: url('/assets/images/button.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 240px;
+    height: 80px;
+    border: none;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 22px;
+    color: var(--text-brown);
+    font-weight: bold;
+    font-family: var(--font-primary);
+    cursor: pointer;
+  }
+
+  .btn-back img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .btn-back:active {
+    opacity: 0.8;
+  }
+
+  .btn-danger {
+    background-color: var(--error-red);
+    border: 3px solid var(--error-red-dark);
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 22px;
+  }
+
+  .btn-danger:active {
+    background-color: var(--error-red-dark);
+  }
+
+  .btn-success {
+    background-color: var(--success-green);
+    border: 3px solid var(--success-green-dark);
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 22px;
+  }
+
+  .btn-success:active {
+    background-color: var(--success-green-dark);
+  }
+
+  .btn-blue {
+    background-color: var(--blue);
+    border: 3px solid var(--blue-dark);
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 22px;
+  }
+
+  .btn-blue:active {
+    background-color: var(--blue-dark);
+  }
+
+  .btn-gray {
+    background-color: var(--gray);
+    border: 3px solid var(--gray-dark);
+    color: var(--white);
+    padding: 12px 24px;
+    font-size: 22px;
+  }
+
+  .btn-gray:active {
+    background-color: var(--gray-dark);
+  }
+
+  .btn-disabled {
+    background-color: var(--gray-light);
+    border: 3px solid var(--gray);
+    color: var(--gray);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  /* Image button (login buttons) */
+  .btn-image {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-image:active {
+    opacity: 0.7;
+  }
+
+  .btn-image img {
+    display: block;
+    width: 275px;
+    height: 68px;
+    object-fit: contain;
+  }
+
+  /* ========== Popup / Modal ========== */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .popup-overlay.dark {
+    background: var(--overlay-bg-dark);
+  }
+
+  .popup-overlay.heavy {
+    background: var(--overlay-bg-heavy);
+  }
+
+  .popup {
+    background: var(--popup-bg);
+    border: 4px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 90%;
+    text-align: center;
+    animation: popIn 0.2s ease;
+  }
+
+  .popup-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--text-brown);
+    margin-bottom: 12px;
+  }
+
+  .popup-title.error {
+    color: var(--error-red);
+  }
+
+  .popup-message {
+    font-size: 22px;
+    color: var(--text-brown);
+    line-height: 1.4;
+    margin-bottom: 20px;
+    white-space: pre-line;
+  }
+
+  .popup-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ========== Loading overlay ========== */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay-bg-heavy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+  }
+
+  .loading-text {
+    font-family: var(--font-primary);
+    font-size: 28px;
+    color: var(--white);
+  }
+
+  /* ========== Toast message ========== */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--white);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: var(--font-primary);
+    font-size: 24px;
+    color: var(--error-red);
+    z-index: 3000;
+    animation: toastUp 1.5s ease forwards;
+    pointer-events: none;
+  }
+
+  /* ========== Toggle Switch ========== */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-beige);
+    border: 2px solid var(--accent-brown);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+
+  .toggle-label {
+    font-size: 24px;
+    color: var(--text-brown);
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 32px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input {
+    display: none;
+  }
+
+  .toggle-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--gray-light);
+    border-radius: 16px;
+    transition: background-color 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-track {
+    background-color: var(--success-green);
+  }
+
+  .toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 28px;
+    height: 28px;
+    background-color: var(--white);
+    border-radius: 50%;
+    border: 2px solid #DDD;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked ~ .toggle-knob {
+    transform: translateX(28px);
+  }
+
+  /* ========== Section ========== */
+  .section-title {
+    font-size: 28px;
+    color: var(--text-brown);
+    font-weight: bold;
+    text-align: center;
+    padding: 20px 0 12px;
+  }
+
+  .section-divider {
+    height: 2px;
+    background-color: var(--accent-brown);
+    margin: 12px 0;
+  }
+
+  /* ========== Grid (3-column) ========== */
+  .grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  /* ========== Category Header ========== */
+  .category-header {
+    background-color: #FFD982;
+    border: 2px solid var(--border-dark);
+    border-radius: 6px;
+    padding: 8px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-brown);
+    margin: 12px 0 8px;
+  }
+
+  /* ========== Version text ========== */
+  .version-text {
+    text-align: center;
+    font-size: 18px;
+    color: var(--gray);
+    padding: 20px 0;
+  }
+}
+
+/* ========== Animations (outside layers) ========== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes toastUp {
+  0% { opacity: 1; transform: translate(-50%, -50%); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, calc(-50% - 50px)); }
+}

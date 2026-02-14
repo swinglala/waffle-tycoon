@@ -229,11 +229,11 @@ export class CloudSaveManager {
       mergedDayMoney[day] = Math.max(localVal, cloudVal);
     });
 
-    // 하트는 더 많은 쪽
-    const mergedHearts = Math.max(
-      local.hearts?.hearts || 0,
-      cloud.hearts?.hearts || 0
-    );
+    // 하트는 로컬 우선 (하트 사용/충전은 로컬에서 발생하므로)
+    // lastRechargeTime이 더 최근인 쪽이 최신 데이터
+    const localRechargeTime = local.hearts?.lastRechargeTime || 0;
+    const cloudRechargeTime = cloud.hearts?.lastRechargeTime || 0;
+    const useLocalHearts = localRechargeTime >= cloudRechargeTime;
 
     return {
       progress: {
@@ -244,11 +244,8 @@ export class CloudSaveManager {
         upgrades: mergedUpgrades as typeof local.progress.upgrades,
       },
       hearts: {
-        hearts: mergedHearts,
-        lastRechargeTime: Math.max(
-          local.hearts?.lastRechargeTime || 0,
-          cloud.hearts?.lastRechargeTime || 0
-        ),
+        hearts: useLocalHearts ? (local.hearts?.hearts ?? 0) : (cloud.hearts?.hearts ?? 0),
+        lastRechargeTime: Math.max(localRechargeTime, cloudRechargeTime),
       },
     };
   }
