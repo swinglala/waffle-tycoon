@@ -173,10 +173,10 @@ export default function ShopScreen() {
         </span>
       </div>
 
-      <div className="scroll-content">
+      <div className="scroll-content" style={{ padding: '10px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {CATEGORY_ORDER.map((category) => (
-          <div key={category}>
-            <div className="category-header">{CATEGORY_NAMES[category]}</div>
+          <div key={category} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="category-header" style={{ margin: 0 }}>{CATEGORY_NAMES[category]}</div>
             <div className="grid-3col">
               {UPGRADE_BY_CATEGORY[category].map((type) => (
                 <UpgradeCard
