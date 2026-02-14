@@ -6,16 +6,14 @@ import { AuthManager } from "../../utils/AuthManager";
 import { CloudSaveManager, LocalSaveData } from "../../utils/CloudSaveManager";
 import { SoundManager } from "../../utils/SoundManager";
 import { HEART_CONFIG, TUTORIAL_CONFIG } from "../../types/game";
+import RankingPopup from "../components/RankingPopup";
 
 type PopupType =
   | "noHearts"
   | "heartPurchase"
   | "tutorial"
-  | "placeholder";
-
-interface PlaceholderData {
-  title: string;
-}
+  | "placeholder"
+  | "ranking";
 
 export default function HomeScreen() {
   const screenManager = ScreenManager.getInstance();
@@ -30,9 +28,6 @@ export default function HomeScreen() {
   const [timerText, setTimerText] = useState("");
   const [userName, setUserName] = useState("");
   const [popupType, setPopupType] = useState<PopupType | null>(null);
-  const [placeholderData, setPlaceholderData] = useState<PlaceholderData>({
-    title: "",
-  });
 
   const isSyncing = useRef(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -191,11 +186,6 @@ export default function HomeScreen() {
   const handleTutorialSkip = useCallback(() => {
     localStorage.setItem(TUTORIAL_CONFIG.STORAGE_KEY, "true");
     setPopupType(null);
-  }, []);
-
-  const handlePlaceholderClick = useCallback((title: string) => {
-    setPlaceholderData({ title });
-    setPopupType("placeholder");
   }, []);
 
   const closePopup = useCallback(() => {
@@ -492,7 +482,7 @@ export default function HomeScreen() {
               aspectRatio: "1",
               cursor: "pointer",
             }}
-            onClick={() => handlePlaceholderClick("랭킹")}
+            onClick={() => setPopupType("ranking")}
             alt="rank"
           />
           <img
@@ -670,7 +660,7 @@ export default function HomeScreen() {
       {popupType === "placeholder" && (
         <div className="popup-overlay" onClick={closePopup}>
           <div className="popup" onClick={(e) => e.stopPropagation()}>
-            <div className="popup-title">{placeholderData.title}</div>
+            <div className="popup-title">알림</div>
             <div className="popup-message">준비 중입니다!</div>
             <div className="popup-buttons">
               <button className="btn btn-primary" onClick={closePopup}>
@@ -679,6 +669,10 @@ export default function HomeScreen() {
             </div>
           </div>
         </div>
+      )}
+
+      {popupType === "ranking" && (
+        <RankingPopup onClose={closePopup} />
       )}
     </div>
   );

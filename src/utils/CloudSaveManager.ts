@@ -70,6 +70,8 @@ export class CloudSaveManager {
           {
             user_id: user.id,
             ...cloudData,
+            display_name: this.authManager.getDisplayName(),
+            total_money: Object.values(data.progress.dayMoney || {}).reduce((sum, v) => sum + v, 0),
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'user_id' }
