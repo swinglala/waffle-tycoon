@@ -379,9 +379,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createUI(): void {
+    const sw = this.cameras.main.width;
+
     // 상단 바 배경
     this.add
-      .rectangle(this.cameras.main.width / 2, this.HEADER_Y, this.cameras.main.width - 20, 50, 0xd4a574)
+      .rectangle(sw / 2, this.HEADER_Y, sw - 20, 50, 0xd4a574)
       .setStrokeStyle(3, 0x8b6914)
       .setDepth(10);
 
@@ -389,7 +391,7 @@ export class GameScene extends Phaser.Scene {
     this.dayText = this.add
       .text(30, this.HEADER_Y, `${this.gameState.day}일차`, {
         fontFamily: "UhBeePuding",
-        fontSize: "30px",
+        fontSize: `${Math.round(sw * 0.055)}px`,
         color: "#5D4E37",
         fontStyle: "bold",
         padding: { top: 4, bottom: 4 },
@@ -400,12 +402,12 @@ export class GameScene extends Phaser.Scene {
     // 돈 표시
     this.moneyText = this.add
       .text(
-        this.cameras.main.width / 2,
+        sw / 2,
         this.HEADER_Y,
         `💰 ${this.gameState.money.toLocaleString()} / ${this.gameState.targetMoney.toLocaleString()}원`,
         {
           fontFamily: "UhBeePuding",
-          fontSize: "24px",
+          fontSize: `${Math.round(sw * 0.042)}px`,
           color: "#5D4E37",
         },
       )
@@ -413,12 +415,12 @@ export class GameScene extends Phaser.Scene {
       .setDepth(11);
 
     // 시간 바 (헤더 바로 아래)
-    const barWidth = this.cameras.main.width - 80;
+    const barWidth = sw - 80;
     const barHeight = 24;
 
     // 바 배경 (회색)
     this.add
-      .rectangle(this.cameras.main.width / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xcccccc)
+      .rectangle(sw / 2, this.TIME_BAR_Y, barWidth, barHeight, 0xcccccc)
       .setStrokeStyle(2, 0x999999)
       .setDepth(10);
 
@@ -431,13 +433,13 @@ export class GameScene extends Phaser.Scene {
     // 시간 텍스트 (바 위에 표시)
     this.timeText = this.add
       .text(
-        this.cameras.main.width / 2,
+        sw / 2,
         this.TIME_BAR_Y,
         this.formatTime(this.gameState.timeRemaining),
         {
           fontFamily: "UhBeePuding",
           padding: { y: 5 },
-          fontSize: "14px",
+          fontSize: `${Math.round(sw * 0.028)}px`,
           color: "#FFFFFF",
           fontStyle: "bold",
         },
@@ -447,7 +449,7 @@ export class GameScene extends Phaser.Scene {
 
     // X 버튼 (헤더 오른쪽 끝)
     const closeBtn = this.add
-      .image(this.cameras.main.width - 45, this.HEADER_Y, "icon_x")
+      .image(sw - 45, this.HEADER_Y, "icon_x")
       .setDisplaySize(50, 50)
       .setInteractive({ useHandCursor: true })
       .setDepth(11);
@@ -1720,67 +1722,71 @@ export class GameScene extends Phaser.Scene {
     if (this.isPaused) return;
     this.isPaused = true;
 
+    const sw = this.cameras.main.width;
+    const sh = this.cameras.main.height;
+    const cx = sw / 2;
+    const cy = sh / 2;
+    const popupW = sw * 0.75;
+    const popupH = popupW * 0.7;
+    const btnW = popupW * 0.7;
+    const btnH = Math.round(sw * 0.1);
+    const titleSize = Math.round(sw * 0.07);
+    const btnFontSize = Math.round(sw * 0.05);
+
     // 반투명 오버레이
     const overlay = this.add
-      .rectangle(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2,
-        this.cameras.main.width,
-        this.cameras.main.height,
-        0x000000,
-        0.5,
-      )
+      .rectangle(cx, cy, sw, sh, 0x000000, 0.5)
       .setInteractive()
       .setDepth(300);
 
     // 팝업 배경
     const popup = this.add
-      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 400, 280, 0xfff8e7)
+      .rectangle(cx, cy, popupW, popupH, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(301);
 
     // 타이틀
     const title = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 90, "일시정지", {
+      .text(cx, cy - popupH * 0.32, "일시정지", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "32px",
+        fontSize: `${titleSize}px`,
         color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5)
       .setDepth(302);
 
-    // 재시도 버튼
+    // 재시도 버튼 (btn-primary 스타일: 갈색)
     const retryBtn = this.add
-      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 - 10, 280, 55, 0xffc107)
-      .setStrokeStyle(3, 0xffa000)
+      .rectangle(cx, cy - btnH * 0.2, btnW, btnH, 0xd4a574)
+      .setStrokeStyle(3, 0x8b6914)
       .setInteractive({ useHandCursor: true })
       .setDepth(302);
 
     const retryText = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 10, "🔄 재시도", {
+      .text(cx, cy - btnH * 0.2, "재시도", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "24px",
+        fontSize: `${btnFontSize}px`,
         color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5)
       .setDepth(303);
 
-    // 종료 버튼
+    // 종료 버튼 (btn-danger 스타일: 빨강)
     const exitBtn = this.add
-      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2 + 60, 280, 55, 0xe85a4f)
-      .setStrokeStyle(3, 0xb8453c)
+      .rectangle(cx, cy + btnH * 1.0, btnW, btnH, 0xe85a4f)
+      .setStrokeStyle(3, 0xc0392b)
       .setInteractive({ useHandCursor: true })
       .setDepth(302);
 
     const exitText = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 60, "🚪 종료", {
+      .text(cx, cy + btnH * 1.0, "종료", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "24px",
+        fontSize: `${btnFontSize}px`,
         color: "#FFFFFF",
         fontStyle: "bold",
       })
@@ -1834,31 +1840,36 @@ export class GameScene extends Phaser.Scene {
   ): void {
     this.isPaused = true;
 
+    const sw = this.cameras.main.width;
+    const sh = this.cameras.main.height;
+    const cx = sw / 2;
+    const cy = sh / 2;
+    const popupW = sw * 0.75;
+    const popupH = popupW * 0.65;
+    const btnW = popupW * 0.35;
+    const btnH = Math.round(sw * 0.09);
+    const titleSize = Math.round(sw * 0.07);
+    const msgSize = Math.round(sw * 0.045);
+    const btnFontSize = Math.round(sw * 0.045);
+
     // 반투명 오버레이
     const overlay = this.add
-      .rectangle(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2,
-        this.cameras.main.width,
-        this.cameras.main.height,
-        0x000000,
-        0.5,
-      )
+      .rectangle(cx, cy, sw, sh, 0x000000, 0.5)
       .setInteractive()
       .setDepth(400);
 
     // 팝업 배경
     const popup = this.add
-      .rectangle(this.cameras.main.width / 2, this.cameras.main.height / 2, 420, 250, 0xfff8e7)
+      .rectangle(cx, cy, popupW, popupH, 0xfff8e7)
       .setStrokeStyle(4, 0x8b6914)
       .setDepth(401);
 
     // 타이틀
     const titleText = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 70, title, {
+      .text(cx, cy - popupH * 0.3, title, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "28px",
+        fontSize: `${titleSize}px`,
         color: "#5D4E37",
         fontStyle: "bold",
       })
@@ -1867,46 +1878,46 @@ export class GameScene extends Phaser.Scene {
 
     // 메시지
     const messageText = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 15, message, {
+      .text(cx, cy - popupH * 0.05, message, {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "22px",
+        fontSize: `${msgSize}px`,
         color: "#5D4E37",
       })
       .setOrigin(0.5)
       .setDepth(402);
 
-    // 취소 버튼
-    const cancelBtn = this.add
-      .rectangle(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, 130, 50, 0xcccccc)
-      .setStrokeStyle(3, 0x999999)
+    // 확인 버튼 (btn-danger 스타일: 빨강)
+    const confirmBtn = this.add
+      .rectangle(cx - btnW * 0.6, cy + popupH * 0.3, btnW, btnH, 0xe85a4f)
+      .setStrokeStyle(3, 0xc0392b)
       .setInteractive({ useHandCursor: true })
       .setDepth(402);
 
-    const cancelText = this.add
-      .text(this.cameras.main.width / 2 - 80, this.cameras.main.height / 2 + 60, "취소", {
+    const confirmText = this.add
+      .text(cx - btnW * 0.6, cy + popupH * 0.3, "확인", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
+        fontSize: `${btnFontSize}px`,
+        color: "#FFFFFF",
         fontStyle: "bold",
       })
       .setOrigin(0.5)
       .setDepth(403);
 
-    // 확인 버튼
-    const confirmBtn = this.add
-      .rectangle(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, 130, 50, 0x4caf50)
-      .setStrokeStyle(3, 0x388e3c)
+    // 취소 버튼 (btn-primary 스타일: 갈색)
+    const cancelBtn = this.add
+      .rectangle(cx + btnW * 0.6, cy + popupH * 0.3, btnW, btnH, 0xd4a574)
+      .setStrokeStyle(3, 0x8b6914)
       .setInteractive({ useHandCursor: true })
       .setDepth(402);
 
-    const confirmText = this.add
-      .text(this.cameras.main.width / 2 + 80, this.cameras.main.height / 2 + 60, "확인", {
+    const cancelText = this.add
+      .text(cx + btnW * 0.6, cy + popupH * 0.3, "취소", {
         fontFamily: "UhBeePuding",
         padding: { y: 5 },
-        fontSize: "20px",
-        color: "#FFFFFF",
+        fontSize: `${btnFontSize}px`,
+        color: "#5D4E37",
         fontStyle: "bold",
       })
       .setOrigin(0.5)
