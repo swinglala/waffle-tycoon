@@ -1,6 +1,7 @@
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { supabase, isSupabaseConnected } from '../config/supabase';
 import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
@@ -48,6 +49,13 @@ export class AuthManager {
     if (Capacitor.isNativePlatform()) {
       App.addListener('appUrlOpen', async ({ url }) => {
         if (url.startsWith('waffletycoon://')) {
+          // 인앱 브라우저 닫기
+          try {
+            await Browser.close();
+          } catch (_) {
+            // 이미 닫혀있을 수 있음
+          }
+
           const hashPart = url.split('#')[1];
           if (hashPart) {
             const params = new URLSearchParams(hashPart);
@@ -74,22 +82,28 @@ export class AuthManager {
     }
 
     try {
-      // Capacitor 앱: 커스텀 URL Scheme으로 리다이렉트
-      // 웹: 현재 페이지 URL로 리다이렉트
-      const redirectUrl = Capacitor.isNativePlatform()
+      const isNative = Capacitor.isNativePlatform();
+      const redirectUrl = isNative
         ? 'waffletycoon://auth-callback'
         : window.location.href.split('?')[0].split('#')[0];
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          skipBrowserRedirect: isNative,
+          queryParams: { prompt: 'select_account' },
         },
       });
 
       if (error) {
         console.error('[AuthManager] Google 로그인 실패:', error.message);
         return { error };
+      }
+
+      // 네이티브: SFSafariViewController(인앱 브라우저)로 열기
+      if (isNative && data?.url) {
+        await Browser.open({ url: data.url });
       }
 
       return { error: null };
@@ -109,20 +123,28 @@ export class AuthManager {
     }
 
     try {
-      const redirectUrl = Capacitor.isNativePlatform()
+      const isNative = Capacitor.isNativePlatform();
+      const redirectUrl = isNative
         ? 'waffletycoon://auth-callback'
         : window.location.href.split('?')[0].split('#')[0];
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'kakao',
         options: {
           redirectTo: redirectUrl,
+          skipBrowserRedirect: isNative,
+          queryParams: { prompt: 'login' },
         },
       });
 
       if (error) {
         console.error('[AuthManager] Kakao 로그인 실패:', error.message);
         return { error };
+      }
+
+      // 네이티브: SFSafariViewController(인앱 브라우저)로 열기
+      if (isNative && data?.url) {
+        await Browser.open({ url: data.url });
       }
 
       return { error: null };
@@ -234,6 +256,49 @@ export class AuthManager {
     } catch (err) {
       const error = err instanceof Error ? err : new Error('알 수 없는 오류');
       console.error('[AuthManager] 로그아웃 예외:', error.message);
+      return { error };
+    }
+  }
+
+  /**
+   * 계정 삭제 (데이터 + 인증 계정)
+   */
+  async deleteAccount(): Promise<{ error: Error | null }> {
+    if (!isSupabaseConnected() || !supabase) {
+      return { error: new Error('Supabase가 설정되지 않았습니다.') };
+    }
+
+    if (!this.currentUser) {
+      return { error: new Error('로그인되어 있지 않습니다.') };
+    }
+
+    try {
+      // DB 함수를 호출하여 게임 데이터 + 인증 계정 삭제
+      const { error } = await supabase.rpc('delete_user_account');
+
+      if (error) {
+        console.error('[AuthManager] 계정 삭제 실패:', error.message);
+        return { error };
+      }
+
+      // Supabase 세션 정리 (캐시된 토큰 제거)
+      await supabase.auth.signOut({ scope: 'local' });
+
+      // 로컬 데이터 전체 삭제
+      localStorage.removeItem('waffleTycoon_hearts');
+      localStorage.removeItem('waffleTycoon_progress');
+      localStorage.removeItem('waffleTycoon_sound');
+      localStorage.removeItem('waffle_hasLoggedIn');
+      localStorage.removeItem('waffle_isGuest');
+
+      this.currentUser = null;
+      this.notifyListeners();
+
+      console.log('[AuthManager] 계정 삭제 완료');
+      return { error: null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('알 수 없는 오류');
+      console.error('[AuthManager] 계정 삭제 예외:', error.message);
       return { error };
     }
   }

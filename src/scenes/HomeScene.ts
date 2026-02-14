@@ -20,8 +20,6 @@ export class HomeScene extends Phaser.Scene {
   private userText!: Phaser.GameObjects.Text;
   private profileIcon!: Phaser.GameObjects.Image;
   private dayContainer!: Phaser.GameObjects.Container;
-  private loginBtn!: Phaser.GameObjects.Rectangle;
-  private loginBtnText!: Phaser.GameObjects.Text;
   private authUnsubscribe?: () => void;
   private isSyncing = false;
 
@@ -119,35 +117,6 @@ export class HomeScene extends Phaser.Scene {
         fontStyle: "bold",
       })
       .setOrigin(0.5);
-
-    // 로그인/로그아웃 버튼 (유저 이름 아래)
-    this.loginBtn = this.add
-      .rectangle(
-        leftX,
-        topY + profileDisplaySize / 2 + 35,
-        80 * scale * 2,
-        28 * scale * 2,
-        0x4285f4,
-      )
-      .setStrokeStyle(2, 0x3367d6)
-      .setInteractive({ useHandCursor: true });
-
-    this.loginBtnText = this.add
-      .text(leftX, topY + profileDisplaySize / 2 + 35, "로그인", {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: `${Math.round(14 * scale * 2)}px`,
-        color: "#FFFFFF",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
-
-    this.loginBtn.on("pointerdown", () => this.handleLoginLogout());
-    this.loginBtn.on("pointerover", () => this.loginBtn.setFillStyle(0x3367d6));
-    this.loginBtn.on("pointerout", () => {
-      const isLoggedIn = this.authManager.isLoggedIn();
-      this.loginBtn.setFillStyle(isLoggedIn ? 0xe74c3c : 0x4285f4);
-    });
 
     // ========== 하트 + 별 UI (왼쪽으로 이동) ==========
     const centerX = sw / 2 - 40;
@@ -531,26 +500,8 @@ export class HomeScene extends Phaser.Scene {
   }
 
   private updateUserUI(): void {
-    const isLoggedIn = this.authManager.isLoggedIn();
     const displayName = this.authManager.getDisplayName();
-
     this.userText.setText(displayName);
-
-    if (isLoggedIn) {
-      this.loginBtnText.setText("로그아웃");
-      this.loginBtn.setFillStyle(0xe74c3c);
-      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(
-        2,
-        0xc0392b,
-      );
-    } else {
-      this.loginBtnText.setText("로그인");
-      this.loginBtn.setFillStyle(0x4285f4);
-      (this.loginBtn as Phaser.GameObjects.Rectangle).setStrokeStyle(
-        2,
-        0x3367d6,
-      );
-    }
   }
 
   private updateStartButton(): void {
@@ -916,117 +867,8 @@ export class HomeScene extends Phaser.Scene {
   }
 
   // ========================================
-  // 인증 및 클라우드 동기화
+  // 클라우드 동기화
   // ========================================
-
-  private async handleLoginLogout(): Promise<void> {
-    const isLoggedIn = this.authManager.isLoggedIn();
-
-    if (isLoggedIn) {
-      this.showLogoutConfirmPopup();
-    } else {
-      this.scene.start("LoginScene");
-    }
-  }
-
-  private showLogoutConfirmPopup(): void {
-    const { width: sw, height: sh } = this.cameras.main;
-
-    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
-    overlay.setInteractive();
-
-    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 200, 0xfff8e7);
-    popup.setStrokeStyle(4, 0x8b6914);
-
-    const popupTitle = this.add.text(sw / 2, sh / 2 - 50, "로그아웃", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "28px",
-      color: "#5D4E37",
-      fontStyle: "bold",
-    });
-    popupTitle.setOrigin(0.5);
-
-    const message = this.add.text(
-      sw / 2,
-      sh / 2,
-      "정말 로그아웃 하시겠습니까?",
-      {
-        fontFamily: "UhBeePuding",
-        padding: { y: 5 },
-        fontSize: "20px",
-        color: "#5D4E37",
-      },
-    );
-    message.setOrigin(0.5);
-
-    const confirmBtn = this.add.rectangle(
-      sw / 2 - 70,
-      sh / 2 + 60,
-      100,
-      40,
-      0xe74c3c,
-    );
-    confirmBtn.setStrokeStyle(2, 0xc0392b);
-    confirmBtn.setInteractive({ useHandCursor: true });
-
-    const confirmBtnText = this.add.text(sw / 2 - 70, sh / 2 + 60, "로그아웃", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "16px",
-      color: "#FFFFFF",
-      fontStyle: "bold",
-    });
-    confirmBtnText.setOrigin(0.5);
-
-    const cancelBtn = this.add.rectangle(
-      sw / 2 + 70,
-      sh / 2 + 60,
-      100,
-      40,
-      0xd4a574,
-    );
-    cancelBtn.setStrokeStyle(2, 0x8b6914);
-    cancelBtn.setInteractive({ useHandCursor: true });
-
-    const cancelBtnText = this.add.text(sw / 2 + 70, sh / 2 + 60, "취소", {
-      fontFamily: "UhBeePuding",
-      padding: { y: 5 },
-      fontSize: "16px",
-      color: "#5D4E37",
-      fontStyle: "bold",
-    });
-    cancelBtnText.setOrigin(0.5);
-
-    const closePopup = () => {
-      overlay.destroy();
-      popup.destroy();
-      popupTitle.destroy();
-      message.destroy();
-      confirmBtn.destroy();
-      confirmBtnText.destroy();
-      cancelBtn.destroy();
-      cancelBtnText.destroy();
-    };
-
-    confirmBtn.on("pointerdown", async () => {
-      closePopup();
-      await this.authManager.signOut();
-      this.progressManager.resetProgress();
-      this.heartManager.resetHearts();
-      localStorage.removeItem("waffle_hasLoggedIn");
-      localStorage.removeItem("waffle_isGuest");
-      this.scene.start("LoginScene");
-    });
-
-    cancelBtn.on("pointerdown", closePopup);
-    overlay.on("pointerdown", closePopup);
-
-    confirmBtn.on("pointerover", () => confirmBtn.setFillStyle(0xc0392b));
-    confirmBtn.on("pointerout", () => confirmBtn.setFillStyle(0xe74c3c));
-    cancelBtn.on("pointerover", () => cancelBtn.setFillStyle(0xc49a6c));
-    cancelBtn.on("pointerout", () => cancelBtn.setFillStyle(0xd4a574));
-  }
 
   private async syncWithCloud(): Promise<void> {
     if (this.isSyncing) return;

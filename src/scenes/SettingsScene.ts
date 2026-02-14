@@ -1,8 +1,12 @@
 import Phaser from 'phaser';
 import { SoundManager } from '../utils/SoundManager';
+import { AuthManager } from '../utils/AuthManager';
+import { ProgressManager } from '../utils/ProgressManager';
+import { HeartManager } from '../utils/HeartManager';
 
 export class SettingsScene extends Phaser.Scene {
   private soundManager!: SoundManager;
+  private authManager!: AuthManager;
 
   constructor() {
     super({ key: 'SettingsScene' });
@@ -10,10 +14,12 @@ export class SettingsScene extends Phaser.Scene {
 
   create(): void {
     this.soundManager = SoundManager.getInstance();
+    this.authManager = AuthManager.getInstance();
 
     this.createBackground();
     this.createHeader();
     this.createSettingsUI();
+    this.createAccountSection();
     this.createBackButton();
   }
 
@@ -185,6 +191,303 @@ export class SettingsScene extends Phaser.Scene {
       // 콜백 호출
       onChange(isEnabled);
     });
+  }
+
+  private createAccountSection(): void {
+    const { width: sw } = this.cameras.main;
+    const isLoggedIn = this.authManager.isLoggedIn();
+    const sectionY = 600;
+
+    // 계정 섹션 타이틀
+    this.add
+      .text(sw / 2, sectionY, '👤 계정 관리', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '28px',
+        color: '#5D4E37',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+
+    // 로그인/로그아웃 버튼
+    const authBtnY = sectionY + 80;
+    const authBtnColor = isLoggedIn ? 0xe74c3c : 0x4285f4;
+    const authBtnStroke = isLoggedIn ? 0xc0392b : 0x3367d6;
+    const authBtnLabel = isLoggedIn ? '로그아웃' : '로그인';
+
+    const authBtn = this.add
+      .rectangle(sw / 2, authBtnY, 280, 55, authBtnColor)
+      .setStrokeStyle(3, authBtnStroke)
+      .setInteractive({ useHandCursor: true });
+
+    this.add
+      .text(sw / 2, authBtnY, authBtnLabel, {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '24px',
+        color: '#FFFFFF',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+
+    authBtn.on('pointerdown', () => {
+      if (this.authManager.isLoggedIn()) {
+        this.showLogoutConfirmPopup();
+      } else {
+        this.scene.start('LoginScene');
+      }
+    });
+    authBtn.on('pointerover', () => authBtn.setFillStyle(authBtnStroke));
+    authBtn.on('pointerout', () => authBtn.setFillStyle(authBtnColor));
+
+    // 계정 삭제 버튼 (로그인 상태에서만)
+    if (isLoggedIn) {
+      const deleteBtnY = authBtnY + 75;
+      const deleteBtn = this.add
+        .rectangle(sw / 2, deleteBtnY, 280, 55, 0x999999)
+        .setStrokeStyle(3, 0x777777)
+        .setInteractive({ useHandCursor: true });
+
+      this.add
+        .text(sw / 2, deleteBtnY, '계정 삭제', {
+          fontFamily: 'UhBeePuding',
+          padding: { y: 5 },
+          fontSize: '24px',
+          color: '#FFFFFF',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+
+      deleteBtn.on('pointerdown', () => this.showDeleteAccountPopup());
+      deleteBtn.on('pointerover', () => deleteBtn.setFillStyle(0x777777));
+      deleteBtn.on('pointerout', () => deleteBtn.setFillStyle(0x999999));
+    }
+  }
+
+  private showLogoutConfirmPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+    const popupObjects: Phaser.GameObjects.GameObject[] = [];
+
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.5);
+    overlay.setInteractive();
+    popupObjects.push(overlay);
+
+    const popup = this.add.rectangle(sw / 2, sh / 2, 400, 200, 0xfff8e7);
+    popup.setStrokeStyle(4, 0x8b6914);
+    popupObjects.push(popup);
+
+    const title = this.add
+      .text(sw / 2, sh / 2 - 50, '로그아웃', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '28px',
+        color: '#5D4E37',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(title);
+
+    const message = this.add
+      .text(sw / 2, sh / 2, '정말 로그아웃 하시겠습니까?', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '20px',
+        color: '#5D4E37',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(message);
+
+    const confirmBtn = this.add
+      .rectangle(sw / 2 - 70, sh / 2 + 60, 100, 40, 0xe74c3c)
+      .setStrokeStyle(2, 0xc0392b)
+      .setInteractive({ useHandCursor: true });
+    popupObjects.push(confirmBtn);
+
+    const confirmText = this.add
+      .text(sw / 2 - 70, sh / 2 + 60, '로그아웃', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '16px',
+        color: '#FFFFFF',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(confirmText);
+
+    const cancelBtn = this.add
+      .rectangle(sw / 2 + 70, sh / 2 + 60, 100, 40, 0xd4a574)
+      .setStrokeStyle(2, 0x8b6914)
+      .setInteractive({ useHandCursor: true });
+    popupObjects.push(cancelBtn);
+
+    const cancelText = this.add
+      .text(sw / 2 + 70, sh / 2 + 60, '취소', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '16px',
+        color: '#5D4E37',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(cancelText);
+
+    const closePopup = () => {
+      popupObjects.forEach((obj) => obj.destroy());
+    };
+
+    confirmBtn.on('pointerdown', async () => {
+      closePopup();
+      await this.authManager.signOut();
+      ProgressManager.getInstance().resetProgress();
+      HeartManager.getInstance().resetHearts();
+      localStorage.removeItem('waffle_hasLoggedIn');
+      localStorage.removeItem('waffle_isGuest');
+      this.scene.start('LoginScene');
+    });
+
+    cancelBtn.on('pointerdown', closePopup);
+    overlay.on('pointerdown', closePopup);
+
+    confirmBtn.on('pointerover', () => confirmBtn.setFillStyle(0xc0392b));
+    confirmBtn.on('pointerout', () => confirmBtn.setFillStyle(0xe74c3c));
+    cancelBtn.on('pointerover', () => cancelBtn.setFillStyle(0xc49a6c));
+    cancelBtn.on('pointerout', () => cancelBtn.setFillStyle(0xd4a574));
+  }
+
+  private showDeleteAccountPopup(): void {
+    const { width: sw, height: sh } = this.cameras.main;
+    const popupObjects: Phaser.GameObjects.GameObject[] = [];
+
+    const overlay = this.add.rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.6);
+    overlay.setInteractive();
+    popupObjects.push(overlay);
+
+    const popup = this.add.rectangle(sw / 2, sh / 2, 560, 440, 0xfff8e7);
+    popup.setStrokeStyle(4, 0x8b6914);
+    popupObjects.push(popup);
+
+    const title = this.add
+      .text(sw / 2, sh / 2 - 150, '계정 삭제', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '48px',
+        color: '#E85A4F',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(title);
+
+    const message = this.add
+      .text(
+        sw / 2,
+        sh / 2 - 30,
+        '정말 계정을 삭제하시겠습니까?\n\n모든 게임 데이터가 영구적으로\n삭제되며 복구할 수 없습니다.',
+        {
+          fontFamily: 'UhBeePuding',
+          padding: { y: 5 },
+          fontSize: '32px',
+          color: '#5D4E37',
+          align: 'center',
+        }
+      )
+      .setOrigin(0.5);
+    popupObjects.push(message);
+
+    // 삭제 확인 버튼
+    const confirmBtn = this.add
+      .rectangle(sw / 2 - 100, sh / 2 + 140, 170, 70, 0xe74c3c)
+      .setStrokeStyle(3, 0xc0392b)
+      .setInteractive({ useHandCursor: true });
+    popupObjects.push(confirmBtn);
+
+    const confirmText = this.add
+      .text(sw / 2 - 100, sh / 2 + 140, '삭제', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '34px',
+        color: '#FFFFFF',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(confirmText);
+
+    // 취소 버튼
+    const cancelBtn = this.add
+      .rectangle(sw / 2 + 100, sh / 2 + 140, 170, 70, 0xd4a574)
+      .setStrokeStyle(3, 0x8b6914)
+      .setInteractive({ useHandCursor: true });
+    popupObjects.push(cancelBtn);
+
+    const cancelText = this.add
+      .text(sw / 2 + 100, sh / 2 + 140, '취소', {
+        fontFamily: 'UhBeePuding',
+        padding: { y: 5 },
+        fontSize: '34px',
+        color: '#5D4E37',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    popupObjects.push(cancelText);
+
+    const closePopup = () => {
+      popupObjects.forEach((obj) => obj.destroy());
+    };
+
+    confirmBtn.on('pointerdown', async () => {
+      closePopup();
+      await this.executeDeleteAccount();
+    });
+
+    cancelBtn.on('pointerdown', closePopup);
+    overlay.on('pointerdown', closePopup);
+
+    confirmBtn.on('pointerover', () => confirmBtn.setFillStyle(0xc0392b));
+    confirmBtn.on('pointerout', () => confirmBtn.setFillStyle(0xe74c3c));
+    cancelBtn.on('pointerover', () => cancelBtn.setFillStyle(0xc49a6c));
+    cancelBtn.on('pointerout', () => cancelBtn.setFillStyle(0xd4a574));
+  }
+
+  private async executeDeleteAccount(): Promise<void> {
+    const { width: sw, height: sh } = this.cameras.main;
+
+    // 로딩 표시
+    const loadingOverlay = this.add
+      .rectangle(sw / 2, sh / 2, sw, sh, 0x000000, 0.7)
+      .setDepth(100)
+      .setInteractive();
+    const loadingText = this.add
+      .text(sw / 2, sh / 2, '계정 삭제 중...', {
+        fontFamily: 'UhBeePuding',
+        fontSize: '28px',
+        color: '#FFFFFF',
+      })
+      .setOrigin(0.5)
+      .setDepth(101);
+
+    const { error } = await this.authManager.deleteAccount();
+
+    loadingOverlay.destroy();
+    loadingText.destroy();
+
+    if (error) {
+      // 에러 메시지 표시
+      const errorText = this.add
+        .text(sw / 2, sh / 2, '계정 삭제에 실패했습니다.\n다시 시도해주세요.', {
+          fontFamily: 'UhBeePuding',
+          fontSize: '22px',
+          color: '#E85A4F',
+          align: 'center',
+        })
+        .setOrigin(0.5);
+
+      this.time.delayedCall(2000, () => errorText.destroy());
+      return;
+    }
+
+    // 삭제 성공 → 로컬 데이터도 초기화 후 로그인 화면으로
+    ProgressManager.getInstance().resetProgress();
+    HeartManager.getInstance().resetHearts();
+    this.scene.start('LoginScene');
   }
 
   private createBackButton(): void {
