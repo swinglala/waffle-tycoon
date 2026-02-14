@@ -84,7 +84,7 @@ export default function SettingsScreen() {
       </div>
 
       {/* 스크롤 영역 */}
-      <div className="scroll-content">
+      <div className="scroll-content" style={{ padding: '0 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {/* 사운드 설정 섹션 */}
         <div className="section-title">사운드 설정</div>
 
@@ -125,7 +125,7 @@ export default function SettingsScreen() {
         {/* 로그인/로그아웃 버튼 */}
         <button
           className={`btn ${isLoggedIn ? 'btn-danger' : 'btn-blue'}`}
-          style={{ width: '100%', marginBottom: 12, fontSize: 'clamp(18px, 6cqw, 24px)', padding: 14 }}
+          style={{ width: '100%', marginBottom: 0, fontSize: 'clamp(18px, 6cqw, 24px)', padding: 14 }}
           onClick={handleAuthButtonClick}
         >
           {isLoggedIn ? '로그아웃' : '로그인'}
@@ -135,7 +135,7 @@ export default function SettingsScreen() {
         {isLoggedIn && (
           <button
             className="btn btn-gray"
-            style={{ width: '100%', marginBottom: 12, fontSize: 'clamp(18px, 6cqw, 24px)', padding: 14 }}
+            style={{ width: '100%', marginBottom: 0, fontSize: 'clamp(18px, 6cqw, 24px)', padding: 14 }}
             onClick={() => setShowPopup('deleteAccount')}
           >
             계정 삭제

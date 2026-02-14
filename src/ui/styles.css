@@ -104,7 +104,7 @@
     background-color: var(--accent-brown);
     border: 3px solid var(--border-gold);
     margin: 10px 20px 0;
-    border-radius: 8px;
+    border-radius: 0;
     flex-shrink: 0;
     position: relative;
   }
@@ -397,7 +397,6 @@
     border: 2px solid var(--accent-brown);
     border-radius: 8px;
     padding: 16px 20px;
-    margin-bottom: 12px;
   }
 
   .toggle-label {
