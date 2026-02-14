@@ -280,9 +280,11 @@
 
   .btn-image img {
     display: block;
-    width: 275px;
-    height: 68px;
+    width: 70cqw;
+    max-width: 100%;
+    height: auto;
     object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
   }
 
   /* ========== Popup / Modal ========== */

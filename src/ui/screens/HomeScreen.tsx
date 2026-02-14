@@ -259,8 +259,6 @@ export default function HomeScreen() {
 
   // Check if plus button should show
   const shouldShowPlus = hearts < HEART_CONFIG.MAX_HEARTS;
-  const isLoggedIn = authManager.isLoggedIn();
-
   // Heart purchase popup state
   const canBuyHeart = totalStars >= 1 && hearts < HEART_CONFIG.MAX_HEARTS;
 
@@ -352,24 +350,6 @@ export default function HomeScreen() {
             >
               {userName}
             </span>
-            {!isLoggedIn && (
-              <button
-                style={{
-                  marginTop: 4,
-                  padding: "2px 12px",
-                  background: "#4285F4",
-                  color: "#fff",
-                  fontFamily: "var(--font-primary)",
-                  fontSize: "clamp(10px, 3cqw, 13px)",
-                  borderRadius: 4,
-                  border: "none",
-                  cursor: "pointer",
-                }}
-                onClick={() => screenManager.showScreen("login")}
-              >
-                로그인
-              </button>
-            )}
           </div>
 
           {/* Hearts + Stars Area */}
