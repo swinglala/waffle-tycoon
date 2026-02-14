@@ -173,7 +173,7 @@ export default function ShopScreen() {
         </span>
       </div>
 
-      <div className="scroll-content" style={{ padding: '10px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="scroll-content" style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         {CATEGORY_ORDER.map((category) => (
           <div key={category} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div className="category-header" style={{ margin: 0 }}>{CATEGORY_NAMES[category]}</div>

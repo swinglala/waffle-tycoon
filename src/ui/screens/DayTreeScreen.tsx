@@ -272,7 +272,7 @@ export default function DayTreeScreen() {
         재도전으로 더 많은 별을 모아보세요!{'\n'}재도전 시, 하트 1개 소모
       </div>
 
-      <div className="scroll-content" style={{ padding: '10px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="scroll-content" style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <TutorialCell onStart={handleTutorialStart} />
         <div className="grid-3col">
           {days.map((day) => (
