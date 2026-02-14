@@ -19,7 +19,7 @@ function TutorialCell({ onStart }: TutorialCellProps) {
         padding: 16,
         textAlign: 'center',
         cursor: 'pointer',
-        margin: '8px 0',
+        margin: 0,
         border: `3px solid ${tutorialCompleted ? '#4CAF50' : '#FF9800'}`,
         backgroundColor: tutorialCompleted ? '#E8F5E9' : '#FFF3E0',
       }}
@@ -272,7 +272,7 @@ export default function DayTreeScreen() {
         재도전으로 더 많은 별을 모아보세요!{'\n'}재도전 시, 하트 1개 소모
       </div>
 
-      <div className="scroll-content">
+      <div className="scroll-content" style={{ padding: '10px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <TutorialCell onStart={handleTutorialStart} />
         <div className="grid-3col">
           {days.map((day) => (
