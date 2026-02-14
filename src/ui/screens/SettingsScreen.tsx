@@ -4,9 +4,10 @@ import { AuthManager } from '../../utils/AuthManager';
 import { ProgressManager } from '../../utils/ProgressManager';
 import { HeartManager } from '../../utils/HeartManager';
 import { ScreenManager } from '../ScreenManager';
+import { TEST_ACCOUNTS } from '../../config/constants';
 import '../styles.css';
 
-type PopupType = 'logout' | 'deleteAccount' | null;
+type PopupType = 'logout' | 'deleteAccount' | 'developer' | null;
 
 export default function SettingsScreen() {
   const screenManager = ScreenManager.getInstance();
@@ -20,6 +21,8 @@ export default function SettingsScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isLoggedIn = authManager.isLoggedIn();
+  const userEmail = authManager.getUser()?.email ?? '';
+  const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
 
   const handleBgmToggle = useCallback((checked: boolean) => {
     setBgmEnabled(checked);
@@ -71,6 +74,28 @@ export default function SettingsScreen() {
     HeartManager.getInstance().resetHearts();
     screenManager.showScreen('login');
   }, [authManager, screenManager]);
+
+  const handleTestAddHeart = useCallback(() => {
+    HeartManager.getInstance().addHeart();
+  }, []);
+
+  const handleTestAddStars = useCallback(() => {
+    ProgressManager.getInstance().addStars(10);
+  }, []);
+
+  const handleTestAdvanceDay = useCallback(() => {
+    ProgressManager.getInstance().advanceToNextDay();
+  }, []);
+
+  const handleTestReset = useCallback(() => {
+    ProgressManager.getInstance().resetProgress();
+    HeartManager.getInstance().resetHearts();
+  }, []);
+
+  const handleTestUITest = useCallback(() => {
+    setShowPopup(null);
+    screenManager.startPhaserScene('TestScene');
+  }, [screenManager]);
 
   const handleBackToHome = useCallback(() => {
     screenManager.showScreen('home');
@@ -142,6 +167,20 @@ export default function SettingsScreen() {
           </button>
         )}
 
+        {/* 개발자 버튼 (테스트 계정에서만) */}
+        {isTestAccount && (
+          <>
+            <div className="section-divider"></div>
+            <button
+              className="btn"
+              style={{ width: '100%', marginBottom: 0, fontSize: 'clamp(18px, 6cqw, 24px)', padding: 14, background: '#9C27B0', color: '#fff', border: '3px solid #7B1FA2' }}
+              onClick={() => setShowPopup('developer')}
+            >
+              개발자
+            </button>
+          </>
+        )}
+
         {/* 버전 정보 */}
         <div className="version-text">Waffle Tycoon v1.0.0</div>
       </div>
@@ -193,6 +232,40 @@ export default function SettingsScreen() {
               </button>
               <button className="btn btn-primary" onClick={() => setShowPopup(null)}>
                 취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 개발자 팝업 */}
+      {showPopup === 'developer' && (
+        <div
+          className="popup-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowPopup(null); }}
+        >
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-title">테스트 메뉴</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+              <button className="btn" style={{ background: '#E85A4F', color: '#fff', padding: 12, fontSize: 18 }} onClick={handleTestAddHeart}>
+                하트 +1
+              </button>
+              <button className="btn" style={{ background: '#FFD700', color: '#fff', padding: 12, fontSize: 18 }} onClick={handleTestAddStars}>
+                별 +10
+              </button>
+              <button className="btn" style={{ background: '#4CAF50', color: '#fff', padding: 12, fontSize: 18 }} onClick={handleTestAdvanceDay}>
+                Day +1
+              </button>
+              <button className="btn" style={{ background: '#9E9E9E', color: '#fff', padding: 12, fontSize: 18 }} onClick={handleTestReset}>
+                초기화
+              </button>
+            </div>
+            <button className="btn" style={{ background: '#9C27B0', color: '#fff', padding: 12, fontSize: 18, width: '100%', marginBottom: 12 }} onClick={handleTestUITest}>
+              UI 테스트
+            </button>
+            <div className="popup-buttons">
+              <button className="btn btn-primary" onClick={() => setShowPopup(null)}>
+                닫기
               </button>
             </div>
           </div>

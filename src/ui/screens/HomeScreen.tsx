@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { ScreenManager } from "../ScreenManager";
-import { TEST_ACCOUNTS } from "../../config/constants";
 import { HeartManager } from "../../utils/HeartManager";
 import { ProgressManager } from "../../utils/ProgressManager";
 import { AuthManager } from "../../utils/AuthManager";
@@ -11,7 +10,6 @@ import { HEART_CONFIG, TUTORIAL_CONFIG } from "../../types/game";
 type PopupType =
   | "noHearts"
   | "heartPurchase"
-  | "test"
   | "tutorial"
   | "placeholder";
 
@@ -177,47 +175,14 @@ export default function HomeScreen() {
   }, [heartManager, screenManager, currentDay]);
 
   const handlePlusClick = useCallback(() => {
-    const userEmail = authManager.getUser()?.email ?? "";
-    const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
-    if (isTestAccount) {
-      setPopupType("test");
-    } else {
-      setPopupType("heartPurchase");
-    }
-  }, [authManager]);
+    setPopupType("heartPurchase");
+  }, []);
 
   const handleHeartPurchase = useCallback(() => {
     progressManager.useStars(1);
     heartManager.addHeart();
     updateHeartsUI();
   }, [progressManager, heartManager, updateHeartsUI]);
-
-  const handleTestAddHeart = useCallback(() => {
-    heartManager.addHeart();
-    updateHeartsUI();
-  }, [heartManager, updateHeartsUI]);
-
-  const handleTestAddStars = useCallback(() => {
-    progressManager.addStars(10);
-    updateHeartsUI();
-  }, [progressManager, updateHeartsUI]);
-
-  const handleTestAdvanceDay = useCallback(() => {
-    progressManager.advanceToNextDay();
-    setCurrentDay(progressManager.getCurrentDay());
-  }, [progressManager]);
-
-  const handleTestReset = useCallback(() => {
-    progressManager.resetProgress();
-    heartManager.resetHearts();
-    setCurrentDay(1);
-    updateHeartsUI();
-  }, [progressManager, heartManager, updateHeartsUI]);
-
-  const handleTestUITest = useCallback(() => {
-    setPopupType(null);
-    screenManager.startPhaserScene("TestScene");
-  }, [screenManager]);
 
   const handleTutorialStart = useCallback(() => {
     screenManager.startPhaserScene("TutorialScene");
@@ -293,9 +258,7 @@ export default function HomeScreen() {
   };
 
   // Check if plus button should show
-  const userEmail = authManager.getUser()?.email ?? "";
-  const isTestAccount = TEST_ACCOUNTS.includes(userEmail);
-  const shouldShowPlus = isTestAccount || hearts < HEART_CONFIG.MAX_HEARTS;
+  const shouldShowPlus = hearts < HEART_CONFIG.MAX_HEARTS;
   const isLoggedIn = authManager.isLoggedIn();
 
   // Heart purchase popup state
@@ -687,94 +650,6 @@ export default function HomeScreen() {
                   alt="star"
                 />
               </span>
-            </button>
-            <div className="popup-buttons">
-              <button className="btn btn-primary" onClick={closePopup}>
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {popupType === "test" && (
-        <div className="popup-overlay" onClick={closePopup}>
-          <div
-            className="popup"
-            style={{ width: 380 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="popup-title">테스트 메뉴</div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 10,
-                marginBottom: 12,
-              }}
-            >
-              <button
-                className="btn"
-                style={{
-                  background: "#E85A4F",
-                  color: "#fff",
-                  padding: 12,
-                  fontSize: 18,
-                }}
-                onClick={handleTestAddHeart}
-              >
-                하트 +1
-              </button>
-              <button
-                className="btn"
-                style={{
-                  background: "#FFD700",
-                  color: "#fff",
-                  padding: 12,
-                  fontSize: 18,
-                }}
-                onClick={handleTestAddStars}
-              >
-                별 +10
-              </button>
-              <button
-                className="btn"
-                style={{
-                  background: "#4CAF50",
-                  color: "#fff",
-                  padding: 12,
-                  fontSize: 18,
-                }}
-                onClick={handleTestAdvanceDay}
-              >
-                Day +1
-              </button>
-              <button
-                className="btn"
-                style={{
-                  background: "#9E9E9E",
-                  color: "#fff",
-                  padding: 12,
-                  fontSize: 18,
-                }}
-                onClick={handleTestReset}
-              >
-                초기화
-              </button>
-            </div>
-            <button
-              className="btn"
-              style={{
-                background: "#9C27B0",
-                color: "#fff",
-                padding: 12,
-                fontSize: 18,
-                width: "100%",
-                marginBottom: 12,
-              }}
-              onClick={handleTestUITest}
-            >
-              UI 테스트
             </button>
             <div className="popup-buttons">
               <button className="btn btn-primary" onClick={closePopup}>
