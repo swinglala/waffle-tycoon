@@ -1,6 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
-import { RankingManager, RankingTab, RankingResult } from "../../utils/RankingManager";
+import {
+  RankingManager,
+  RankingTab,
+  RankingResult,
+} from "../../utils/RankingManager";
 import { AuthManager } from "../../utils/AuthManager";
+
+function maskName(name: string): string {
+  // Split by space, mask each word
+  return name.split(' ').map(word => {
+    if (word.length <= 1) return word;
+    if (word.length === 2) return word[0] + '*';
+    return word[0] + '*'.repeat(word.length - 2) + word[word.length - 1];
+  }).join(' ');
+}
 
 interface RankingPopupProps {
   onClose: () => void;
@@ -14,28 +27,29 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
   const rankingManager = RankingManager.getInstance();
   const authManager = AuthManager.getInstance();
 
-  const isGuest = !authManager.isLoggedIn() && localStorage.getItem("waffle_isGuest") === "true";
+  const isGuest =
+    !authManager.isLoggedIn() &&
+    localStorage.getItem("waffle_isGuest") === "true";
 
-  const fetchData = useCallback(async (tab: RankingTab) => {
-    setLoading(true);
-    try {
-      const result = await rankingManager.fetchRankings(tab);
-      setRankingData(result);
-    } catch (error) {
-      console.error("[RankingPopup] Failed to fetch rankings:", error);
-      setRankingData({ topList: [], myRank: null, error: error as Error });
-    } finally {
-      setLoading(false);
-    }
-  }, [rankingManager]);
+  const fetchData = useCallback(
+    async (tab: RankingTab) => {
+      setLoading(true);
+      try {
+        const result = await rankingManager.fetchRankings(tab);
+        setRankingData(result);
+      } catch (error) {
+        console.error("[RankingPopup] Failed to fetch rankings:", error);
+        setRankingData({ topList: [], myRank: null, error: error as Error });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [rankingManager],
+  );
 
   useEffect(() => {
-    if (!isGuest) {
-      fetchData(activeTab);
-    } else {
-      setLoading(false);
-    }
-  }, [activeTab, fetchData, isGuest]);
+    fetchData(activeTab);
+  }, [activeTab, fetchData]);
 
   const handleTabChange = (tab: RankingTab) => {
     setActiveTab(tab);
@@ -101,7 +115,10 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
               flex: 1,
               padding: "8px 0",
               borderRadius: "8px",
-              border: activeTab === "day" ? "2px solid #8B6914" : "2px solid transparent",
+              border:
+                activeTab === "day"
+                  ? "2px solid #8B6914"
+                  : "2px solid transparent",
               background: activeTab === "day" ? "#D4A574" : "#F5E6D3",
               color: activeTab === "day" ? "#5D4E37" : "#8B7355",
               fontFamily: "var(--font-primary)",
@@ -119,7 +136,10 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
               flex: 1,
               padding: "8px 0",
               borderRadius: "8px",
-              border: activeTab === "money" ? "2px solid #8B6914" : "2px solid transparent",
+              border:
+                activeTab === "money"
+                  ? "2px solid #8B6914"
+                  : "2px solid transparent",
               background: activeTab === "money" ? "#D4A574" : "#F5E6D3",
               color: activeTab === "money" ? "#5D4E37" : "#8B7355",
               fontFamily: "var(--font-primary)",
@@ -143,18 +163,7 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
             fontFamily: "var(--font-primary)",
           }}
         >
-          {isGuest ? (
-            <div
-              style={{
-                padding: "40px 20px",
-                textAlign: "center",
-                color: "#8B7355",
-                fontSize: "clamp(16px, 5cqw, 20px)",
-              }}
-            >
-              로그인하면 랭킹에 등록할 수 있습니다
-            </div>
-          ) : loading ? (
+          {loading ? (
             <div
               style={{
                 padding: "40px 20px",
@@ -165,7 +174,9 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
             >
               로딩 중...
             </div>
-          ) : rankingData?.error || !rankingData || rankingData.topList.length === 0 ? (
+          ) : rankingData?.error ||
+            !rankingData ||
+            rankingData.topList.length === 0 ? (
             <div
               style={{
                 padding: "40px 20px",
@@ -215,7 +226,7 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
                         color: "#5D4E37",
                       }}
                     >
-                      {entry.displayName}
+                      {entry.nickname || maskName(entry.displayName)}
                     </span>
                     <span
                       style={{
@@ -232,32 +243,49 @@ export default function RankingPopup({ onClose }: RankingPopupProps) {
               </div>
 
               {/* My Rank Section */}
-              {rankingData.myRank && !rankingData.topList.some(e => e.isMe) && (
-                <>
-                  <div
-                    style={{
-                      height: "2px",
-                      background: "#D4A574",
-                      margin: "12px 0",
-                    }}
-                  />
-                  <div
-                    style={{
-                      background: "#FFF0D4",
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      fontWeight: "bold",
-                      fontSize: "clamp(14px, 4.5cqw, 20px)",
-                      color: "#5D4E37",
-                    }}
-                  >
-                    <span>내 순위: #{rankingData.myRank.rank}</span>
-                    <span>{formatValue(rankingData.myRank.value, activeTab)}</span>
-                  </div>
-                </>
+              {isGuest ? (
+                <div
+                  style={{
+                    padding: "12px",
+                    textAlign: "center",
+                    color: "#8B7355",
+                    fontSize: "clamp(14px, 4.5cqw, 18px)",
+                    marginTop: "8px",
+                  }}
+                >
+                  로그인하면 랭킹에 등록할 수 있습니다
+                </div>
+              ) : (
+                rankingData.myRank &&
+                !rankingData.topList.some((e) => e.isMe) && (
+                  <>
+                    <div
+                      style={{
+                        height: "2px",
+                        background: "#D4A574",
+                        margin: "12px 0",
+                      }}
+                    />
+                    <div
+                      style={{
+                        background: "#FFF0D4",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontWeight: "bold",
+                        fontSize: "clamp(14px, 4.5cqw, 20px)",
+                        color: "#5D4E37",
+                      }}
+                    >
+                      <span>내 순위: #{rankingData.myRank.rank}</span>
+                      <span>
+                        {formatValue(rankingData.myRank.value, activeTab)}
+                      </span>
+                    </div>
+                  </>
+                )
               )}
             </div>
           )}

@@ -3,7 +3,8 @@ import { AuthManager } from './AuthManager';
 
 export interface RankingEntry {
   rank: number;
-  displayName: string;
+  displayName: string;  // OAuth display name (for masking fallback)
+  nickname: string | null;  // User-set custom nickname (shown unmasked)
   value: number; // current_day or total_money
   isMe: boolean;
 }
@@ -51,7 +52,7 @@ export class RankingManager {
       const orderColumn = tab === 'day' ? 'current_day' : 'total_money';
       const { data, error } = await supabase
         .from('game_progress')
-        .select('user_id, display_name, current_day, total_money')
+        .select('user_id, display_name, nickname, current_day, total_money')
         .order(orderColumn, { ascending: false })
         .limit(10);
 
@@ -68,6 +69,7 @@ export class RankingManager {
       const topList: RankingEntry[] = data.map((entry, index) => ({
         rank: index + 1,
         displayName: entry.display_name || 'User',
+        nickname: entry.nickname || null,
         value: tab === 'day' ? entry.current_day : entry.total_money,
         isMe: currentUserId ? entry.user_id === currentUserId : false,
       }));
@@ -81,7 +83,7 @@ export class RankingManager {
         // User not in top 10, fetch their rank
         const { data: userData, error: userError } = await supabase
           .from('game_progress')
-          .select('user_id, display_name, current_day, total_money')
+          .select('user_id, display_name, nickname, current_day, total_money')
           .eq('user_id', currentUserId)
           .single();
 
@@ -98,6 +100,7 @@ export class RankingManager {
             myRank = {
               rank: count + 1,
               displayName: userData.display_name || 'User',
+              nickname: userData.nickname || null,
               value: userValue,
               isMe: true,
             };

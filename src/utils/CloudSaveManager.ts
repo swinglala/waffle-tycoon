@@ -278,4 +278,69 @@ export class CloudSaveManager {
   canSaveToCloud(): boolean {
     return isSupabaseConnected() && this.authManager.isLoggedIn();
   }
+
+  /**
+   * 닉네임 저장
+   */
+  async saveNickname(nickname: string): Promise<{ error: Error | null }> {
+    if (!isSupabaseConnected() || !supabase) {
+      return { error: new Error('Supabase가 설정되지 않았습니다.') };
+    }
+
+    const user = this.authManager.getUser();
+    if (!user) {
+      return { error: new Error('로그인이 필요합니다.') };
+    }
+
+    try {
+      const { error } = await supabase
+        .from('game_progress')
+        .update({ nickname })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('[CloudSave] 닉네임 저장 실패:', error.message);
+        return { error };
+      }
+
+      return { error: null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('닉네임 저장 중 오류 발생');
+      return { error };
+    }
+  }
+
+  /**
+   * 닉네임 조회
+   */
+  async getNickname(): Promise<{ nickname: string | null; error: Error | null }> {
+    if (!isSupabaseConnected() || !supabase) {
+      return { nickname: null, error: new Error('Supabase가 설정되지 않았습니다.') };
+    }
+
+    const user = this.authManager.getUser();
+    if (!user) {
+      return { nickname: null, error: new Error('로그인이 필요합니다.') };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('game_progress')
+        .select('nickname')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return { nickname: null, error: null };
+        }
+        return { nickname: null, error };
+      }
+
+      return { nickname: data?.nickname || null, error: null };
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('닉네임 조회 중 오류 발생');
+      return { nickname: null, error };
+    }
+  }
 }

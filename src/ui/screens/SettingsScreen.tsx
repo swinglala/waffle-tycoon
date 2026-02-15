@@ -19,7 +19,6 @@ export default function SettingsScreen() {
   const [showPopup, setShowPopup] = useState<PopupType>(null);
   const [showLoading, setShowLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const isLoggedIn = authManager.isLoggedIn();
   const userEmail = authManager.getUser()?.email ?? '';
   const isTestAccount = TEST_ACCOUNTS.includes(userEmail);

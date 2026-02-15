@@ -13,7 +13,8 @@ type PopupType =
   | "heartPurchase"
   | "tutorial"
   | "placeholder"
-  | "ranking";
+  | "ranking"
+  | "profile";
 
 export default function HomeScreen() {
   const screenManager = ScreenManager.getInstance();
@@ -28,6 +29,12 @@ export default function HomeScreen() {
   const [timerText, setTimerText] = useState("");
   const [userName, setUserName] = useState("");
   const [popupType, setPopupType] = useState<PopupType | null>(null);
+  const [nickname, setNickname] = useState("");
+  const [nicknameInput, setNicknameInput] = useState("");
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
+  const [profileConfirm, setProfileConfirm] = useState<"logout" | "deleteAccount" | null>(null);
+  const [showLoading, setShowLoading] = useState(false);
 
   const isSyncing = useRef(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,6 +130,13 @@ export default function HomeScreen() {
     updateHeartsUI();
     updateUserUI();
 
+    // Load nickname
+    if (authManager.isLoggedIn()) {
+      cloudSaveManager.getNickname().then(({ nickname: n }) => {
+        if (n) setNickname(n);
+      });
+    }
+
     // BGM
     const soundManager = SoundManager.getInstance();
     soundManager.stopAll();
@@ -134,8 +148,14 @@ export default function HomeScreen() {
     // Auth state listener
     const authUnsubscribe = authManager.onAuthStateChange(async (user) => {
       updateUserUI();
-      if (user && !isSyncing.current) {
-        await syncWithCloud();
+      if (user) {
+        // Load nickname on auth
+        cloudSaveManager.getNickname().then(({ nickname: n }) => {
+          if (n) setNickname(n);
+        });
+        if (!isSyncing.current) {
+          await syncWithCloud();
+        }
       }
     });
 
@@ -191,6 +211,68 @@ export default function HomeScreen() {
   const closePopup = useCallback(() => {
     setPopupType(null);
   }, []);
+
+  // Nickname handlers
+  const handleProfileClick = useCallback(() => {
+    if (!authManager.isLoggedIn()) return;
+    // Load current nickname when opening
+    cloudSaveManager.getNickname().then(({ nickname: n }) => {
+      if (n) {
+        setNickname(n);
+        setNicknameInput(n);
+      } else {
+        setNickname("");
+        setNicknameInput("");
+      }
+    });
+    setPopupType("profile");
+  }, [authManager, cloudSaveManager]);
+
+  const handleNicknameSave = useCallback(async () => {
+    const trimmed = nicknameInput.trim();
+    if (!trimmed || trimmed === nickname) return;
+    if (trimmed.length > 10) {
+      setNicknameError("닉네임은 10자 이내로 입력해주세요.");
+      setTimeout(() => setNicknameError(null), 2000);
+      return;
+    }
+    setNicknameSaving(true);
+    const { error } = await cloudSaveManager.saveNickname(trimmed);
+    setNicknameSaving(false);
+    if (error) {
+      setNicknameError("닉네임 저장에 실패했습니다.");
+      setTimeout(() => setNicknameError(null), 2000);
+      return;
+    }
+    setNickname(trimmed);
+  }, [nicknameInput, nickname, cloudSaveManager]);
+
+  const handleLogout = useCallback(async () => {
+    setProfileConfirm(null);
+    setPopupType(null);
+    await authManager.signOut();
+    progressManager.resetProgress();
+    heartManager.resetHearts();
+    localStorage.removeItem("waffle_hasLoggedIn");
+    localStorage.removeItem("waffle_isGuest");
+    screenManager.showScreen("login");
+  }, [authManager, screenManager, progressManager, heartManager]);
+
+  const handleDeleteAccount = useCallback(async () => {
+    setProfileConfirm(null);
+    setPopupType(null);
+    setShowLoading(true);
+    const { error } = await authManager.deleteAccount();
+    setShowLoading(false);
+    if (error) {
+      setNicknameError("계정 삭제에 실패했습니다.");
+      setTimeout(() => setNicknameError(null), 2000);
+      return;
+    }
+    progressManager.resetProgress();
+    heartManager.resetHearts();
+    screenManager.showScreen("login");
+  }, [authManager, screenManager, progressManager, heartManager]);
 
   // Render day display
   const renderDayDisplay = () => {
@@ -309,37 +391,47 @@ export default function HomeScreen() {
           >
             <div
               style={{
-                background: panelBg,
-                borderRadius: 16,
-                padding: 8,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                width: "calc(clamp(44px, 16cqw, 64px) + 16px)",
               }}
             >
-              <img
-                src="assets/images/profile.png"
-                style={{ width: "clamp(44px, 16cqw, 64px)", aspectRatio: "1" }}
-                alt="profile"
-              />
+              <div
+                style={{
+                  background: panelBg,
+                  borderRadius: 16,
+                  padding: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
+                }}
+              >
+                <img
+                  src="assets/images/profile.png"
+                  style={{ width: "clamp(44px, 16cqw, 64px)", aspectRatio: "1", cursor: authManager.isLoggedIn() ? "pointer" : "default" }}
+                  onClick={handleProfileClick}
+                  alt="profile"
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-primary)",
+                  fontSize: "clamp(11px, 3.5cqw, 14px)",
+                  color: "#5D4E37",
+                  fontWeight: "bold",
+                  marginTop: 4,
+                  textAlign: "center",
+                  width: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {nickname || userName}
+              </span>
             </div>
-            <span
-              style={{
-                fontFamily: "var(--font-primary)",
-                fontSize: "clamp(11px, 3.5cqw, 14px)",
-                color: "#5D4E37",
-                fontWeight: "bold",
-                marginTop: 4,
-                textAlign: "center",
-                maxWidth: 76,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {userName}
-            </span>
           </div>
 
           {/* Hearts + Stars Area */}
@@ -673,6 +765,128 @@ export default function HomeScreen() {
 
       {popupType === "ranking" && (
         <RankingPopup onClose={closePopup} />
+      )}
+
+      {popupType === "profile" && (
+        <div className="popup-overlay" onClick={closePopup}>
+          <div className="popup" style={{ width: "85%", maxWidth: "85%", padding: 20, display: "flex", flexDirection: "column", gap: 16 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: "clamp(24px, 7cqw, 32px)", fontWeight: "bold", color: "#5D4E37", fontFamily: "var(--font-primary)", textAlign: "center" }}>
+              계정 관리
+            </div>
+
+            {/* 닉네임 섹션 */}
+            <div>
+              <div style={{ fontSize: "clamp(16px, 5cqw, 20px)", fontWeight: "bold", color: "#5D4E37", fontFamily: "var(--font-primary)", marginBottom: 8 }}>
+                닉네임
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  type="text"
+                  value={nicknameInput}
+                  onChange={(e) => setNicknameInput(e.target.value)}
+                  placeholder="닉네임 입력 (최대 10자)"
+                  maxLength={10}
+                  style={{
+                    flex: 1,
+                    padding: "12px 16px",
+                    borderRadius: 8,
+                    border: "2px solid #8B6914",
+                    background: "#FFF8E7",
+                    fontFamily: "var(--font-primary)",
+                    fontSize: "clamp(16px, 5cqw, 22px)",
+                    color: "#5D4E37",
+                    outline: "none",
+                  }}
+                />
+                <button
+                  className="btn btn-primary"
+                  style={{ padding: "12px 16px", fontSize: "clamp(16px, 5cqw, 20px)", whiteSpace: "nowrap" }}
+                  onClick={handleNicknameSave}
+                  disabled={nicknameSaving || !nicknameInput.trim() || nicknameInput.trim() === nickname}
+                >
+                  {nicknameSaving ? "저장 중..." : "저장"}
+                </button>
+              </div>
+              {nickname && (
+                <div style={{ fontSize: "clamp(13px, 4cqw, 16px)", color: "#8B7355", paddingLeft: 4, marginTop: 6 }}>
+                  현재 닉네임: {nickname}
+                </div>
+              )}
+            </div>
+
+            {/* 구분선 */}
+            <div style={{ height: 2, background: "#E8D5C0" }} />
+
+            {/* 계정 버튼 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <button
+                className="btn btn-danger"
+                style={{ width: "100%", fontSize: "clamp(16px, 5cqw, 20px)", padding: 12 }}
+                onClick={() => setProfileConfirm("logout")}
+              >
+                로그아웃
+              </button>
+              <button
+                className="btn btn-gray"
+                style={{ width: "100%", fontSize: "clamp(14px, 4.5cqw, 18px)", padding: 10 }}
+                onClick={() => setProfileConfirm("deleteAccount")}
+              >
+                계정 삭제
+              </button>
+            </div>
+
+            {nicknameError && (
+              <div style={{ fontSize: "clamp(13px, 4cqw, 16px)", color: "#E85A4F", textAlign: "center" }}>
+                {nicknameError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button className="btn btn-primary" onClick={closePopup}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 로그아웃 확인 */}
+      {profileConfirm === "logout" && (
+        <div className="popup-overlay" style={{ zIndex: 1001 }} onClick={() => setProfileConfirm(null)}>
+          <div className="popup" onClick={(e) => e.stopPropagation()}>
+            <div className="popup-title">로그아웃</div>
+            <div className="popup-message">정말 로그아웃 하시겠습니까?</div>
+            <div className="popup-buttons">
+              <button className="btn btn-danger" onClick={handleLogout}>로그아웃</button>
+              <button className="btn btn-primary" onClick={() => setProfileConfirm(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 계정 삭제 확인 */}
+      {profileConfirm === "deleteAccount" && (
+        <div className="popup-overlay" style={{ zIndex: 1001 }} onClick={() => setProfileConfirm(null)}>
+          <div className="popup" style={{ width: 420 }} onClick={(e) => e.stopPropagation()}>
+            <div className="popup-title error">계정 삭제</div>
+            <div className="popup-message">
+              정말 계정을 삭제하시겠습니까?<br/><br/>
+              모든 게임 데이터가 영구적으로<br/>
+              삭제되며 복구할 수 없습니다.
+            </div>
+            <div className="popup-buttons">
+              <button className="btn btn-danger" onClick={handleDeleteAccount}>삭제</button>
+              <button className="btn btn-primary" onClick={() => setProfileConfirm(null)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 로딩 오버레이 */}
+      {showLoading && (
+        <div className="loading-overlay">
+          <span className="loading-text">계정 삭제 중...</span>
+        </div>
       )}
     </div>
   );
