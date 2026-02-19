@@ -38,10 +38,10 @@
       }
       #game-container {
         position: fixed;
-        top: env(safe-area-inset-top, 0px);
+        top: 0;
         left: 0;
         width: 100%;
-        height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+        height: 100%;
       }
       /* 가로가 세로보다 넓은 화면 (웹/데스크탑)에서만 적용 */
       @media (min-aspect-ratio: 9/16) {

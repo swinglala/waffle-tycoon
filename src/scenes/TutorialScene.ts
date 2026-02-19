@@ -114,14 +114,14 @@ export class TutorialScene extends Phaser.Scene {
   private isStrongFire = false;
   private strongFireRemaining = 0;
 
-  // 레이아웃 Y 좌표
-  private readonly HEADER_Y = 45;
-  private readonly CUSTOMER_Y = 190;
-  private readonly FINISHED_TRAY_Y = 355;
-  private readonly TOPPING_BTN_Y = 455;
-  private readonly WORK_TRAY_Y = 535;
-  private readonly GRILL_START_Y = 680;
-  private readonly CUSTOMER_SLOT_X = [150, 330, 510];
+  // 레이아웃 Y 좌표 (create에서 safe area 반영하여 계산)
+  private HEADER_Y = 45;
+  private CUSTOMER_Y = 190;
+  private FINISHED_TRAY_Y = 355;
+  private TOPPING_BTN_Y = 455;
+  private WORK_TRAY_Y = 535;
+  private GRILL_START_Y = 680;
+  private CUSTOMER_SLOT_X = [150, 330, 510];
 
   // 트레이 용량
   private readonly workTrayCapacity = 5;
@@ -138,7 +138,26 @@ export class TutorialScene extends Phaser.Scene {
     super({ key: "TutorialScene" });
   }
 
+  private calculateLayout(): void {
+    const sw = this.cameras.main.width;
+    const sh = this.cameras.main.height;
+
+    const baseHeight = 1280;
+    const scale = sh / baseHeight;
+
+    this.HEADER_Y = 45 * scale;
+    this.CUSTOMER_Y = 190 * scale;
+    this.FINISHED_TRAY_Y = 355 * scale;
+    this.TOPPING_BTN_Y = 455 * scale;
+    this.WORK_TRAY_Y = 535 * scale;
+    this.GRILL_START_Y = 680 * scale;
+
+    const customerSpacing = sw / 4;
+    this.CUSTOMER_SLOT_X = [customerSpacing, customerSpacing * 2, customerSpacing * 3];
+  }
+
   create(): void {
+    this.calculateLayout();
     this.initializeGrill();
     this.createBackground();
     this.createHeader();
