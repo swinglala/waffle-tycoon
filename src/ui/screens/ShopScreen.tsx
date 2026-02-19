@@ -51,11 +51,11 @@ const IMAGE_KEY_MAP: Record<string, string> = {
 
 interface UpgradeCardProps {
   type: UpgradeType;
-  onPurchase: () => void;
+  onRequestPurchase: (type: UpgradeType) => void;
   onInsufficientStars: () => void;
 }
 
-function UpgradeCard({ type, onPurchase, onInsufficientStars }: UpgradeCardProps) {
+function UpgradeCard({ type, onRequestPurchase, onInsufficientStars }: UpgradeCardProps) {
   const progressManager = ProgressManager.getInstance();
   const config = UPGRADE_CONFIGS[type];
   const currentLevel = progressManager.getUpgradeLevel(type);
@@ -68,12 +68,11 @@ function UpgradeCard({ type, onPurchase, onInsufficientStars }: UpgradeCardProps
   const handleClick = useCallback(() => {
     if (isMaxed) return;
     if (progressManager.canPurchaseUpgrade(type)) {
-      progressManager.purchaseUpgrade(type);
-      onPurchase();
+      onRequestPurchase(type);
     } else {
       onInsufficientStars();
     }
-  }, [type, isMaxed, progressManager, onPurchase, onInsufficientStars]);
+  }, [type, isMaxed, progressManager, onRequestPurchase, onInsufficientStars]);
 
   const btnStyle: React.CSSProperties = isMaxed
     ? { background: '#4CAF50', border: '2px solid #388E3C', color: '#fff', cursor: 'default' }
@@ -147,13 +146,22 @@ function UpgradeCard({ type, onPurchase, onInsufficientStars }: UpgradeCardProps
 export default function ShopScreen() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [confirmType, setConfirmType] = useState<UpgradeType | null>(null);
 
   const progressManager = ProgressManager.getInstance();
   const screenManager = ScreenManager.getInstance();
 
-  const handlePurchase = useCallback(() => {
-    setRefreshKey((k) => k + 1);
+  const handleRequestPurchase = useCallback((type: UpgradeType) => {
+    setConfirmType(type);
   }, []);
+
+  const handleConfirmPurchase = useCallback(() => {
+    if (confirmType === null) return;
+    if (progressManager.purchaseUpgrade(confirmType)) {
+      setRefreshKey((k) => k + 1);
+    }
+    setConfirmType(null);
+  }, [confirmType, progressManager]);
 
   const handleInsufficientStars = useCallback(() => {
     setToastMessage('별이 부족해요!');
@@ -182,7 +190,7 @@ export default function ShopScreen() {
                 <UpgradeCard
                   key={type}
                   type={type}
-                  onPurchase={handlePurchase}
+                  onRequestPurchase={handleRequestPurchase}
                   onInsufficientStars={handleInsufficientStars}
                 />
               ))}
@@ -196,6 +204,38 @@ export default function ShopScreen() {
           <img src="assets/images/home_100.png" alt="home" /> 홈으로
         </button>
       </div>
+
+      {/* 구매 확인 팝업 */}
+      {confirmType !== null && (() => {
+        const config = UPGRADE_CONFIGS[confirmType];
+        const cost = progressManager.getUpgradeCost(confirmType);
+        const currentLevel = progressManager.getUpgradeLevel(confirmType);
+        return (
+          <div
+            className="popup-overlay"
+            onClick={(e) => { if (e.target === e.currentTarget) setConfirmType(null); }}
+          >
+            <div className="popup">
+              <div className="popup-title">업그레이드 구매</div>
+              <div className="popup-message">
+                <strong>{config.name}</strong> LV.{currentLevel} → LV.{currentLevel + 1}<br />
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <img src="assets/images/star.png" alt="star" style={{ width: 20, height: 20, flexShrink: 0, transform: 'translateY(2px)' }} />
+                  <span><strong>{cost}</strong>개를 사용합니다.</span>
+                </span>
+              </div>
+              <div className="popup-buttons">
+                <button className="btn btn-primary" onClick={handleConfirmPurchase}>
+                  구매
+                </button>
+                <button className="btn btn-gray" onClick={() => setConfirmType(null)}>
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {toastMessage && <div className="toast">{toastMessage}</div>}
     </div>
