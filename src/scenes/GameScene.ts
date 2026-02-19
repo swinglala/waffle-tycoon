@@ -673,9 +673,7 @@ export class GameScene extends Phaser.Scene {
 
     // 완성품 개수 확인
     if (this.finishedTray.length < customer.waffleCount) {
-      this.showMessage(
-        `완성품이 부족해요! (${this.finishedTray.length}/${customer.waffleCount})`,
-      );
+      this.showMessage("완성품이 부족해요!", "sale", index);
       return;
     }
 
@@ -690,9 +688,7 @@ export class GameScene extends Phaser.Scene {
           : customer.preferredJam === JamType.BERRY
             ? "베리잼"
             : "피스타치오잼";
-      this.showMessage(
-        `${jamName} 와플이 부족해요! (${matchingWaffles.length}/${customer.waffleCount})`,
-      );
+      this.showMessage(`${jamName} 와플이 부족해요!`, "sale", index);
       return;
     }
 
@@ -702,9 +698,7 @@ export class GameScene extends Phaser.Scene {
         (w) => w.stage === CookingStage.PERFECT,
       );
       if (perfectWaffles.length < customer.waffleCount) {
-        this.showMessage(
-          `🦊 여우는 퍼펙트 와플만 원해요! (${perfectWaffles.length}/${customer.waffleCount})`,
-        );
+        this.showMessage("🦊 여우는 퍼펙트 와플만 원해요!", "sale", index);
         return;
       }
     }
@@ -739,7 +733,7 @@ export class GameScene extends Phaser.Scene {
       // 럭키 와플 (가격 2배 확률)
       if (this.progressManager.rollLucky()) {
         wafflePrice *= 2;
-        this.showMessage("🍀 럭키!");
+        this.showMessage("🍀 럭키!", "sale", index);
       }
 
       totalPrice += wafflePrice;
@@ -775,7 +769,7 @@ export class GameScene extends Phaser.Scene {
     ) {
       const tipAmount = this.progressManager.getTipAmount();
       totalPrice += tipAmount;
-      this.showMessage(`💝 팁 +${tipAmount}원!`);
+      this.showMessage(`💝 팁 +${tipAmount}원!`, "sale", index);
     }
 
     this.gameState.lastSaleTime = this.gameState.timeRemaining;
@@ -788,7 +782,7 @@ export class GameScene extends Phaser.Scene {
     this.updateCustomerDisplay();
     this.updateFinishedTrayDisplay();
 
-    this.showMessage(`+${totalPrice.toLocaleString()}원!`);
+    this.showMessage(`+${totalPrice.toLocaleString()}원!`, "sale", index);
   }
 
   private checkAngryStateChanges(): boolean {
@@ -823,7 +817,7 @@ export class GameScene extends Phaser.Scene {
       if (customer.waitTime <= 0) {
         // 손님이 화나서 떠남
         this.customerSlots[i] = null;
-        this.showMessage("😠 손님이 화나서 떠났어요!");
+        this.showMessage("😠 손님이 화나서 떠났어요!", "sale", i);
         customerChanged = true;
       }
     }
@@ -1047,9 +1041,7 @@ export class GameScene extends Phaser.Scene {
   private moveToWorkTray(row: number, col: number): void {
     // 준비 트레이 용량 체크
     if (this.workTray.length >= this.workTrayCapacity) {
-      this.showMessage(
-        `작업 트레이가 가득 찼어요! (${this.workTray.length}/${this.workTrayCapacity})`,
-      );
+      this.showMessage("작업 트레이가 가득 찼어요!", "tray");
       return;
     }
 
@@ -1086,22 +1078,20 @@ export class GameScene extends Phaser.Scene {
 
   private applyJam(jamType: JamType): void {
     if (this.workTray.length === 0) {
-      this.showMessage("작업 트레이가 비어있어요");
+      this.showMessage("작업 트레이가 비어있어요", "tray");
       return;
     }
 
     const waffle = this.workTray[0]; // 항상 첫 번째 와플
 
     if (waffle.stage === CookingStage.BURNT) {
-      this.showMessage("탄 와플은 판매할 수 없어요!");
+      this.showMessage("탄 와플은 판매할 수 없어요!", "tray");
       return;
     }
 
     // 완성품 트레이 용량 체크
     if (this.finishedTray.length >= this.finishedTrayCapacity) {
-      this.showMessage(
-        `완성품 트레이가 가득 찼어요! (${this.finishedTray.length}/${this.finishedTrayCapacity})`,
-      );
+      this.showMessage("완성품 트레이가 가득 찼어요!", "tray");
       return;
     }
 
@@ -1115,7 +1105,7 @@ export class GameScene extends Phaser.Scene {
 
   private onTrashButtonClick(): void {
     if (this.workTray.length === 0) {
-      this.showMessage("⚠️ 작업 트레이가 비어있어요");
+      this.showMessage("⚠️ 작업 트레이가 비어있어요", "tray");
       return;
     }
 
@@ -1125,14 +1115,27 @@ export class GameScene extends Phaser.Scene {
     // 버리기 효과음
     this.soundManager.playSfx(this, "sfx_trash", { volume: 0.5 });
 
-    this.showMessage("🗑️ 버렸어요");
+    this.showMessage("🗑️ 버렸어요", "tray");
   }
 
-  private showMessage(text: string): void {
+  private showMessage(text: string, position: "sale" | "tray" | "center" = "center", slotIndex?: number): void {
+    let x = this.cameras.main.width / 2;
+    let y: number;
+    if (position === "sale") {
+      y = this.CUSTOMER_Y - 40;
+      if (slotIndex !== undefined && this.CUSTOMER_SLOT_X[slotIndex] !== undefined) {
+        x = this.CUSTOMER_SLOT_X[slotIndex];
+      }
+    } else if (position === "tray") {
+      y = this.WORK_TRAY_Y - 60;
+    } else {
+      y = this.cameras.main.height / 2;
+    }
+
     const msg = this.add
-      .text(this.cameras.main.width / 2, this.cameras.main.height / 2, text, {
+      .text(x, y, text, {
         fontFamily: "UhBeePuding",
-        fontSize: "24px",
+        fontSize: "30px",
         color: "#5D4E37",
         backgroundColor: "#FFFFFF",
         padding: { x: 15, y: 8 },
